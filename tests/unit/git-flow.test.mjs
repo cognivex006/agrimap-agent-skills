@@ -139,6 +139,14 @@ test('delivery gates: protected branch, missing ack, secrets without values, cha
   const ok=p.cli(['deliver','plan','--session','s1','--exclude-paths','config.js','--changelog-na','x']);
   assert.ok(!ok.paths.own.some(f=>f.startsWith('.agrimap-agent/local/')));
   assert.ok(ok.warnings.some(w=>w.code==='LOCAL_MEMORY_TRACKED'));
+  // Prompt history is local only (5.0.1): never delivered, and a tracked copy is reported.
+  await mkdir(path.join(p.repo,'.agrimap-agent','prompts','2026-10','c1'),{recursive:true});
+  await writeFile(path.join(p.repo,'.agrimap-agent','prompts','2026-10','c1','history.md'),'### [2026-10-14 09:00:00]\nแก้ export\n');
+  assert.match(await readFile(path.join(p.repo,'.agrimap-agent','.gitignore'),'utf8'),/^prompts\/$/m);
+  gitIn(p.repo,['add','-f','--','.agrimap-agent/prompts/2026-10/c1/history.md']);
+  const prompts=p.cli(['deliver','plan','--session','s1','--exclude-paths','config.js','--changelog-na','x']);
+  assert.ok(!prompts.paths.own.some(f=>f.startsWith('.agrimap-agent/prompts/')));
+  assert.ok(prompts.warnings.some(w=>w.code==='PROMPT_HISTORY_TRACKED'));
   assert.equal(started.ok,true);
 });
 

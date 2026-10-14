@@ -369,6 +369,11 @@ export async function classifyPaths(root, { preexisting = [], includeAudit = tru
   if (lines(git(run, root, ["ls-files", "--", ".agrimap-agent/local"]).stdout).length) {
     warnings.push(warning("LOCAL_MEMORY_TRACKED", ".agrimap-agent/local", "ask the requester before `git rm --cached -r .agrimap-agent/local`"));
   }
+  // Raw prompt history is local only since 5.0.1 (owner decision 2026-10-14); the
+  // next release's final audit commit untracks it and keeps the files on disk.
+  if (lines(git(run, root, ["ls-files", "--", ".agrimap-agent/prompts"]).stdout).length) {
+    warnings.push(warning("PROMPT_HISTORY_TRACKED", ".agrimap-agent/prompts", "untrack once with `git rm --cached -r -- .agrimap-agent/prompts` in an `audit:` commit; files stay local"));
+  }
   return { groups, warnings, inventory };
 }
 
