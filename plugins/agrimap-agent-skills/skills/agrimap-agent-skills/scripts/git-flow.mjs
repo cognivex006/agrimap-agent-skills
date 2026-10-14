@@ -8,13 +8,13 @@ import { mkdir, open, readdir, readFile, stat, writeFile } from "node:fs/promise
 import path from "node:path";
 import { defaultRun, trimStderr } from "./run-command.mjs";
 import { detectSensitive } from "./sensitive-recording.mjs";
-import { isProtected, workTypeOf } from "./workflow-policy.mjs";
+import { branchTypeOf, isProtected, workTypeOf } from "./workflow-policy.mjs";
 
 const AUDIT_DIRECTORIES = new Set(["decisions", "instructions", "knowledge", "logs", "memory", "reports", "policy"]);
 const SECRET_KINDS = new Set(["CREDENTIAL", "TOKEN", "AUTH", "PRIVATE_KEY"]);
 // Team commit style (bootstrap AGENTS.md §10.6): "<type>: <plain description>" that an
 // App Leader, BA or customer can read. Work: feature|fix|comment; agm-release: bump|audit|ci.
-const TYPE_BY_WORK = { feature: "feature", fix: "fix", hotfix: "fix", refactor: "comment", docs: "comment", chore: "ci" };
+const TYPE_BY_WORK = { feature: "feature", feat: "feature", fix: "fix", bugfix: "fix", hotfix: "fix", refactor: "comment", docs: "comment", chore: "ci", ci: "ci" };
 export const TEAM_HEADER = /^(feature|fix|comment|ci|bump|audit): \S.*$/u;
 const TEAM_HEADER_MAX = 100;
 // Conventional or habitual types map onto the team type and lose their scope (4.9.6).
@@ -168,8 +168,11 @@ function branchCard({ question, impact, checked, options, reason, risk = "R2" })
 export async function planBranch({ root, policy, active = null, type, slug, ticket = null, mode = null, run = defaultRun, fetch = true }) {
   if (!policy) return stop("POLICY_REQUIRED", "No workflow policy; run policy infer and ask its card first.", { next: { action: "run", command: "policy infer" } });
   if (policy.branching?.disabled) return { ok: true, action: "skip", reason: "branching disabled by policy", commands: [], warnings: [], card: null };
-  const workType = policy.branching?.workTypes?.[type];
-  if (!workType) return stop("WORK_TYPE_INVALID", `--type must be one of ${Object.keys(policy.branching?.workTypes || {}).join("|")}.`);
+  // feature/ or hotfix/ only (5.0.1); fix, refactor, docs and chore branch as feature/
+  // and keep their own commit type through changeType.
+  const branchType = branchTypeOf(type);
+  const workType = branchType ? policy.branching?.workTypes?.[branchType] : null;
+  if (!workType) return stop("WORK_TYPE_INVALID", "--type must be feature or hotfix; fix, refactor, docs and chore branch as feature/.");
   if (!SLUG.test(String(slug || ""))) return stop("BRANCH_NAME_INVALID", "--slug must be English kebab-case.", { next: { action: "run", command: "branch plan with a kebab-case --slug" } });
   const maxLength = Number(policy.branching.slug?.maxLength || 40);
   const facts = await gitFacts(root, { run, fetch });
@@ -274,7 +277,7 @@ export async function planBranch({ root, policy, active = null, type, slug, tick
   if (action === "reuse") { remoteBranch = active?.remoteBranch || facts.branch; name = facts.branch; }
   const hashFacts = { branch: facts.branch, head: facts.head, baseRef, baseSha, dirty: facts.dirty.map(entry => [entry.path, entry.status]) };
   const plan = {
-    ok: true, action, branch: action === "keep" ? facts.branch : name, remoteBranch, base, baseRef, baseSha, workType: type,
+    ok: true, action, branch: action === "keep" ? facts.branch : name, remoteBranch, base, baseRef, baseSha, workType: branchType, changeType: String(type).toLowerCase(),
     facts: { current: facts.branch, dirty: dirty.length, remote: facts.hasRemote, upstream: facts.upstream },
     commands, warnings, card,
   };
@@ -299,7 +302,7 @@ export async function applyBranch(options) {
   if (plan.planHash !== options.planHash) return stop("PLAN_STALE", "Repository state changed since the plan; run branch plan again.", { next: { action: "run", command: "branch plan" } });
   const result = runCommands(options.run || defaultRun, options.root, plan.commands);
   if (!result.ok) return stop("BRANCH_APPLY_FAILED", `Command failed: ${result.command}`, result);
-  return { ok: true, action: plan.action, branch: plan.branch, record: { branch: plan.branch, remoteBranch: plan.remoteBranch, base: plan.base, baseSha: plan.baseSha, workType: plan.workType, branchAction: plan.action }, warnings: plan.warnings, next: { action: "none" }, card: null };
+  return { ok: true, action: plan.action, branch: plan.branch, record: { branch: plan.branch, remoteBranch: plan.remoteBranch, base: plan.base, baseSha: plan.baseSha, workType: plan.workType, changeType: plan.changeType, branchAction: plan.action }, warnings: plan.warnings, next: { action: "none" }, card: null };
 }
 
 // ---------------------------------------------------------------- delivery
@@ -510,7 +513,7 @@ export async function planDelivery({
   const verified = ["passed", "not-applicable"].includes(verification);
   if (!verified) warnings.push(warning("DELIVERED_UNVERIFIED", active.executionId, "run the tests, fix them, deliver again; merge is not offered until verification passes"));
   const convention = policy?.delivery?.commitConvention || "agrimap";
-  const message = commitMessage({ input, workType: active.workType || workTypeOf(policy, branch), objective: active.objective, own: groups.own, executionId: active.executionId, verificationTrailer: verified ? null : verification === "failed" ? "failed" : "not-run", bodyFallback, convention });
+  const message = commitMessage({ input, workType: active.changeType || active.workType || workTypeOf(policy, branch), objective: active.objective, own: groups.own, executionId: active.executionId, verificationTrailer: verified ? null : verification === "failed" ? "failed" : "not-run", bodyFallback, convention });
   const language = policy?.delivery?.commitLanguage || "th";
   const headerCheck = checkCommitHeader(message.header, convention, language);
   if (!pushOnly && groups.own.length && !headerCheck.ok) {
@@ -1092,7 +1095,8 @@ export async function pendingWork({ root, policy = null, target = null, run = de
   // Local develop may already hold unpushed merges from an earlier gather.
   const base = hasLocal && (!hasRemote || isAncestor(run, root, remoteRef, integration)) ? integration : remoteRef;
   const prefixes = [...new Set(Object.values(policy?.branching?.workTypes || {}).map(value => value?.prefix).filter(Boolean))];
-  const workPrefixes = prefixes.length ? prefixes : DEFAULT_WORK_PREFIXES;
+  // Branches created before 5.0.1 (fix/, refactor/, docs/, chore/) are still gathered.
+  const workPrefixes = [...new Set([...(prefixes.length ? prefixes : []), ...DEFAULT_WORK_PREFIXES])];
   const byName = new Map();
   for (const line of lines(git(run, root, ["for-each-ref", "--format=%(refname)%09%(objectname)", "refs/heads", "refs/remotes/origin"]).stdout)) {
     const [ref, sha] = line.split("\t");

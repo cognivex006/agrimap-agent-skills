@@ -71,8 +71,8 @@
 | Type | Agent ใช้เมื่อ | ตัวอย่าง |
 | --- | --- | --- |
 | `feature:` | ส่งงานที่เพิ่มความสามารถใหม่ให้ผู้ใช้ (branch `feature/*`) | `feature: เพิ่มรับ User หลายช่องทาง` |
-| `fix:` | ส่งงานที่แก้สิ่งที่ทำงานผิด รวม hotfix (branch `fix/*`, `hotfix/*`) | `fix: แก้ dynamic form เพิ่มวันที่ ช่วงเวลา` |
-| `comment:` | ปรับตาม comment หรือปรับปรุงที่ไม่ใช่ความสามารถใหม่ เช่น หน้าตา ข้อความ ปรับโครงสร้าง เอกสาร (`refactor/*`, `docs/*`) | `comment: ปรับโทนสีปุ่มเป็นสีม่วง` |
+| `fix:` | ส่งงานที่แก้สิ่งที่ทำงานผิด (branch `feature/*`; ด่วนบน Production ใช้ `hotfix/*`) | `fix: แก้ dynamic form เพิ่มวันที่ ช่วงเวลา` |
+| `comment:` | ปรับตาม comment หรือปรับปรุงที่ไม่ใช่ความสามารถใหม่ เช่น หน้าตา ข้อความ ปรับโครงสร้าง เอกสาร (branch `feature/*`) | `comment: ปรับโทนสีปุ่มเป็นสีม่วง` |
 | `bump:` | agm-release แก้เลข version ใน `Jenkinsfile*` และ release notes/changelog ของ version นั้น | `bump: Production 1.4.2` |
 | `audit:` | agm-release บันทึกประวัติ/รายงาน `.agrimap-agent` หลังปิด release แล้ว push develop ครั้งเดียว | `audit: บันทึกประวัติ release 1.4.2` |
 | `ci:` | แก้ pipeline, governance หรือ bootstrap เช่น `AGENTS.md`, `tools/agrimap/*` | `ci: อัปเดต bootstrap 4.9.4` |
@@ -92,7 +92,7 @@ release สนใจแค่ `develop`, `jenkins`, `jenkins-release` และ 
 
 | เจอสถานการณ์ | Agent ทำ |
 | --- | --- |
-| อยู่บน `feature/xxx` หรือ `fix/xxx` แล้วสั่ง release | deliver ไฟล์ที่ค้าง แล้วรวม branch นั้นเข้า develop และ release ต่อ |
+| อยู่บน `feature/xxx` หรือ `hotfix/xxx` (หรือ `fix/xxx` ที่สร้างก่อน 5.0.1) แล้วสั่ง release | deliver ไฟล์ที่ค้าง แล้วรวม branch นั้นเข้า develop และ release ต่อ |
 | branch ของงานนี้ชนกับ develop | merge develop เข้า branch นั้น **แก้ conflict ให้เอง** รัน test แล้ว commit ไม่ถาม |
 | มีคน push develop ระหว่าง release | merge `origin/develop` เข้ามาเองแล้ว push ใหม่ ไม่เกิน 2 ครั้ง |
 | `jenkins`/`jenkins-release` มีประวัติหรือ hotfix ที่ develop ไม่มี | back-merge เข้า develop เองแล้วรายงานไฟล์ที่ได้มา ถ้าชนก็แก้ให้เอง |

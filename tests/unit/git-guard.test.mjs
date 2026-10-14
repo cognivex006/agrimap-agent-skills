@@ -95,3 +95,22 @@ test('G8 the agent never runs sqlctx query --reveal (4.11.0)',async()=>{
   assert.equal(denied?.rule,'G8');
   assert.equal(denied?.decision,'deny');
 });
+
+test('G9 work branches are feature/ or hotfix/ only in product repositories (5.0.1)',async t=>{
+  const g9={...ctx,workBranchRule:true};
+  for(const command of ['git switch -c fix/login-error','git checkout -b chore/bump','git branch refactor/tidy develop','git switch --create=docs/readme','git worktree add -b fix/x ../wt develop','git branch -m bugfix/y','git checkout -b login-error']){
+    assert.deepEqual([rule(command,g9),verdict(command,g9).decision],['G9','deny'],command);
+  }
+  assert.match(verdict('git switch -c fix/login-error',g9).reason,/use "feature\/login-error"/);
+  for(const command of ['git switch -c feature/login-error','git checkout -b hotfix/prod-crash origin/develop','git worktree add -b feature/x ../wt develop','git switch -c fix/old-work origin/fix/old-work','git checkout -b develop origin/develop','git switch -c claude/agent-work','git branch','git branch --list','git branch -d fix/old','git switch develop','git checkout -- file.txt','git branch -c x y']){
+    assert.equal(verdict(command,g9),null,command);
+  }
+  assert.equal(verdict('git switch -c fix/x',ctx),null,'rule off outside product repositories');
+  const h=await createHarness('agm-guard9-');t.after(()=>h.cleanup());
+  const {repo}=await createGitFixture(h,{name:'agmws-orders-netcore'});
+  assert.equal(await guardCommand('git switch -c fix/x',{cwd:repo}),null,'plain repository');
+  await mkdir(path.join(repo,'.agrimap-agent'),{recursive:true});
+  assert.equal((await guardCommand('git switch -c fix/x',{cwd:repo}))?.rule,'G9');
+  await writeFile(path.join(repo,'package.json'),JSON.stringify({name:'agrimap-agent-skills'}));
+  assert.equal(await guardCommand('git switch -c fix/x',{cwd:repo}),null,'the skill package itself develops on fix/*');
+});

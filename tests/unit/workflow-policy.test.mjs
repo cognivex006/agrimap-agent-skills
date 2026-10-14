@@ -49,3 +49,23 @@ test('init writes policy, decision and project fact; set keeps unknown keys and 
   assert.equal(decisions.length,2);
   assert.match((await loadPolicy(repo)).policy.decisionRef,/^decisions\/\d{4}-\d{2}\/\d{8}-git-workflow-policy(-2)?\.md$/);
 });
+
+test('work branches are feature/ or hotfix/ only; older policies are normalized on load (5.0.1)',async t=>{
+  for(const profile of Object.values(PROFILES))assert.deepEqual(Object.keys(profile.branching.workTypes),['feature','hotfix']);
+  const {branchTypeOf}=await import('../../skills/agrimap-agent-skills/scripts/workflow-policy.mjs');
+  assert.deepEqual(['feature','hotfix','fix','chore','docs','refactor','release'].map(branchTypeOf),['feature','hotfix','feature','feature','feature','feature',null]);
+  const custom=confirmed(PROFILES['agrimap-jenkins']);custom.branching.workTypes.fix={prefix:'fix/',base:'develop',target:'develop',backMerge:[]};
+  assert.equal(validatePolicy(custom).ok,false,'a new fix/ work type is refused');
+  const h=await fixture(t);const {repo}=await createGitFixture(h,{name:'svc',remote:false});
+  const {mkdir,writeFile}=await import('node:fs/promises');
+  const legacy=confirmed(PROFILES['agrimap-jenkins']);
+  for(const type of ['fix','refactor','docs','chore'])legacy.branching.workTypes[type]={prefix:`${type}/`,base:'develop',target:'develop',backMerge:[]};
+  legacy.branching.workTypes.feature.prefix='feat/';
+  await mkdir(path.join(repo,'.agrimap-agent','policy'),{recursive:true});
+  await writeFile(path.join(repo,POLICY_PATH),JSON.stringify(legacy));
+  const loaded=await loadPolicy(repo);
+  assert.equal(loaded.validation.ok,true,JSON.stringify(loaded.validation.details));
+  assert.deepEqual(Object.keys(loaded.policy.branching.workTypes),['feature','hotfix']);
+  assert.equal(loaded.policy.branching.workTypes.feature.prefix,'feature/');
+  assert.ok(loaded.validation.warnings.some(w=>w.startsWith('WORK_TYPE_RETIRED:fix,refactor,docs,chore')));
+});

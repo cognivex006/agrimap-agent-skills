@@ -6,7 +6,7 @@
       "source": "AGENTS.md",
       "target": "AGENTS.md",
       "mode": "copy",
-      "sha256": "67e4a875ccfc21dca76515a27dcf0c5e376ed00f4a888e6471833e9dc761408d",
+      "sha256": "6afeea061c7d6cddc845a6364979b9ef72e83d224c709d2a4e4d4a7276357b50",
       "previous": [
         {
           "version": "3.2.2",

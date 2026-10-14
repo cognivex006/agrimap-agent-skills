@@ -9,7 +9,7 @@ Load for product writes in a Git repository or for a short integration reply. Sc
 
 ## Start
 
-After `start`, run `branch plan --type feature|fix|hotfix|refactor|docs|chore --slug <english-kebab>` then `branch apply`. The work type is yours unless it changes base or target (hotfix vs fix); then use a card. Pre-existing dirty files are carried but never delivered. Host-created worktree branches follow `hostWorktreeBranch`.
+After `start`, run `branch plan --type feature|fix|hotfix|refactor|docs|chore --slug <english-kebab>` then `branch apply`. Work branches are `feature/<slug>` or `hotfix/<slug>` only (owner decision 2026-10-14): fix, refactor, docs and chore branch as `feature/` and keep their commit type; guard G9 denies other prefixes. The work type is yours unless it changes base or target (hotfix vs feature); then use a card. Pre-existing dirty files are carried but never delivered. Host-created worktree branches follow `hostWorktreeBranch`.
 
 ## Deliver
 

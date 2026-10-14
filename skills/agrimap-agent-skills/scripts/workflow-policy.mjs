@@ -7,7 +7,32 @@ import { defaultRun } from "./run-command.mjs";
 import { bangkokParts, upsertProjectFact, writeDecision } from "./decision-records.mjs";
 
 export const POLICY_PATH = ".agrimap-agent/policy/workflow.json";
-export const WORK_TYPES = Object.freeze(["feature", "fix", "hotfix", "refactor", "docs", "chore"]);
+// Owner decision 2026-10-14 (5.0.1): work branches are feature/<slug> or hotfix/<slug>
+// only. Other kinds of change keep their commit type but branch as feature/.
+export const WORK_TYPES = Object.freeze(["feature", "hotfix"]);
+export const WORK_TYPE_ALIASES = Object.freeze({ feat: "feature", fix: "feature", bugfix: "feature", refactor: "feature", docs: "feature", chore: "feature", ci: "feature" });
+export const BRANCH_PREFIXES = Object.freeze(WORK_TYPES.map(type => `${type}/`));
+
+export function branchTypeOf(type) {
+  const value = String(type || "").trim().toLowerCase();
+  return WORK_TYPES.includes(value) ? value : WORK_TYPE_ALIASES[value] || null;
+}
+
+// A policy written before 5.0.1 may still list fix/refactor/docs/chore work types.
+// They are dropped on load (not on disk) and reported, and the two allowed types
+// always use their own prefix.
+export function normalizeWorkTypes(policy) {
+  const branching = policy?.branching;
+  const types = branching?.workTypes;
+  if (!types || typeof types !== "object") return [];
+  const retired = Object.keys(types).filter(type => !WORK_TYPES.includes(type));
+  for (const type of retired) delete types[type];
+  for (const type of WORK_TYPES) if (types[type]) types[type].prefix = `${type}/`;
+  if (!types.feature && branching.integrationBranch) {
+    types.feature = { prefix: "feature/", base: branching.integrationBranch, target: branching.integrationBranch, backMerge: [] };
+  }
+  return retired;
+}
 export const DEFAULT_PROTECTED = Object.freeze(["main", "master", "develop", "jenkins", "jenkins-release"]);
 const ENUMS = Object.freeze({
   status: ["draft", "confirmed"],
@@ -118,6 +143,7 @@ export function validatePolicy(policy) {
     const prefix = value?.prefix;
     if (!/^[a-z][a-z0-9-]*\/$/.test(String(prefix || ""))) add("POLICY_INVALID", `branching.workTypes.${type}.prefix`, "prefix must match ^[a-z][a-z0-9-]*/$");
     else if (prefixes.has(prefix)) add("POLICY_INVALID", `branching.workTypes.${type}.prefix`, "prefixes must be unique");
+    else if (!WORK_TYPES.includes(type) || prefix !== `${type}/`) add("POLICY_INVALID", `branching.workTypes.${type}`, "work branches are feature/<slug> or hotfix/<slug> only (owner decision 2026-10-14)");
     prefixes.add(prefix);
     for (const field of ["base", "target"]) if (!validBranchName(value?.[field])) add("POLICY_INVALID", `branching.workTypes.${type}.${field}`, "must be a valid branch name");
     if (!Array.isArray(value?.backMerge) || value.backMerge.some(item => !validBranchName(item))) add("POLICY_INVALID", `branching.workTypes.${type}.backMerge`, "must be a list of valid branch names");
@@ -146,7 +172,10 @@ export async function loadPolicy(root) {
   try { text = await readFile(file, "utf8"); } catch { return { exists: false, status: null, policy: null, validation: null }; }
   let policy;
   try { policy = JSON.parse(text); } catch { return { exists: true, status: null, policy: null, validation: { ok: false, details: [{ code: "POLICY_INVALID", field: "", message: "not valid JSON" }], warnings: [] } }; }
-  return { exists: true, status: policy?.status || null, policy, validation: validatePolicy(policy) };
+  const retired = normalizeWorkTypes(policy);
+  const validation = validatePolicy(policy);
+  if (retired.length) validation.warnings.push(`WORK_TYPE_RETIRED:${retired.join(",")} (branches are feature/ or hotfix/ only)`);
+  return { exists: true, status: policy?.status || null, policy, validation };
 }
 
 const lines = value => String(value || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);

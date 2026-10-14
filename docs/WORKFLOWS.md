@@ -46,7 +46,7 @@
 ## ทำงานบน work branch และส่งงาน (4.6.0)
 
 - งานแรกที่แก้ repository: Agent อ่าน `AGENTS.md` ของ repo (และระดับบน) ก่อน แล้วถาม workflow ของทีม **ครั้งเดียว** บันทึกเป็น `.agrimap-agent/policy/workflow.json` (commit เข้า repo)
-- เมื่อ policy ยืนยันแล้ว งานใหม่จะอยู่บน `feature/…`, `fix/…`, `hotfix/…` และเมื่อจบงาน Agent จะ commit + push **เฉพาะ work branch** แล้วตรวจ SHA บน remote ไม่ push/merge `develop`, `main`, `jenkins*` เอง
+- เมื่อ policy ยืนยันแล้ว งานใหม่จะอยู่บน `feature/…` หรือ `hotfix/…` เท่านั้น (5.0.1: งานแก้ bug, refactor, docs, chore ใช้ `feature/…` ส่วน commit ยังใช้ `fix:`/`comment:` ตามชนิดงาน; guard G9 ปฏิเสธ `fix/…`, `chore/…`) และเมื่อจบงาน Agent จะ commit + push **เฉพาะ work branch** แล้วตรวจ SHA บน remote ไม่ push/merge `develop`, `main`, `jenkins*` เอง
 - ไฟล์ที่ค้างอยู่ก่อนเริ่มงานจะไม่ถูกรวมใน commit; test ไม่ผ่านยังส่งขึ้น work branch ได้แต่จะมี `⚠️ ต้องตามต่อ` และไม่เสนอ merge
 - `.agrimap-agent/policy/project.json` บอกว่า project เป็น Not AI-First (code-first), AI-First (spec-first) หรือ hybrid; path ของ spec นอก repo จำไว้เฉพาะเครื่องใน `.agrimap-agent/local/memory.md` ซึ่งไม่ถูก commit
 
