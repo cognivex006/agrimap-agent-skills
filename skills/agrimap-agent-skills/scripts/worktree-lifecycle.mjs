@@ -7,6 +7,7 @@
 // deletes uncommitted work: Git's own non-forced commands refuse those cases.
 import { mkdir, open, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { randomBytes } from "node:crypto";
+import { realpathSync } from "node:fs";
 import path from "node:path";
 import { defaultRun } from "./run-command.mjs";
 
@@ -17,7 +18,9 @@ const git = (run, cwd, args) => run("git", args, { cwd });
 const out = result => (result.ok ? String(result.stdout || "").trim() : "");
 const stop = (code, message, extra = {}) => ({ ok: false, code, message, ...extra });
 const toSlash = value => String(value || "").replaceAll("\\", "/");
-const samePath = (a, b) => toSlash(path.resolve(a)).toLowerCase() === toSlash(path.resolve(b)).toLowerCase();
+// Real paths: Windows temp paths may be 8.3 short names (RUNNER~1) while git prints long ones.
+const canonical = (value) => { try { return toSlash(realpathSync.native(value)).toLowerCase(); } catch { return toSlash(path.resolve(value)).toLowerCase(); } };
+const samePath = (a, b) => canonical(a) === canonical(b);
 
 export function jobsDirectory(state) {
   return path.join(state, "runtime", "jobs");
