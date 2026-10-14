@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased
+
+- Raw prompt history keeps requester text only: `hook-context.mjs` removes Claude Code `<task-notification>` blocks (background-task completions that carry the agent's own commands, such as `gh workflow run …` or `git push …`) before archiving to `prompts/YYYY-MM/<conversation>/history.md`, and archives nothing when no requester text remains. Before, 11 of 24 histories in this repository held such blocks, and product repositories committed them. Existing histories are not rewritten.
+
 ## 4.11.0 — 2026-10-09
 
 Supports sql-context-pack 3.0.0, which keeps sensitive data from reaching AI models: values come back as marked fakes, aliases, generalized or redacted values, and real values go only to the user through a reveal handoff.
