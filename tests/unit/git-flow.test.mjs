@@ -115,6 +115,8 @@ test('delivery gates: protected branch, missing ack, secrets without values, cha
   assert.equal(p.cli(['deliver','plan','--session','s1']).code,'PROTECTED_BRANCH');
   assert.equal(p.cli(['deliver','plan','--session','other']).code,'NO_ACTIVE_EXECUTION');
   const plan=p.cli(['branch','plan','--session','s1','--type','fix','--slug','gates']);
+  // 5.0.1: a fix still branches as feature/ and keeps fix as its commit type.
+  assert.equal(plan.branch,'feature/gates');assert.equal(plan.workType,'feature');assert.equal(plan.changeType,'fix');
   p.cli(['branch','apply','--session','s1','--type','fix','--slug','gates','--plan-hash',plan.planHash]);
   await writeFile(path.join(p.repo,'AGENTS.md'),'# Rules changed\n');
   assert.equal(p.cli(['deliver','plan','--session','s1']).code,'INSTRUCTIONS_NOT_ACKNOWLEDGED');
