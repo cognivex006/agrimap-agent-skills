@@ -7,6 +7,7 @@
 - [S4–S6: generated API, refactor, and tests](#s4--ต้องการ-endpoint-ใหม่ในแอป-gen-code-ไม่ใช่เขียนมือ)
 - [S7–S9: presentation, signals, and assets](#s7--presentational-component-อย่าเติม-facadestore-เกิน)
 - [S10–S12: exceptions, versions, and templates](#s10--ไฟล์-legacy-ที่เป็น-tech-debt-exception-อย่า-แก้ให้ถูก)
+- [S13: core-first for multi-screen work](#s13--หลายหน้าที่มีส่วนซ้ำ-สร้าง-shared-ก่อน-แล้วค่อยประกอบหน้า)
 - [สรุป coverage](#สรุป-coverage)
 
 วัด **situational judgment** ของ skill ไม่ใช่ความจำ: agent เจอสถานการณ์จริง แล้วต้อง (ก) รู้ว่า
@@ -221,6 +222,21 @@ pin `@agrimap/ui-kit: "0.0.75"` แบบ exact
 
 ---
 
+## S13 — หลายหน้าที่มีส่วนซ้ำ: สร้าง shared ก่อน แล้วค่อยประกอบหน้า
+
+**Maps:** frontend-engineer Core-first for multi-screen work (5.0.1)
+**Situation:** แอปยังไม่มี data table กลาง; ต้องสร้าง 3 หน้ารายการที่หน้าตาเหมือนกัน
+**Prompt:** "สร้างหน้ารายการเกษตรกร รายการแปลง และรายการคำขอ แต่ละหน้ามี filter ตาราง แบ่งหน้า และ badge สถานะ"
+
+- **[HARD]** มี component กลางใต้ `shared/` สำหรับตาราง+filter+paging และ status badge และถูกสร้างก่อนไฟล์ของหน้า (ลำดับใน plan/commit)
+- **[HARD]** ทั้ง 3 หน้า import component กลางเดียวกัน; ไม่มี markup ตาราง/paging ซ้ำในแต่ละ feature
+- **[HARD]** component กลางมี input/output ชุดเดียวที่ทั้ง 3 หน้าใช้ ไม่มี boolean option สำหรับหน้าที่ไม่ได้ขอ
+- **[RUBRIC]** ตอบคำสั่งต่อ "เพิ่มปุ่ม export ทุกหน้า" ด้วยการแก้ component กลางครั้งเดียว
+
+**Anti-pattern:** เขียนหน้า 1 ให้เสร็จแล้ว copy ไปหน้า 2 และ 3 ทำให้ต้องแก้ 3 จุดทุกครั้งที่เปลี่ยน
+
+---
+
 ## สรุป coverage
 
 | เคส | ทดสอบอะไรเป็นหลัก | golden |
@@ -237,6 +253,7 @@ pin `@agrimap/ui-kit: "0.0.75"` แบบ exact
 | S10 | เคารพ legacy exception, ไม่ขยาย scope | CODING-STANDARD §2 |
 | S11 | exact-pin dependency trap | FE-lib 002/004 |
 | S12 | built-in control flow | FE-main 012 |
+| S13 | core-first: shared parts ก่อนหน้า | frontend-engineer Core-first |
 
 **หมายเหตุ:** เคสที่เป็น "synthesize" (S3) วัด objective ได้แค่ **conformance ต่อ invariant** ไม่ใช่
 "ดีไซน์ตรงเฉลย" — ตั้งใจ เพราะคำตอบที่ถูกมีหลายทาง สิ่งที่บังคับคือกรอบ ไม่ใช่รูปแบบตายตัว

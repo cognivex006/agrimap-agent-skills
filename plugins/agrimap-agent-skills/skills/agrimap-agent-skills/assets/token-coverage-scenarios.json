@@ -329,7 +329,7 @@
     },
     {
       "id": "qa-fe-main-golden-regulated",
-      "description": "Independent frontend QA with one selected current golden architecture entry; 4.5.5 adds checklist routing pointers in the pattern, status, and conflict references",
+      "description": "Independent frontend QA with one selected current golden architecture entry; 4.5.5 adds checklist routing pointers in the pattern, status, and conflict references; 5.0.1 adds the owner-requested core-first rule to frontend-engineer.md",
       "operation": "qa",
       "depth": "regulated",
       "activate": [
@@ -353,8 +353,8 @@
       ],
       "budgets": {
         "scenario": {
-          "maxWords": 8200,
-          "maxEstimatedTokensHigh": 21800
+          "maxWords": 8300,
+          "maxEstimatedTokensHigh": 22200
         }
       }
     },
