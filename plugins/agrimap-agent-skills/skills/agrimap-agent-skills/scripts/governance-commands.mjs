@@ -5,7 +5,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { defaultRun } from "./run-command.mjs";
 import { acknowledge, instructionChain, readRequired, resolveTargetRoots, scanBelow, worktreeFacts } from "./instruction-chain.mjs";
-import { inferPolicy, initPolicy, loadPolicy, setPolicyValue } from "./workflow-policy.mjs";
+import { branchTypeOf, inferPolicy, initPolicy, loadPolicy, setPolicyValue } from "./workflow-policy.mjs";
+import { integrateJob, planJob, resumeCleanups, startJob } from "./worktree-lifecycle.mjs";
 import { recordChoice, renderCard, normalizeOptions, storeCard, validateCard } from "./decision-card.mjs";
 import { applyBranch, applyDelivery, applyGather, applyIntegration, applyReleaseSync, dirtyInventory, integrationOptions, pendingWork, planBranch, planDelivery, planGather, planIntegration, planReleaseSync, releasePreflight, snapshotDirty } from "./git-flow.mjs";
 import { applyProjectPatch, inferProject, initProject, loadProject, resolveSpecSources, setProjectValue, specStandingCard, verifySpecPath } from "./project-profile.mjs";
@@ -249,6 +250,8 @@ async function branchCommand(ctx, sub, args, root) {
   const loaded = await loadPolicy(root);
   if (loaded.exists && !loaded.validation?.ok) return { ok: false, code: "POLICY_INVALID", details: loaded.validation?.details || [] };
   const { active, save } = await activeFor(ctx, state, session);
+  // Orchestration (5.0.1): a parallel writer's job gets its own worktree.
+  if (args.worktree) return jobBranchCommand(ctx, sub, args, { root, state, session, policy: loaded.policy, active, save });
   const options = { root, policy: loaded.policy, active, type: String(args.type || "feature"), slug: args.slug, ticket: args.ticket && args.ticket !== true ? args.ticket : null, mode: args.mode && args.mode !== true ? String(args.mode) : null };
   if (sub === "plan") {
     const plan = await planBranch(options);
@@ -267,6 +270,48 @@ async function branchCommand(ctx, sub, args, root) {
     return { ...result, warnings };
   }
   return { ok: false, message: "Use branch plan|apply." };
+}
+
+// Job worktrees (5.0.1): plan is read-only; apply creates the worktree and records
+// the job for its Leader session. Cleanup happens inside `integrate apply --job`.
+async function jobBranchCommand(ctx, sub, args, { root, state, session, policy, active, save }) {
+  if (!session) return { ok: false, code: "SESSION_REQUIRED", message: "A Leader --session owns every job." };
+  const into = args.into && args.into !== true ? String(args.into) : null;
+  const parentJob = args["parent-job"] && args["parent-job"] !== true ? String(args["parent-job"]) : null;
+  const type = branchTypeOf(args.type || "feature") || "feature";
+  if (sub === "plan") return planJob({ root, policy, slug: args.slug, type, into, parentJob });
+  if (sub !== "apply") return { ok: false, message: "Use branch plan|apply --worktree." };
+  await resumeCleanups({ root, state, session });
+  const started = await startJob({ root, state, policy, slug: args.slug, type, into, parentJob, session, executionId: active?.executionId || null });
+  if (!started.ok) return started;
+  const { job } = started;
+  if (active) {
+    await logForActive(ctx, state, active, {
+      event: "changed", milestone: "work-branch",
+      summary: `Job ${job.jobId} worktree on ${job.branch} from ${job.into}@${job.baseSha.slice(0, 7)}${started.reworkOf ? ` (rework of ${started.reworkOf})` : ""}`.slice(0, 240),
+      reason: `job=${job.jobId}; parent=${job.parentJob || "none"}; branch=${job.branch}`,
+    });
+    if (save) await save({ ...active, jobs: [...new Set([...(active.jobs || []), job.jobId])] });
+  }
+  return { ok: true, job: { ...job, directory: job.directory.replaceAll("\\", "/") }, reworkOf: started.reworkOf, next: { action: "dispatch", detail: "Give the subagent the worktree path, branch and job rules; integrate with integrate apply --job after verification." } };
+}
+
+async function integrateJobCommand(ctx, args, { root, state, session, active }) {
+  if (!session) return { ok: false, code: "SESSION_REQUIRED", message: "The Leader --session integrates its jobs." };
+  const jobId = String(args.job);
+  const verification = args.verification && args.verification !== true ? String(args.verification) : null;
+  const evidence = args.evidence && args.evidence !== true ? String(args.evidence) : "";
+  // Durable job context goes to the Leader execution's audit log before cleanup.
+  const persist = async ({ job, mergeSha }) => {
+    if (!active?.executionId) throw new Error("No active Leader execution to record the job in; start one, then integrate again.");
+    await logForActive(ctx, state, active, {
+      event: "integrated",
+      summary: `Job ${job.jobId} (${job.branch}) integrated into ${job.into}`.slice(0, 240),
+      reason: `job=${job.jobId}; parent=${job.parentJob || "none"}; base=${String(job.baseSha).slice(0, 7)}; mergeSha=${String(mergeSha || "none").slice(0, 12)}`,
+      verification: [String(evidence || "verified by Leader").slice(0, 300)],
+    });
+  };
+  return integrateJob({ root, state, jobId, session, verification, evidence, persist });
 }
 
 // ------------------------------------------------------------------ deliver
@@ -377,6 +422,12 @@ async function integrateCommand(ctx, sub, args, root) {
   const delivery = sessionState.lastDelivery || (active?.delivery ? { ...active, ...active.delivery, executionId: active.executionId } : null);
   const loaded = await loadPolicy(root);
   const policy = loaded.validation?.ok ? loaded.policy : null;
+  // Finish any interrupted job cleanup of this Leader first (5.0.1); idempotent.
+  if (session) await resumeCleanups({ root, state, session });
+  if (args.job && args.job !== true) {
+    if (sub !== "apply") return { ok: false, message: "Use integrate apply --job <id> --verification passed --evidence <checks>." };
+    return integrateJobCommand(ctx, args, { root, state, session, active });
+  }
   if (sub === "options") {
     const result = await integrationOptions({ root, policy, delivery });
     if (!result.ok) return result;

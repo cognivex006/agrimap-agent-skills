@@ -196,6 +196,11 @@
           "when": "the project profile is spec-first or hybrid and the question concerns specified behavior",
           "path": "spec-driven.md",
           "why": "spec items are the source of truth for specified behavior"
+        },
+        {
+          "when": "the analysis proposes an execution order for two or more units",
+          "path": "subagents-and-branches.md",
+          "why": "parallel or sequential order and agent sizing"
         }
       ]
     },
@@ -321,7 +326,8 @@
       "example": "$agm-plan objective=\"Add order cancellation\" target_files=src/orders.ts",
       "instructions": [
         "Reverse-engineer current behavior, dependencies, callers, tests, and integration order before planning.",
-        "Each step names target, action, reason, verification, and decision-owner gate; do not implement."
+        "Each step names target, action, reason, verification, and decision-owner gate; do not implement.",
+        "Two or more units: end with the orchestration decision of subagents-and-branches.md — ordered work graph, contract-first steps, parallel or sequential, agents and model tier — ready to drive a long-running execution."
       ],
       "references": [
         {
@@ -391,6 +397,11 @@
           "when": "the project profile is spec-first or hybrid and the question concerns specified behavior",
           "path": "spec-driven.md",
           "why": "spec items are the source of truth for specified behavior"
+        },
+        {
+          "when": "the plan has two or more units",
+          "path": "subagents-and-branches.md",
+          "why": "work graph, parallel or sequential, rolling dispatch and job worktrees"
         }
       ]
     },
@@ -1169,7 +1180,7 @@
       ],
       "conditionalReferences": [
         {
-          "when": "the Prompt Result defines Subagent assignments",
+          "when": "the Prompt Result has two or more units or Subagent assignments",
           "path": "subagents-and-branches.md",
           "why": "Main/Subagent ownership, visibility, and integration boundaries"
         },
@@ -1260,7 +1271,8 @@
       "instructions": [
         "Use recorded requester authorization; a generated prompt is optional. Preserve binding scope, dependencies and acceptance while adapting implementation steps to evidence.",
         "Select tracking/assurance from actual work; keep the savepoint current (checkpoint --done/--remaining/--next).",
-        "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request."
+        "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request.",
+        "Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree."
       ],
       "references": [
         {
@@ -1358,7 +1370,7 @@
           "why": "service gateway keys, Kubernetes Services and health; no DB or IP data"
         },
         {
-          "when": "Subagent assignments are dispatched",
+          "when": "the work has two or more units or delegation is considered",
           "path": "subagents-and-branches.md",
           "why": "delegation packet, workspace mode, visibility, and integration boundaries"
         },
