@@ -50,7 +50,7 @@ test('ensureStateIgnore appends local/ once to an existing ignore file and Git i
   const state=path.join(h.temp,'.agrimap-agent');await mkdir(state,{recursive:true});
   await writeFile(path.join(state,'.gitignore'),'runtime/\ncache/\n');
   await ensureStateIgnore(state);await ensureStateIgnore(state);
-  assert.equal(await readFile(path.join(state,'.gitignore'),'utf8'),'runtime/\ncache/\nlocal/\n');
+  assert.equal(await readFile(path.join(state,'.gitignore'),'utf8'),'runtime/\ncache/\nlocal/\nprompts/\n');
   await setLocalPath(h.temp,{kind:'repo',id:'x-repo',path:h.temp,date:'2026-09-18'});
   gitIn(h.temp,['check-ignore','-q','.agrimap-agent/local/memory.md']);
   // Runtime layout writes (new projects) also ignore local/.

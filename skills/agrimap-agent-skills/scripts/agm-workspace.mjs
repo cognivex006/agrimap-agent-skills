@@ -31,6 +31,7 @@ import { snapshotDirty } from './git-flow.mjs';
 import { instructionChain, readRequired } from './instruction-chain.mjs';
 import { GOVERNANCE_COMMANDS, runGovernanceCommand } from './governance-commands.mjs';
 import { GOVERNANCE_SESSION_FIELDS, readSessionState } from './session-state.mjs';
+import { gitPlace, listPending, mergeSavepoint, parseSavepoint, renderSavepoint, savepointItems } from './savepoint.mjs';
 
 const AUDIT_SCHEMA_VERSION = 4;
 const SUPPORTED_AUDIT_SCHEMA_VERSIONS = new Set([1, 2, 3, AUDIT_SCHEMA_VERSION]);
@@ -822,7 +823,9 @@ async function start(root, args) {
   const executionId = reservation.executionId;
   const taskId = TASK_WORKFLOW_DEPTHS.has(workflowDepth) ? executionId : null;
   const slug = taskSubjectSlug(args.subject || objective) || operation || "work";
-  const taskPath = taskId ? path.join(state, "tasks", reservation.period, taskId) : null;
+  // 5.0.1: v3 tracked work keeps its state in the savepoint (memory/current), not
+  // tasks/<id>/task.md; only an explicit legacy run still gets a task directory.
+  const taskPath = taskId && args['legacy-artifacts'] ? path.join(state, "tasks", reservation.period, taskId) : null;
   if (taskId && await findTaskPath(state, taskId)) {
     await rm(reservation.reservation, { recursive: true, force: true });
     return {
@@ -909,15 +912,28 @@ async function start(root, args) {
     preexistingDirty,
   };
   await writeJson(activePath, active);
-  if (taskPath && active.artifactVersion === 3) {
-    await writeFile(path.join(taskPath, 'task.md'), `# Task ${executionId}\n\n- Objective: ${objective}\n- Requester: ${requestedBy}\n- Depth: ${workflowDepth}\n- Reason: ${selection.reason}\n- Status: active\n\n## Scope\n${scaffoldReplacements['brief.md'].scope}\n\n## Acceptance\n- [ ] Authorized objective verified with proportional evidence.\n\n## Progress and evidence\n\n## Result\nPending.\n`, 'utf8');
-  }
   const memoryPaths = activeMemoryPaths(state, active);
   await mkdir(path.dirname(memoryPaths.current), { recursive: true });
   await mkdir(path.dirname(memoryPaths.recent), { recursive: true });
   await writeFile(
     memoryPaths.current,
-    `# Current execution memory\n\n- Execution ID: \`${executionId}\`\n- Task ID: ${taskId ? `\`${taskId}\`` : "not-applicable"}\n- Workflow depth: \`${workflowDepth}\`\n- Requested by: ${requestedBy}\n- Requester authority: \`${scaffoldReplacements["brief.md"].requester_authority}\`\n- Decision owner: ${scaffoldReplacements["brief.md"].decision_owner_or_not_required}\n- Request: ${objective}\n- Model label: \`${execution.modelLabel}\`\n- Actual model: \`${execution.model}\`\n- Role: \`${execution.role}\`\n- Agent: \`${execution.agent}\`\n- Provider: \`${execution.provider}\`\n- Status: started\n- Operation: \`${operation}\`\n- Last milestone: ${startedAt}\n- Summary: ${objective}\n- Next action: execute the authorized scope or record a terminal/blocked state\n`,
+    renderSavepoint({
+      ...execution,
+      executionId,
+      taskId,
+      workflowDepth,
+      requestedBy,
+      objective,
+      status: "started",
+      session: sessionId,
+      branch: gitPlace(root),
+      updated: startedAt,
+      done: [],
+      remaining: savepointItems(args.remaining || args.acceptance || ""),
+      next: String(args.next || "").trim() || null,
+      decisions: [],
+      checkpoint: { milestone: "started", at: startedAt, summary: objective },
+    }),
     "utf8",
   );
   await writeFile(
@@ -1064,8 +1080,28 @@ async function checkpoint(root, args) {
   const memoryPaths = activeMemoryPaths(state, active);
   await mkdir(path.dirname(memoryPaths.current), { recursive: true });
   await mkdir(path.dirname(memoryPaths.recent), { recursive: true });
-  await writeFile(memoryPaths.current,
-    `# Current execution memory\n\n- Execution ID: \`${executionId}\`\n- Task ID: ${taskId ? `\`${taskId}\`` : "not-applicable"}\n- Workflow depth: \`${active.workflowDepth || taskIdentity.workflowDepth || "regulated"}\`\n- Requested by: ${requestedBy}\n- Request: ${request || "Not recorded (legacy task)"}\n- Model label: \`${execution.modelLabel}\`\n- Actual model: \`${execution.model}\`\n- Role: \`${execution.role}\`\n- Agent: \`${execution.agent}\`\n- Provider: \`${execution.provider}\`\n- Status: ${args.status || "in-progress"}\n- Last milestone: \`${milestone}\` at ${timestamp}\n- Summary: ${summary}\n- Reason: ${reason}\n- Files: ${files.length ? files.map((file) => `\`${file}\``).join(", ") : "None"}\n- Verification: ${verification.length ? verification.join("; ") : "Not yet run"}\n- Concerns: ${concerns}\n- Next action: ${String(args.next || "Continue the active execution or record a terminal state.").trim()}\n`, "utf8");
+  const previous = parseSavepoint(await readFile(memoryPaths.current, "utf8").catch(() => ""));
+  const savepoint = mergeSavepoint(previous, {
+    // A changed acceptance slice is done work unless the caller lists it explicitly.
+    done: args.done ?? (event === "changed" ? summary : undefined),
+    remaining: args.remaining,
+    next: args.next,
+    decisions: args.decisions ?? (event === "decision" ? summary : undefined),
+  });
+  await writeFile(memoryPaths.current, renderSavepoint({
+    ...execution,
+    ...savepoint,
+    executionId,
+    taskId,
+    workflowDepth: active.workflowDepth || taskIdentity.workflowDepth || "regulated",
+    requestedBy,
+    objective: request || "Not recorded (legacy task)",
+    status: args.status || "in-progress",
+    session: active.sessionId || null,
+    branch: gitPlace(root),
+    updated: timestamp,
+    checkpoint: { milestone, at: timestamp, summary, files, verification, concerns },
+  }), "utf8");
   if (!(await exists(memoryPaths.recent))) {
     await writeFile(memoryPaths.recent, `# Recent execution journal\n\n- Execution ID: \`${executionId}\`\n- Task ID: ${taskId ? `\`${taskId}\`` : "not-applicable"}\n- Workflow depth: \`${active.workflowDepth}\`\n- Requested by: ${requestedBy}\n- Request: ${request}\n\n## Events\n`, "utf8");
   }
@@ -1387,15 +1423,19 @@ async function validate(root, args) {
     || Boolean(await findExecutionMemoryPath(state, 'recent', executionId, original?.timestamp ? zonedParts(original.timestamp, (await workspaceConfig(state)).timeZone || DEFAULT_PROJECT_TIME_ZONE).period : null));
   if (active.artifactVersion === 3) {
     const failures = [];
+    const warnings = [];
     if (!created || !memoryRecorded) failures.push('missing-execution-evidence');
+    // Tracked runs started before 5.0.1 keep their task.md gate.
     if (taskPath) {
       const task = await readFile(path.join(taskPath, 'task.md'), 'utf8').catch(() => '');
       if (!task || /- \[ \]/.test(task) || !/## Result\s+\S/.test(task) || /## Result\s+Pending\./.test(task)) failures.push('task-not-complete');
     }
+    const savepoint = parseSavepoint(await readFile(memoryPaths.current, 'utf8').catch(() => ''));
+    if (savepoint.remaining.length) warnings.push('savepoint-remaining-items');
     if (!evidence.events.some(event => event.event === 'verified')) failures.push('verification-evidence-required');
     if (!['passed','not-applicable'].includes(active.verificationStatus)) failures.push('verification-not-passed');
     if (active.risk === 'independent-assurance' && active.verificationAgent === active.agent) failures.push('independent-verifier-required');
-    return { ok: !failures.length && !evidence.failures.length, executionId, taskId, workflowDepth, contentFailures: failures, auditFailures: evidence.failures };
+    return { ok: !failures.length && !evidence.failures.length, executionId, taskId, workflowDepth, contentFailures: failures, auditFailures: evidence.failures, warnings, remaining: savepoint.remaining };
   }
   if (workflowDepth === "light") {
     const leakedTaskPath = await findTaskPath(state, executionId, active);
@@ -1808,7 +1848,10 @@ async function complete(root, args) {
     precedents: [...new Set([...listValue(args.precedent), ...avoided.map((item) => item.precedent)])],
     questionsAvoided: avoided.length,
   });
-  const memoryPaths = await appendRecentTerminal(state, active, "completed", "Completion gate passed.");
+  const finalSavepoint = parseSavepoint(await readFile(activeMemoryPaths(state, active).current, "utf8").catch(() => ""));
+  const memoryPaths = await appendRecentTerminal(state, active, "completed", finalSavepoint.done.length
+    ? `Completion gate passed. Done: ${finalSavepoint.done.slice(-5).join("; ")}`
+    : "Completion gate passed.");
   const reportPath = await writeCanonicalExecutionReport(state, active, "completed", files, verification, taskPath);
   const projectMemory = active.artifactVersion === 3 && !active.taskId && !active.reportRequested ? null : await updateProjectMemory(state, active, "completed", reportPath);
   const archivedTaskPath = await moveTaskToTerminal(state, active, "complete");
@@ -1870,6 +1913,15 @@ async function closeTask(root, args) {
   });
   const memoryPaths = await appendRecentTerminal(state, active, status, reason);
   if (status === "blocked") {
+    // The savepoint stays and says why work stopped, so any session can resume it.
+    const previous = parseSavepoint(await readFile(memoryPaths.current, "utf8").catch(() => ""));
+    if (previous.executionId) {
+      await writeFile(memoryPaths.current, renderSavepoint({
+        ...execution, ...previous, taskId: active.taskId, objective: previous.objective || active.objective,
+        status: "blocked", updated: now(), branch: gitPlace(root),
+        checkpoint: { milestone: "blocked", at: now(), summary: reason, concerns: reason },
+      }), "utf8");
+    }
     return { ok: true, executionId, taskId: active.taskId, status, complete: false, remainsCurrent: true, currentMemory: stateRelative(state, memoryPaths.current), recentMemory: stateRelative(state, memoryPaths.recent) };
   }
   const reportPath = await writeCanonicalExecutionReport(state, active, status, files, [], taskPath);
@@ -2214,6 +2266,119 @@ async function prune(root) {
   return { ok: true, pruned: true, retentionDays, removed, logsPreserved: true };
 }
 
+// Savepoint (5.0.1): record where unfinished work stands without an audit event.
+async function savepoint(root, args) {
+  const executionId = safeTaskId(args.execution || args["execution-id"] || args.task);
+  if (!executionId) return { ok: false, message: "--execution is required." };
+  const state = await ensureLayout(root);
+  const activeMatch = await findActiveForTask(state, executionId, safeSessionId(args.session));
+  if (activeMatch?.ambiguous) return activeTaskAmbiguityError(executionId, activeMatch.matches);
+  if (!activeMatch?.active) return { ok: false, code: "ACTIVE_EXECUTION_NOT_FOUND", message: "No active execution matches this ID/session; use pending and resume first." };
+  const active = activeMatch.active;
+  const memoryPaths = activeMemoryPaths(state, active);
+  const previous = parseSavepoint(await readFile(memoryPaths.current, "utf8").catch(() => ""));
+  const merged = mergeSavepoint(previous, { done: args.done, remaining: args.remaining, next: args.next, decisions: args.decisions });
+  const timestamp = now();
+  await mkdir(path.dirname(memoryPaths.current), { recursive: true });
+  await writeFile(memoryPaths.current, renderSavepoint({
+    ...executionIdentity(args, active),
+    ...merged,
+    executionId,
+    taskId: active.taskId,
+    workflowDepth: active.workflowDepth,
+    requestedBy: active.requestedBy,
+    objective: active.objective,
+    status: args.status || previous.status || "in-progress",
+    session: active.sessionId || null,
+    branch: gitPlace(root),
+    updated: timestamp,
+    checkpoint: { milestone: "savepoint", at: timestamp, summary: String(args.summary || merged.next || "Savepoint recorded.").trim() },
+  }), "utf8");
+  await appendRecentTerminal(state, active, "savepoint", merged.next || "Savepoint recorded.");
+  return { ok: true, executionId, savepoint: stateRelative(state, memoryPaths.current), done: merged.done, remaining: merged.remaining, next: merged.next };
+}
+
+async function pending(root) {
+  const state = path.join(root, ".agrimap-agent");
+  if (!(await exists(state))) return { ok: true, pending: [] };
+  return { ok: true, pending: await listPending(state) };
+}
+
+// Resume (5.0.1): attach an unfinished execution to this session. The runtime
+// pointer moves; nothing is copied, so one execution never has two owners.
+const RESUME_TAKEOVER_MS = 10 * 60_000;
+
+async function resume(root, args) {
+  const executionId = safeTaskId(args.execution || args["execution-id"] || args.task);
+  const sessionId = safeSessionId(args.session);
+  if (!executionId || !sessionId) return { ok: false, message: "--execution and --session are required." };
+  const state = await ensureLayout(root);
+  const entry = (await listPending(state)).find(item => item.executionId === executionId);
+  if (!entry) return { ok: false, code: "SAVEPOINT_NOT_FOUND", message: "No unfinished execution has this ID; run pending to list them." };
+  const targetPath = activeTaskPath(state, sessionId);
+  const current = await readJson(targetPath).catch(() => null);
+  if (current && current.executionId !== executionId) {
+    return { ok: false, code: "SESSION_BUSY", activeExecution: current.executionId, message: "This session already owns another execution; savepoint or complete it first." };
+  }
+  const match = await findActiveForTask(state, executionId, null);
+  if (match?.ambiguous) return activeTaskAmbiguityError(executionId, match.matches);
+  let active = match?.active || null;
+  if (match && match.activePath !== targetPath) {
+    const idleMs = Date.now() - (await stat(match.activePath)).mtimeMs;
+    if (idleMs < RESUME_TAKEOVER_MS && !args["take-over"]) {
+      return { ok: false, code: "EXECUTION_RECENTLY_ACTIVE", ownerSession: path.basename(match.activePath, ".json"), message: "Another session touched this execution in the last 10 minutes; confirm it is closed, then retry with --take-over." };
+    }
+  }
+  if (!active) {
+    // Runtime state is local and may be gone; rebuild it from the savepoint and its created event.
+    const created = (await auditEvidenceForExecution(state, executionId)).events.find(event => event.event === "created");
+    const sp = parseSavepoint(await readFile(path.join(state, entry.path), "utf8"));
+    const [, period, file] = entry.path.match(/^memory\/current\/(?:(\d{4}-\d{2})\/)?(.+)$/) || [];
+    active = {
+      artifactVersion: created?.artifactVersion || 3,
+      executionId,
+      runId: executionId,
+      taskId: created?.taskId ?? null,
+      period: period || null,
+      slug: String(file || "").replace(/^\d+-?/, "").replace(/\.md$/, "") || "work",
+      operation: "execute",
+      workflowDepth: sp.workflowDepth || created?.workflowDepth || "light",
+      objective: sp.objective || created?.request || "",
+      requestedBy: sp.requestedBy || created?.requestedBy,
+      requesterId: created?.requesterId || null,
+      identitySource: created?.identitySource || "legacy-migrated",
+      risk: created?.risk || "",
+      startedAt: created?.timestamp || sp.updated,
+      currentMemoryPath: entry.path,
+      recentMemoryPath: entry.path.replace(/^memory\/current\//, "memory/recent/"),
+      preexistingDirty: [],
+    };
+  }
+  active = { ...active, sessionId, resumedAt: now() };
+  await writeJson(targetPath, active);
+  if (match && match.activePath !== targetPath) await rm(match.activePath, { force: true });
+  const memoryPaths = activeMemoryPaths(state, active);
+  const previous = parseSavepoint(await readFile(memoryPaths.current, "utf8").catch(() => ""));
+  await writeFile(memoryPaths.current, renderSavepoint({
+    ...executionIdentity(args, active), ...previous, executionId, taskId: active.taskId, workflowDepth: active.workflowDepth,
+    requestedBy: active.requestedBy, objective: previous.objective || active.objective,
+    status: "in-progress", session: sessionId, branch: gitPlace(root), updated: now(),
+    checkpoint: { milestone: "resumed", at: now(), summary: `Resumed in session ${sessionId}.` },
+  }), "utf8");
+  await appendRecentTerminal(state, active, "resumed", `session ${sessionId}`);
+  return {
+    ok: true,
+    executionId,
+    objective: active.objective,
+    branch: entry.branch,
+    next: previous.next,
+    remaining: previous.remaining,
+    done: previous.done,
+    savepoint: stateRelative(state, memoryPaths.current),
+    message: entry.branch && entry.branch.split(" @ ")[0] !== gitPlace(root).split(" @ ")[0] ? `Savepoint was on ${entry.branch}; switch there before continuing.` : null,
+  };
+}
+
 async function executionSummaries(state, executionId) {
   const { events } = await auditEvidenceForExecution(state, executionId);
   return events.filter((event) => ["changed", "verified"].includes(event.event) && event.milestone !== "work-branch").map((event) => event.summary).filter(Boolean).slice(-5);
@@ -2264,6 +2429,15 @@ switch (command) {
   case "prune":
     result = await prune(root);
     break;
+  case "savepoint":
+    result = await savepoint(root, args);
+    break;
+  case "pending":
+    result = await pending(root);
+    break;
+  case "resume":
+    result = await resume(root, args);
+    break;
   default:
     result = GOVERNANCE_COMMANDS.includes(command)
       ? await runGovernanceCommand(command, subcommand, args, root, {
@@ -2275,7 +2449,7 @@ switch (command) {
         isGitRoot: (target) => gitOutput(target, ["rev-parse", "--show-toplevel"]).ok,
         appendRecent: (state, active, status, summary) => appendRecentTerminal(state, active, status, summary),
       })
-      : { ok: false, message: `Use requester, init, identify, start, checkpoint, validate, complete, close, history, prune, ${GOVERNANCE_COMMANDS.join(", ")}.` };
+      : { ok: false, message: `Use requester, init, identify, start, checkpoint, savepoint, pending, resume, validate, complete, close, history, prune, ${GOVERNANCE_COMMANDS.join(", ")}.` };
 }
 
 process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);

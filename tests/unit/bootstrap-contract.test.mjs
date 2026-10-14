@@ -20,9 +20,11 @@ test('bootstrap preserves the complete owner-submitted canonical contract',async
   // 4.9.6: owner-requested mandatory §10.6 team commit style for every Agent commit (guard G7).
   // 4.9.8: owner-requested Thai commit descriptions (§10.6) and the --flash read scope in §2.
   // 4.9.9: owner-requested non-blocking bootstrap auto-merge and technical terms kept as-is in §10.6.
+  // 5.0.1: owner decision 2026-10-14 — §9 prompt history local only, memory/current is the savepoint,
+  // reports only on request, no new tasks/.
   // Package bumps only change the generated version marker; freeze every other byte.
   const sourceBytes=Buffer.from(bytes.toString('utf8').replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->'));
-  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'ec81abd2af7d35997df67e434558363c52564d8a58198083314ac2bf2aa2e527');
+  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'3cd03bce2f133e6370f09359ca06b247a3a827424a9db284c75c3564e7e53fbd');
   const manifest=JSON.parse(await readFile(path.join(bundle,'manifest.json'),'utf8'));
   assert.ok(bytes.toString('utf8').includes(`<!-- AGRIMAP BOOTSTRAP VERSION: ${manifest.version} -->`));
   assert.equal(manifest.files.find(f=>f.source==='AGENTS.md').sha256,createHash('sha256').update(bytes).digest('hex'));

@@ -17,7 +17,7 @@
 ## Execute this contract
 
 1. Use recorded requester authorization; a generated prompt is optional. Preserve binding scope, dependencies and acceptance while adapting implementation steps to evidence.
-2. Select tracking/assurance from actual work; one task.md only when resume/handoff is needed.
+2. Select tracking/assurance from actual work; keep the savepoint current (checkpoint --done/--remaining/--next).
 3. Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request.
 
 ## Load now

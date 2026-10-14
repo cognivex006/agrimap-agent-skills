@@ -166,6 +166,25 @@ test('hook digest: first prompt ≤ 600 chars, next prompt none, new branch agai
   assert.match(digestOf(hook()),/branch feature\/csv/);
 });
 
+test('hook shows pending work first and answers งานค้าง / ทำต่อ / savepoint without a lifecycle (5.0.1)',async t=>{
+  const {h,repo:root}=await repo(t);
+  await mkdir(path.join(root,'.agrimap-agent'),{recursive:true});
+  await writeFile(path.join(root,'.agrimap-agent','config.json'),JSON.stringify({activation:{auto:true}}));
+  const ws=args=>JSON.parse(h.spawn(h.scripts.workspace,[...args,'--cwd',root]).stdout);
+  ws(['identify','--session','s1','--owner','006006']);
+  const id=ws(['start','--session','s1','--operation','execute','--persist','--title','Add CSV export']).activeTask.executionId;
+  assert.equal(ws(['savepoint','--session','s1','--execution',id,'--remaining','writer;tests','--next','write the CSV writer']).ok,true);
+  const hook=(session,prompt)=>h.run(h.scripts.hook,['--provider','claude'],{cwd:root,session_id:session,hook_event_name:'UserPromptSubmit',prompt},root).hookSpecificOutput?.additionalContext||'';
+  const lines=hook('d2','/agrimap-agent-skills:agm-exec แก้ export ให้รองรับ CSV').split('\n');
+  const digestStart=lines.findIndex(line=>line.startsWith('AGM digest:'));
+  assert.equal(lines[digestStart+1],`⏸ Pending work 1: ${id} "Add CSV export" next: write the CSV writer. Tell the requester once; ทำต่อ resumes it.`);
+  assert.match(hook('d2','งานค้าง'),/^Unfinished work \(1\): run agm-workspace\.mjs pending/);
+  assert.match(hook('d2','ทำต่อครับ'),new RegExp(`^Resume ${id} "Add CSV export": run agm-workspace\\.mjs resume --execution ${id} --session d2`));
+  assert.match(hook('s1','savepoint'),new RegExp(`^Write a savepoint for ${id}`));
+  assert.match(hook('s1','แก้ validation ในโค้ด service นี้'),new RegExp(`Open execution ${id} "Add CSV export" next: write the CSV writer`));
+  assert.equal(hook('d2','ตัวอย่างคำสั่ง "งานค้าง"'),'');
+});
+
 test('decide promote requires --topic and --value',async t=>{
   const {h,repo:root}=await repo(t);
   const cli=args=>JSON.parse(h.spawn(h.scripts.workspace,[...args,'--cwd',root]).stdout);

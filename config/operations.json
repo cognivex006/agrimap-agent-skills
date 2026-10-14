@@ -1259,7 +1259,7 @@
       "example": "$agm-exec objective=\"Implement the accepted change\"",
       "instructions": [
         "Use recorded requester authorization; a generated prompt is optional. Preserve binding scope, dependencies and acceptance while adapting implementation steps to evidence.",
-        "Select tracking/assurance from actual work; one task.md only when resume/handoff is needed.",
+        "Select tracking/assurance from actual work; keep the savepoint current (checkpoint --done/--remaining/--next).",
         "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request."
       ],
       "references": [

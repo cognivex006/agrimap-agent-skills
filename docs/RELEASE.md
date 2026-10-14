@@ -30,7 +30,7 @@
 
 Agent ใช้ตัวจับเวลาใน bundle เก็บสถานะนอกไฟล์ที่จะ commit เปลี่ยน step ก่อนทำงานและหยุดนับ Active ก่อนรอคำตอบ การ retry นับเวลาที่ใช้เพิ่มจริง งานขนานนับเพียงครั้งเดียว ถ้าหยุด session หรือไม่มีหลักฐานเวลาเพียงพอ ต้องรายงานส่วนที่วัดไม่ได้ ไม่เดาตัวเลข ดู [Timing contract](../skills/agrimap-agent-skills/references/release-timing.md)
 
-คำสั่งที่มี publication รวม `history.md` และ audit ที่เกี่ยวกับ release และผ่านการตรวจแล้วใน scope commit/push เดิม ก่อน commit candidate ต้องตรวจประวัติด้วย หลัง confirmation ให้ตรวจซ้ำและรวมส่วนที่เพิ่มใหม่ใน commit audit สุดท้ายบน develop พร้อมตรวจ remote และไฟล์ตกค้าง แยก SHA ของ candidate กับ final develop; ไม่เปลี่ยน tag หรือ promote audit ตามไปด้วย งานอื่น ไฟล์ที่ ignore และข้อห้ามของ target ยังต้องรักษา ส่วน indexing/prepare ยังคงเป็นงาน local
+คำสั่งที่มี publication รวม audit ที่เกี่ยวกับ release และผ่านการตรวจแล้วใน scope commit/push เดิม ส่วน prompt history (`.agrimap-agent/prompts/**`) เก็บในเครื่องเท่านั้นตั้งแต่ 5.0.1 ไม่ขึ้น Git ถ้ายังถูก track อยู่ release จะ `git rm --cached` ออกครั้งเดียวใน audit commit สุดท้าย (ไฟล์ยังอยู่ในเครื่อง) ก่อน commit candidate ต้องตรวจประวัติด้วย หลัง confirmation ให้ตรวจซ้ำและรวมส่วนที่เพิ่มใหม่ใน commit audit สุดท้ายบน develop พร้อมตรวจ remote และไฟล์ตกค้าง แยก SHA ของ candidate กับ final develop; ไม่เปลี่ยน tag หรือ promote audit ตามไปด้วย งานอื่น ไฟล์ที่ ignore และข้อห้ามของ target ยังต้องรักษา ส่วน indexing/prepare ยังคงเป็นงาน local
 
 ## งานค้าง, Release Description และแจ้งเตือนทีม (4.9.3)
 

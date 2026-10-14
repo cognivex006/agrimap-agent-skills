@@ -81,7 +81,7 @@ export function renderTaskArtifactSchemaDocs(schema) {
   if (schema.runtimeArtifactVersion === 3) return [
     TASK_ARTIFACT_SCHEMA_START,
     'Ordinary answers: no execution/task artifacts. Bounded writes: concise memory/audit.',
-    'Tracked v3 work: one task.md with scope, acceptance, progress, evidence and result.',
+    'Tracked v3 work: the savepoint in memory/current (goal, done, remaining, next step, decisions); no new tasks/ directories.',
     'Separate analysis/QA/results/reports are consumer-requested deliverables, not a five-file gate.',
     'Legacy v2 five-file validation remains in assets/task-artifact-schema.json for existing executions only; it is not the new-work checklist.',
     TASK_ARTIFACT_SCHEMA_END
