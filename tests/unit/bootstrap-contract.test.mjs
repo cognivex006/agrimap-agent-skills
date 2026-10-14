@@ -21,10 +21,11 @@ test('bootstrap preserves the complete owner-submitted canonical contract',async
   // 4.9.8: owner-requested Thai commit descriptions (§10.6) and the --flash read scope in §2.
   // 4.9.9: owner-requested non-blocking bootstrap auto-merge and technical terms kept as-is in §10.6.
   // 5.0.1: owner decision 2026-10-14 — §9 prompt history local only, memory/current is the savepoint,
-  // reports only on request, no new tasks/; §10.3 work branches are feature/ or hotfix/ only.
+  // reports only on request, no new tasks/; §10.3 work branches are feature/ or hotfix/ only;
+  // §0 sql-context-pack stays read-only except agm-sql context migrate.
   // Package bumps only change the generated version marker; freeze every other byte.
   const sourceBytes=Buffer.from(bytes.toString('utf8').replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->'));
-  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'bcb711ccf56e6a4244ef1378d14b6f3c24f37c463f61738d3ffad2d4cf6c829c');
+  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'dea81783a67a5bc1802019ead78bbbab71bc699b15bee429d382e701a8ba3f66');
   const manifest=JSON.parse(await readFile(path.join(bundle,'manifest.json'),'utf8'));
   assert.ok(bytes.toString('utf8').includes(`<!-- AGRIMAP BOOTSTRAP VERSION: ${manifest.version} -->`));
   assert.equal(manifest.files.find(f=>f.source==='AGENTS.md').sha256,createHash('sha256').update(bytes).digest('hex'));

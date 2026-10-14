@@ -46,7 +46,9 @@ export function classifyRequest({ prompt = '', explicit = false, recognized = fa
 
 // Mirrors supporting[sql-context-pack].readOnlyTools in assets/skill-routing.json (tests keep them equal).
 const SQL_READ_TOOLS = new Set(['sqlctx_get_capabilities', 'sqlctx_get_active_profile', 'sqlctx_list_context_index', 'sqlctx_list_managed_folders', 'sqlctx_query_data']);
-export function sqlContextToolAllowed(name) { return SQL_READ_TOOLS.has(name); }
+// Mirrors supporting[sql-context-pack].migrateTools: only agm-sql context migrate (5.0.1).
+const SQL_MIGRATE_TOOLS = new Set([...SQL_READ_TOOLS, 'sqlctx_create_catalog', 'sqlctx_get_catalog_status', 'sqlctx_get_materialization_plan', 'sqlctx_list_sitemap', 'sqlctx_export_batch', 'sqlctx_get_export_status', 'sqlctx_list_exports', 'sqlctx_validate_exports']);
+export function sqlContextToolAllowed(name, { action = null } = {}) { return action === 'context-migrate' ? SQL_MIGRATE_TOOLS.has(name) : SQL_READ_TOOLS.has(name); }
 
 // Defense in depth for the AgriMap adapter. The managed service's read-only
 // profile/relational parser remains authoritative; this is not a SQL parser.

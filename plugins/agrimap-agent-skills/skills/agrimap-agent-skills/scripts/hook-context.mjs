@@ -404,7 +404,7 @@ if (selection.active || shortReply || workContext) {
   const context = [
     'AgriMap skills: choose one skill per turn by intent x lane (references/skill-routing.md, AGENTS.md §0). Quoted commands are examples, not authorization.',
     'Questions about repository code still load the lane skill for its golden references; questions and explanations create no lifecycle, task files, identity prompt or tests. Start execution only for authorized durable work.',
-    ...(ownerTurn ? [] : ['Inside AgriMap operations SQL context is read-only (managed metadata and protected SELECT; never reveal real sensitive values, relay reveal_handoff; no DDL/DML, EXEC, export, metadata sync or routine deployment); supporting skills never grant database writes or release authority.']),
+    ...(ownerTurn ? [] : ['Inside AgriMap operations SQL context is read-only (managed metadata and protected SELECT; never reveal real sensitive values, relay reveal_handoff; no DDL/DML, EXEC, metadata sync or routine deployment; export only in agm-sql context migrate); supporting skills never grant database writes or release authority.']),
     packageWork ? 'Workspace kind: skill-package. Package work never creates root product FE/BE/SQL artifacts.' : 'Use only the applicable project contracts.',
     identity && !identity.expired ? 'Confirmed requester: ' + identity.requestedBy + '. Identity is not approval authority.'
       : 'For attributed writes, reuse confirmed conversation identity via --requested-by before asking once. Missing local state is not missing human confirmation. Git author alone is not requester evidence; do not ask for ordinary questions.',

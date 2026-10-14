@@ -32,7 +32,7 @@
 | `agm-architect` | ตัดสินใจ boundary, contract, migration | trade-off และแบบระบบ; ไม่แก้ product |
 | `agm-fe` | งาน frontend | action เป็นตัวกำหนดว่าอ่านหรือเขียน |
 | `agm-be` | งาน backend | action เป็นตัวกำหนดว่าอ่านหรือเขียน |
-| `agm-sql` | อธิบาย/ออกแบบ/แก้ **ไฟล์ SQL** | ไม่อนุญาต execute database writes |
+| `agm-sql` | อธิบาย/ออกแบบ/แก้ **ไฟล์ SQL**; `context check` ดูว่า repo ใช้ SP/ตารางอะไรและตัวไหนยังไม่มี DDL ในเครื่อง; `context migrate` ดึง DDL ที่ขาดผ่าน sql-context-pack ลงโฟลเดอร์ db-schema (5.0.1) | ไม่อนุญาต execute database writes, metadata sync หรือ deploy |
 | `agm-qa` | ตรวจตาม acceptance | หลักฐานผ่าน/ไม่ผ่าน/ติดข้อจำกัด; ไม่แก้ product |
 | `agm-prompt` | กลั่นโจทย์เป็นคำสั่งเก็บและส่งต่อ | Prompt Result เมื่อพร้อม; ไม่ implement |
 | `agm-exec` | ลงมือทำโจทย์ที่อนุมัติแล้ว หรืองานแก้ข้าม lane (BE+SQL, FE+BE) | แก้ไขใน scope และตรวจผล; ไม่บังคับมี prompt file |
@@ -55,6 +55,8 @@
 | `เพิ่มคอลัมน์ในตารางหน้า user list` ใน `agmwa-*` | `agm-fe` (คำว่าตาราง/คอลัมน์ในบริบทหน้าจอไม่ใช่ SQL) |
 | `เพิ่ม API สร้าง order และ SP ORDER_H_I` | `agm-exec` (ข้าม lane) |
 | `ขอดูโครงสร้างตาราง ORDER_H ใน database จริง` | `agm-sql` + sql-context-pack แบบอ่านอย่างเดียว |
+| `$agm-sql context check` | รายการ SP/ตารางที่ repo ใช้ พร้อมไฟล์ DDL ในเครื่องและรายการที่ขาด (ไม่แตะ database) |
+| `$agm-sql context migrate` | check แล้ว export DDL เฉพาะตัวที่ขาด (และตารางหลัง SP หนึ่งชั้น) ลง `.agrimap-agent/knowledge/references/db-schema` ผ่าน sql-context-pack แล้ว check ซ้ำ; ไม่ sync metadata ไม่ deploy |
 
 - Claude Code: hook เติมบรรทัด `Skill for this turn: …` ให้ทุกคำขอที่เป็นงาน code/SQL ทั้งใน repo และที่โฟลเดอร์รวมหลาย repo และก่อนแก้ไฟล์ `.sql`/`.cs`/`.ts`/`.html` ใน repo AgriMap จะมี gate ปฏิเสธครั้งแรกถ้ายังไม่ได้โหลด skill ของ lane นั้น (หรือ `agm-exec`) ดู [Troubleshooting](TROUBLESHOOTING.md#skill-gate)
 - Codex / Antigravity: ใช้ตาราง `AGENTS.md` §0 และคำใน description ของแต่ละ skill (ยังไม่มี gate)

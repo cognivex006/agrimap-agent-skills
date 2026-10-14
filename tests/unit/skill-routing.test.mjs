@@ -88,6 +88,11 @@ test('sql-context-pack: owner request owns the turn, data questions stay support
  const sql=routing.raw.supporting.find(item=>item.id==='sql-context-pack');
  for(const tool of sql.readOnlyTools)assert.equal(sqlContextToolAllowed(tool),true,tool);
  for(const tool of ['sqlctx_export_batch','sqlctx_sync_context_index','sqlctx_apply_routine_deployment','sqlctx_connect_profile','sqlctx_sqlfluff_ensure'])assert.equal(sqlContextToolAllowed(tool),false,tool);
+ // 5.0.1: only agm-sql context migrate exports, and never syncs, classifies, deploys or connects.
+ for(const tool of sql.migrateTools)assert.equal(sqlContextToolAllowed(tool,{action:'context-migrate'}),true,tool);
+ for(const tool of ['sqlctx_sync_context_index','sqlctx_apply_folder_classification','sqlctx_submit_classification_proposals','sqlctx_apply_routine_deployment','sqlctx_connect_profile','sqlctx_change_profile'])assert.equal(sqlContextToolAllowed(tool,{action:'context-migrate'}),false,tool);
+ assert.equal(sqlContextToolAllowed('sqlctx_export_batch',{action:'edit'}),false);
+ assert.match(sql.supportingRule,/export only through agm-sql context migrate/);assert.match(sql.migrateRule,/never syncs DB_METADATA_CONTEXT/);
 });
 
 test('lanes from paths and repositories; host invocations per host',()=>{

@@ -11,7 +11,7 @@ Resolve database truth in this order and record which level answered:
 3. `.agrimap-agent/knowledge/drafts/sql/`: AI-generated and `tentative`. Never schema `FACT` and never evidence for a conclusion.
 4. Nothing matches: name the exact missing object, keep the claim at `HYPOTHESIS`/`UNKNOWN`, and ask the owner.
 
-If local evidence is missing or stale, use [sql-context-readonly.md](sql-context-readonly.md) through the current connected sql-context-pack profile. Metadata and bounded protected SELECT are allowed; database DDL/DML/EXEC, metadata sync and routine deployment are forbidden. Never infer missing schema facts.
+`agm-sql context check` lists which used objects lack local DDL; `agm-sql context migrate` (explicit request) fills that folder. If local evidence is missing or stale, use [sql-context-readonly.md](sql-context-readonly.md) through the current connected sql-context-pack profile. Metadata and bounded protected SELECT are allowed; database DDL/DML/EXEC, metadata sync and routine deployment are forbidden. Never infer missing schema facts.
 
 ## Required lookup
 
