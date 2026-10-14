@@ -10,14 +10,18 @@ Load before the first requester question or product write. Scripts compute git m
 
 ## Act
 
+Owner decision 2026-10-14 (5.0.1): the Agent's record is trusted, so the default is to act. Judge an effect by how far it reaches and whether it can be undone, not by its kind: local files, a work branch and `develop`/Inhouse (`jenkins`) are reversible with a new commit or revert; Production, tags, remote deletion and data loss are not.
+
 Agent-owned R0/R1: decide (investigate first when Low). Requester-owned:
 
 | | High | Medium | Low |
 | --- | --- | --- | --- |
 | R0 | decide | decide | investigate, decide |
-| R1 | decide, mention | decide, list under "decided for you" | investigate, non-blocking card |
-| R2 | decide, cite the source | blocking card for the affected slice | blocking card naming missing evidence |
-| R3 | only under an explicit current command or confirmed policy | confirm | confirm |
+| R1 | decide, mention | decide, list under "decided for you" | investigate, decide, list under "decided for you" |
+| R2 | decide, cite the source | reversible: decide, list with how to change it; otherwise blocking card for the affected slice | blocking card naming missing evidence |
+| R3 | under the current command or confirmed policy, without asking again | confirm | confirm |
+
+R2 is not reversible when it changes a contract another repository or team already consumes, deletes or migrates data, or cannot be undone with a revert. An owner command such as `release full` is the confirmation for every effect its contract lists; ask inside it only for an anomaly that contract names.
 
 Investigate before asking: search the repository, `policy show`, `recall --topic <area/subject> --paths <files>`, the AGENTS chain. Never ask what they already answer.
 
@@ -28,7 +32,7 @@ Investigate before asking: search the repository, `policy show`, `recall --topic
 - Every card states impact, what you checked, options with different effects, the recommendation with reason and confidence, and its default or that it blocks.
 - Never ask for granted permission, between equivalent options, for an open-ended preference, or approval after acting.
 - Record the answer with `decide record`; its `recordAs` prevents asking again.
-- `decide card` may return `suppressed` (use the precedent; cite it via `--precedent`) or `autoDecided` (calibrated R1; report as decided for you). A `promotable` recall → `decide promote`. "Always ask about X" → `decide always-ask --kind X`; a requester correction → `decide correction`.
+- `decide card` may return `suppressed` (use the precedent; cite it via `--precedent`) or `autoDecided` (R0/R1 at high or medium confidence, or R2 with `"reversible": true`; report as decided for you). A kind the requester keeps overriding (calibration `ask`) or marked always-ask still produces the card. A `promotable` recall → `decide promote`. "Always ask about X" → `decide always-ask --kind X`; a requester correction → `decide correction`.
 
 ## Report
 

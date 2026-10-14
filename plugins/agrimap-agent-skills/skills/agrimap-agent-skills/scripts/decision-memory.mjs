@@ -219,8 +219,17 @@ export async function recall({ root, topic = null, paths = [], kind = null, limi
 
 // ----------------------------------------------------------- card preflight
 
-// DP2/DP4: before a card is stored, a matching approved precedent suppresses it;
-// calibrated R1 medium cards are auto-decided unless the kind is in alwaysAsk.
+// DP2/DP4: before a card is stored, a matching approved precedent suppresses it.
+// Owner decision 2026-10-14 (5.0.1, autonomy.md): the recommended option is taken
+// without asking for R0/R1 at high or medium confidence and for a reversible R2,
+// unless the requester keeps overriding this kind (calibration "ask") or always asks.
+const AUTO_CONFIDENCE = new Set(["high", "medium"]);
+
+function autonomyWeighted(card) {
+  if (!AUTO_CONFIDENCE.has(card.confidence)) return false;
+  return card.risk === "R0" || card.risk === "R1" || (card.risk === "R2" && card.reversible === true);
+}
+
 export async function preflightCard(root, card, { key = userKey(), now = Date.now() } = {}) {
   const found = await recall({ root, topic: card.topic, paths: card.paths || [], kind: card.kind, limit: 5, now, key });
   for (const match of found.matches) {
@@ -231,11 +240,15 @@ export async function preflightCard(root, card, { key = userKey(), now = Date.no
   }
   const preferences = await loadPreferences(root, key);
   const mode = found.calibration[card.kind]?.mode || "default";
-  if (card.risk === "R1" && card.confidence === "medium" && mode === "decide-and-report" && !preferences.alwaysAsk.includes(card.kind)) {
+  const alwaysAsk = preferences.alwaysAsk.includes(card.kind);
+  if (autonomyWeighted(card) && mode !== "ask" && !alwaysAsk) {
     const option = card.options.find(item => String(item.id) === String(card.recommended));
-    return { autoDecided: { option: { id: option.id, label: option.label, value: option.value ?? null }, reason: `calibration ${card.kind}: acceptRate ${found.calibration[card.kind].acceptRate} over ${found.calibration[card.kind].n}` } };
+    const reason = mode === "decide-and-report"
+      ? `calibration ${card.kind}: acceptRate ${found.calibration[card.kind].acceptRate} over ${found.calibration[card.kind].n}`
+      : `autonomy ${card.risk} ${card.confidence}${card.risk === "R2" ? " reversible" : ""}`;
+    return { autoDecided: { option: { id: option.id, label: option.label, value: option.value ?? null }, reason } };
   }
-  return { calibrationMode: mode, alwaysAsk: preferences.alwaysAsk.includes(card.kind) };
+  return { calibrationMode: mode, alwaysAsk };
 }
 
 export function promotionCard({ topic, value, count, kind = "convention" }) {

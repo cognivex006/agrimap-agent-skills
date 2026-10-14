@@ -54,6 +54,24 @@ test('release stages synchronize stale local branches and re-evaluate in one inv
 });
 
 
+test('owner release command is the confirmation; only a version or candidate anomaly asks (5.0.1)',async()=>{
+  const references=path.join(projectRoot,'skills/agrimap-agent-skills/references');
+  const workflow=await readFile(path.join(references,'release-workflow.md'),'utf8');
+  const steps=await readFile(path.join(references,'release-steps.md'),'utf8');
+  const flash=await readFile(path.join(references,'release-flash.md'),'utf8');
+  const template=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/assets/bootstrap/AGENTS.release.md'),'utf8');
+  const release=JSON.parse(await readFile(path.join(projectRoot,'config/operations.json'),'utf8')).operations.find(item=>item.operation==='release');
+  assert.match(workflow,/the owner-typed command is the confirmation/);
+  assert.match(workflow,/Version anomaly: an owner-supplied version is not its environment's PATCH\+1/);
+  assert.match(workflow,/A bare command with the default PATCH\+1 versions is never an anomaly/);
+  assert.match(steps,/ask its questions in one round \(AGENTS\.release\.md §6\.5\), together with a version anomaly/);
+  assert.match(template,/คำสั่งของ owner คือการยืนยัน/);
+  for(const text of [workflow,steps,flash,JSON.stringify(release)]){
+    assert.doesNotMatch(text,/not concrete Production approval|is not confirmation\.|Never infer that confirmation|one Production confirmation/);
+  }
+  assert.doesNotMatch(template,/ต้องยืนยันกับ owner หนึ่งครั้งก่อนรัน|คำถามที่เหลือมีแค่ยืนยัน Production/);
+});
+
 test('operation policy reaches every first-read adapter without leaking to unrelated skills', async()=>{
   const {renderAliasSkill,renderAntigravitySkill,renderGeminiCommandPrompt,renderOperationEntrypoint,operationConfigIssues}=await import('../../tools/operation-entrypoints.mjs');
   const config=JSON.parse(await readFile(path.join(projectRoot,'config/operations.json'),'utf8'));
@@ -106,7 +124,8 @@ test('instruction diet: core AGENTS.md at most 24,000 chars; core + release keep
   const entry=manifest.files.find(f=>f.source==='AGENTS.release.md');
   assert.equal(entry.target,'AGENTS.release.md');assert.equal(entry.sha256,createHash('sha256').update(release).digest('hex'));
   const frozen=release.replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->');
-  assert.equal(createHash('sha256').update(frozen).digest('hex'),'ed0219574c35f6ee1f771207d0829116792c1243ad82dfe475dd4d0f41ef1c23');
+  // 5.0.1: owner decision 2026-10-14 — §2.1/§6.5 the owner command is the confirmation; only anomalies ask.
+  assert.equal(createHash('sha256').update(frozen).digest('hex'),'5f69c517a55b0a9713973f31f8e68a28f95919b20c2c44e6e06df821e05477c5');
   const headings=['## 0.','## 1.','## 2.','### 2.1','### 2.2','### 2.3','## 3.','## 4.','## 5.','### 5.1','### 5.2','## 6.','### 6.1','### 6.2','### 6.3','## 7.','## 8.','### 8.1','## 9.','### 9.1','### 9.5','## 10.','### 10.5','## Bootstrap contract freshness'];
   const all=(core+'\n'+release).split('\n');
   for(const h of headings)assert.ok(all.some(line=>line.startsWith(h)),h);

@@ -45,6 +45,8 @@ export function validateCard(card) {
   if (!ids.includes(String(card.recommended ?? ""))) add("recommended", "must be one of the option ids");
   if (!String(card.recommendedReason || "").trim()) add("recommendedReason", "give the reason for the recommendation");
   if (card.risk === "R3" && (card.blocking !== true || (card.default !== null && card.default !== undefined))) add("blocking", "R3 cards must block and have no default");
+  if (card.reversible !== undefined && typeof card.reversible !== "boolean") add("reversible", "must be true or false");
+  if (card.reversible === true && card.risk === "R3") add("reversible", "R3 is never reversible");
   if (card.blocking === false && !ids.includes(String(card.default ?? ""))) add("default", "a non-blocking card needs a default option");
   const recordAs = String(card.recordAs || "none");
   if (/^policy:/.test(recordAs)) {

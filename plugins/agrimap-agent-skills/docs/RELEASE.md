@@ -17,9 +17,9 @@
 | `prepare production` | เตรียมและ verify candidate Production, release.md และ versioned notes | เลขที่ระบุ หรือ PATCH+1; ยังไม่ push/tag |
 | `pipeline inhouse` | ตรวจ candidate ที่เตรียมแล้ว → commit paths ที่ตรวจ → push/verify develop และ jenkins | ไม่ bump ซ้ำ; ไม่มี Production/tag |
 | `pipeline production` | ตรวจ Production candidate → commit → push/verify develop และ jenkins → เตรียมแผน Production | หยุดก่อน jenkins-release และ tag |
-| `promote` | ตรวจ candidate → แสดง SHA/version/branch/tag → ขอยืนยัน → publish/verify Production และ annotated tag → Release Description/แจ้งเตือน | ต้องมี candidate ที่เตรียมแล้วและการยืนยัน concrete plan |
-| `release full` | indexing → prepare owners แยกกัน → pipeline inhouse/production → ยืนยัน → promote → Release Description/แจ้งเตือน | เลขตามคำขอ หรือ PATCH+1 แยก owner; notes/tag เฉพาะ Production |
-| `release production` | indexing → prepare production → pipeline production → ยืนยัน → promote → Release Description/แจ้งเตือน | Inhouse version คงเดิม แม้ผ่าน branch jenkins |
+| `promote` | ตรวจ candidate → แสดง SHA/version/branch/tag → publish/verify Production และ annotated tag → Release Description/แจ้งเตือน | ต้องมี candidate ที่เตรียมแล้ว; ไม่ถาม เว้นแต่ผิดปกติ |
+| `release full` | indexing → prepare owners แยกกัน → pipeline inhouse/production → promote → Release Description/แจ้งเตือน | เลขตามคำขอ หรือ PATCH+1 แยก owner; notes/tag เฉพาะ Production |
+| `release production` | indexing → prepare production → pipeline production → promote → Release Description/แจ้งเตือน | Inhouse version คงเดิม แม้ผ่าน branch jenkins |
 | `release inhouse` | indexing → prepare inhouse → pipeline inhouse | เฉพาะ develop/jenkins; ไม่แก้ Production notes/tag |
 
 เลข Version/Patch ที่ผู้ใช้ระบุชัดมีลำดับเหนือค่า PATCH+1 และกฎ default รุ่นเก่า อ่าน baseline จริงก่อนคำนวณ ไม่ถามอนุมัติเลขเดิมซ้ำ เช่น Inhouse `1.0.0 → 1.0.8` และ Production `1.0.4 → 1.0.5` ต้องได้ notes `1.0.5.md` และ tag `v1.0.5` ไม่ใช้เลข Inhouse แทน
@@ -75,7 +75,7 @@ $agm-release production --flash
 
 ชื่อย่อ `full --flash`, `inhouse --flash`, `production --flash` เท่ากับ `release full|inhouse|production --flash` ตามลำดับ ใช้กับ `prepare inhouse|production` และ `pipeline inhouse|production` ได้ด้วย (pipeline ไม่สร้าง candidate ที่ยังไม่ได้เตรียม) โหมดไม่มี flag ยังทำงานเหมือนเดิม ไม่รองรับ flag นี้กับ promote/indexing/bootstrap
 
-ตั้งแต่ 4.9.9 release (รวม `--flash`) รวมแค่ branch ของงานนี้ แก้ conflict เอง sync `jenkins`/`jenkins-release` เอง และไม่ดู branch อื่น คำถามเหลือแค่ยืนยัน Production ดู [Usage](USAGE.md#release-preflight)
+ตั้งแต่ 4.9.9 release (รวม `--flash`) รวมแค่ branch ของงานนี้ แก้ conflict เอง sync `jenkins`/`jenkins-release` เอง และไม่ดู branch อื่น ไม่มีการยืนยัน Production แล้ว (5.0.1) ถามเฉพาะความผิดปกติ ดู [Usage](USAGE.md#release-preflight)
 
 **URL แจ้งเตือน:** เครื่องที่ยังไม่เคยตั้ง Agent ถามผ่านกล่องคำถาม ตัวเลือกแรกคือ URL มาตรฐาน `https://appserv2.cdg.co.th/agrimap-notify/release-description` เลือกแล้วตั้งค่าและส่งต่อทันที
 
@@ -87,13 +87,13 @@ $agm-release production --flash
 | Publish | candidate เดียว; develop → jenkins → jenkins-release ตาม environment; ไม่ push checkpoint สำเร็จซ้ำ |
 | Audit | สรุป delta สั้น ๆ; รวม history/audit ของ release ที่ตรวจแล้วเป็น develop-only รอบสุดท้ายเว้นแต่มีข้อห้ามชัดเจน ไม่ promote ตาม |
 
-ถ้า baseline ไม่ชัด Agent ถามเฉพาะจุดนั้น ไม่แอบกลับไป index ทั้ง project และไม่อ้างว่า full indexing เสร็จแล้ว Production ยังยืนยันครั้งเดียวตามแผนเดิม โหมดนี้ไม่แก้ trigger ของ Jenkins และไม่รับประกันจำนวน pipeline หรือเวลาแน่นอน รายละเอียด: [Flash contract](../skills/agrimap-agent-skills/references/release-flash.md)
+ถ้า baseline ไม่ชัด Agent ถามเฉพาะจุดนั้น ไม่แอบกลับไป index ทั้ง project และไม่อ้างว่า full indexing เสร็จแล้ว Production ไม่ถามยืนยันเช่นเดียวกับโหมดปกติ โหมดนี้ไม่แก้ trigger ของ Jenkins และไม่รับประกันจำนวน pipeline หรือเวลาแน่นอน รายละเอียด: [Flash contract](../skills/agrimap-agent-skills/references/release-flash.md)
 
 Agent ประเมิน scope, diff, เจ้าของงาน และการกู้คืนก่อนทำงาน ขั้นตอนที่ปลอดภัยและอยู่ในสิทธิ์ของคำสั่งเดิมให้ทำต่อพร้อม progress สั้น ๆ ไม่ถามยืนยันทุกครั้ง เช่น pull แบบ fast-forward ที่ปลอดภัย, bootstrap ที่มี backup, เตรียม notes และตรวจ candidate ส่วน prepare/indexing ไม่ได้รับสิทธิ์ push เพิ่มจากกฎนี้
 
-สำหรับ Production ให้รวมคำยืนยันก่อนเผยแพร่ branch/tag เป็นครั้งเดียวต่อแผนที่ไม่เปลี่ยน สรุปสั้น ๆ ว่า **ยืนยันอะไร / หลักฐานอะไร / ผลกระทบอะไร / คำสั่งกู้คืนและข้อจำกัด** โดยใช้ SHA/path ที่ตรวจจริง รายละเอียดและ release notes ให้แนบลิงก์แทนการร่ายยาว หาก retry/resume แล้ว approval เดิมยังตรง ให้ทำเฉพาะขั้นที่เหลือ ไม่ถามหรือ push checkpoint ที่สำเร็จซ้ำ
+**คำสั่งคือการยืนยัน (owner decision 2026-10-14, 5.0.1):** คำสั่ง `release full|production|inhouse`, `pipeline` และ `promote` (รวม `--flash`) ยืนยันทุกขั้นที่คำสั่งนั้นครอบคลุม รวม `jenkins-release`, Production tag และแจ้งเตือน Agent แสดงแผน (version, SHA, tag) เป็นบรรทัด progress แล้วทำต่อ ถามหนึ่งครั้งก่อน push แรกเฉพาะเมื่อผิดปกติ: ระบุเลขเองที่ไม่ใช่ PATCH+1 (ข้ามเลข เปลี่ยน minor/major หรือต่ำกว่าที่ออกไปแล้ว) หรือมีเนื้อหาที่ run นี้ไม่ได้เตรียมเข้ามาใน candidate/ปลายทางหรือ tag เปลี่ยนจากแผน คำถามสรุปสั้น ๆ ว่า **อะไร / หลักฐาน / ผลกระทบ / คำสั่งกู้คืนและข้อจำกัด** หาก retry/resume แล้วคำตอบเดิมยังตรง ให้ทำเฉพาะขั้นที่เหลือ ไม่ถามหรือ push checkpoint ที่สำเร็จซ้ำ
 
-ยังต้องหยุดถามก่อนขั้นที่มีขอบเขตไม่ชัด เสี่ยงสูญเสียงาน สิทธิ์ไม่พอ หรือ candidate/ปลายทางเปลี่ยนอย่างมีนัยสำคัญ การกู้คืนได้ไม่ใช่สิทธิ์เพิ่มและไม่ข้าม server approval: revert Git ไม่ได้ย้อน pipeline/deployment ที่เริ่มแล้ว ห้ามเสนอ force-push หรือย้าย/ลบ published tag เป็นทางลัด และแผน rollback ยังไม่ใช่คำสั่งให้ลงมือ rollback
+ยังต้องหยุดก่อนขั้นที่มีขอบเขตไม่ชัด เสี่ยงสูญเสียงาน หรือสิทธิ์ไม่พอ (หยุดเฉพาะขั้นนั้นพร้อมหลักฐาน ไม่ใช่คำถามยืนยัน) การกู้คืนได้ไม่ใช่สิทธิ์เพิ่มและไม่ข้าม server approval: revert Git ไม่ได้ย้อน pipeline/deployment ที่เริ่มแล้ว ห้ามเสนอ force-push หรือย้าย/ลบ published tag เป็นทางลัด และแผน rollback ยังไม่ใช่คำสั่งให้ลงมือ rollback
 
 ## ความสามารถร่วมและการทำต่อเมื่อพบปัญหา
 
@@ -106,7 +106,7 @@ Agent ประเมิน scope, diff, เจ้าของงาน แล�
 | CLI compatibility | ตรวจ supported options และผลต่อ owner/artifacts ก่อนใช้; หาก CLI รองรับแค่ PATCH+1 แต่ผู้ใช้ระบุเลข ให้ใช้ scoped direct preparation และ equivalent checks ตาม release-tools โดยรายงาน gate ที่ incompatible จริง |
 | Candidate ownership | pipeline/promote แบบ standalone ไม่สร้าง candidate หรือ bump เพื่อแก้ prerequisite โดยอัตโนมัติ ต้องพิสูจน์แหล่งที่มาและ exact owner diff |
 | Resume / verification | บันทึก baseline, candidate และ checkpoints ใช้ candidate เดิมต่อโดยไม่ bump ซ้ำ ตรวจ remote SHA/fast-forward ทุก stage; divergence และ tag collision ต้องแก้จากหลักฐาน |
-| Production confirmation | เตรียมทุกอย่างก่อนขอยืนยัน SHA, version, remote branch และ tag; candidate/destination เปลี่ยนทำให้ confirmation เดิมใช้ไม่ได้ |
+| Production publication | คำสั่งคือการยืนยัน; แสดง SHA, version, remote branch และ tag แล้วทำต่อ ถามเฉพาะความผิดปกติของ version หรือ candidate |
 | Deployment status | branch publication ไม่พิสูจน์ Jenkins build หรือ rollout; ไม่รอ pipeline เขียวและไม่เรียก Jenkins API/remote server ภายใต้ contract นี้ |
 | Recording / history | ใช้กฎ recording ของ target โดยไม่เปิด lifecycle ซ้ำ; รักษา changelog/notes เดิม รายงาน release SHA แยกจาก final develop SHA เมื่อมี audit commit |
 
@@ -184,7 +184,7 @@ Deploy aliases และ ambiguous routing ดู AGENTS §2 ใช้ exact phr
 
 หลัง release/tag checkpoint ทำ final audit commit/push เฉพาะ artifacts ที่ตรวจแล้วบน develop **ไม่ promote audit commit ไม่ย้าย tag และไม่ bump ซ้ำ** รายงาน release SHA กับ final develop SHA แยกกัน inventory ของ publishable changes ต้องไม่ตกหล่น
 
-Exact group-B intent ที่ owner สั่งเองยืนยัน branch pushes รวม final audit; tag push เฉพาะ Version + Tags กรณีอื่นใช้ confirmation ตาม §2.1 ไม่ถามซ้ำเมื่อ authority เดิมครอบคลุมและไม่มี stop condition
+Exact group-B intent และคำสั่ง agm-release ที่ owner สั่งเองยืนยัน branch pushes รวม final audit; tag push เฉพาะ Version + Tags และ `release production|full`/`promote` ตาม §2.1 ไม่ถามซ้ำเมื่อไม่มีความผิดปกติหรือ stop condition
 
 ## หลักฐานและภาษา
 
