@@ -59,19 +59,19 @@ Design ทำงานแบบ passive ในคำสั่งที่เห�
 
 ทั้ง 9 release Flow ตรวจ contract version และ Git, .NET และ CLI `agm-release` ก่อน หากขาดจะติดตั้งจากแหล่งทางการ/แหล่งของโครงการและตรวจซ้ำ หากขาดสิทธิ์หรือเข้าแหล่งติดตั้งไม่ได้ Agent จะแจ้งสาเหตุจริงและขั้นที่ค้าง เครื่องมือที่ใช้งานได้อยู่แล้วจะใช้ต่อ
 
-| คำสั่ง | สิ่งที่ Agent ทำตามลำดับ | เพิ่มเวอร์ชัน | Push ไปที่ใด | ต้องยืนยันก่อน Production/tag |
+| คำสั่ง | สิ่งที่ Agent ทำตามลำดับ | เพิ่มเวอร์ชัน | Push ไปที่ใด | ถามก่อนทำไหม |
 | --- | --- | --- | --- | --- |
 | `$agm-release bootstrap upgrade` | อัปเกรด bootstrap พร้อม backup และรักษากฎเฉพาะโปรเจกต์; ตรวจ version/receipt | ไม่เพิ่ม | ไม่มี | ไม่เกี่ยวข้อง |
 | `$agm-release upgrade` | สำรองและทับไฟล์ contract ที่อยู่ใน bundle พร้อมอัปเดต version tracking; README ทับเฉพาะ managed Deployment block | ไม่เพิ่ม | ไม่มี | ไม่เกี่ยวข้อง |
 | `$agm-release indexing` | Project Backfill: ตรวจ full reachable history/source/diff → เติม project catalog, historical changelog และ README capability/API tables | ไม่เพิ่ม | ไม่มี; แก้ไฟล์ในเครื่อง | ไม่เกี่ยวข้อง |
 | `$agm-release prepare inhouse` | เตรียม Inhouse version → อัปเดต index/changelog → ตรวจความถูกต้อง; ไม่สร้าง release notes | Inhouse +0.0.1 | ไม่มี; เตรียมในเครื่อง | ไม่เกี่ยวข้อง |
 | `$agm-release prepare production` | เตรียม version และ notes → ตรวจความถูกต้อง | Production +0.0.1 | ไม่มี; เตรียมในเครื่อง | ยังไม่ถึงขั้น promote |
-| `$agm-release pipeline inhouse` | ตรวจ candidate ที่เตรียมแล้ว → commit → push/ตรวจ SHA | ไม่เพิ่มซ้ำ | `develop → jenkins` | ไม่เกี่ยวข้อง |
-| `$agm-release pipeline production` | ตรวจ Production candidate → commit → push/ตรวจ SHA → เตรียมแผนส่ง Production | ไม่เพิ่มซ้ำ | `develop → jenkins`; ยังไม่ push Production | รอคำสั่ง promote |
-| `$agm-release promote` | แสดง SHA/version/notes/tag → ขอคำยืนยัน → push Production → สร้างและ push annotated tag | ไม่เพิ่ม | `jenkins-release` และ tag ของ Production เท่านั้น | **ต้องยืนยันทุกครั้งก่อนทำจริง** |
-| `$agm-release release full` | indexing → prepare ทั้งสองฝั่ง → notes เฉพาะ Production → pipeline Inhouse/Production ใช้ candidate เดียว → ยืนยัน → promote → Release Description/แจ้งเตือน Teams | Inhouse และ Production +0.0.1 แยกกัน | `develop → jenkins → jenkins-release` + Production tag | **ต้องยืนยันก่อน promote** |
-| `$agm-release release production` | indexing → prepare Production → pipeline Production → ยืนยัน → promote → Release Description/แจ้งเตือน Teams | Production +0.0.1; Inhouse คงเดิม | ผ่าน `develop → jenkins` ไป `jenkins-release` + Production tag | **ต้องยืนยันก่อน promote** |
-| `$agm-release release inhouse` | indexing → prepare Inhouse → pipeline Inhouse | Inhouse +0.0.1 | `develop → jenkins`; ไม่มี Production/tag | ไม่เกี่ยวข้อง |
+| `$agm-release pipeline inhouse` | ตรวจ candidate ที่เตรียมแล้ว → commit → push/ตรวจ SHA | ไม่เพิ่มซ้ำ | `develop → jenkins` | ไม่ถาม |
+| `$agm-release pipeline production` | ตรวจ Production candidate → commit → push/ตรวจ SHA → เตรียมแผนส่ง Production | ไม่เพิ่มซ้ำ | `develop → jenkins`; ยังไม่ push Production | ไม่ถาม; รอคำสั่ง promote |
+| `$agm-release promote` | แสดง SHA/version/notes/tag → push Production → สร้างและ push annotated tag | ไม่เพิ่ม | `jenkins-release` และ tag ของ Production เท่านั้น | ไม่ถาม เว้นแต่ผิดปกติ |
+| `$agm-release release full` | indexing → prepare ทั้งสองฝั่ง → notes เฉพาะ Production → pipeline Inhouse/Production ใช้ candidate เดียว → promote → Release Description/แจ้งเตือน Teams | Inhouse และ Production +0.0.1 แยกกัน | `develop → jenkins → jenkins-release` + Production tag | ไม่ถาม เว้นแต่ผิดปกติ |
+| `$agm-release release production` | indexing → prepare Production → pipeline Production → promote → Release Description/แจ้งเตือน Teams | Production +0.0.1; Inhouse คงเดิม | ผ่าน `develop → jenkins` ไป `jenkins-release` + Production tag | ไม่ถาม เว้นแต่ผิดปกติ |
+| `$agm-release release inhouse` | indexing → prepare Inhouse → pipeline Inhouse | Inhouse +0.0.1 | `develop → jenkins`; ไม่มี Production/tag | ไม่ถาม เว้นแต่ผิดปกติ |
 
 `project.md` ใน Flow นี้คือ `.agrimap-agent/memory/project.md` ส่วน changelog คือ `changelog.md` ที่ root ของโครงการ ใช้ Version ที่เจ้าของระบุชัด หรือเพิ่ม PATCH เป็นค่าเริ่มต้น เช่น `1.2.9 → 1.2.10` โดยอ่าน Inhouse จาก `Jenkinsfile` และ Production จาก `Jenkinsfile_Production` หากทำต่อจาก candidate เดิมจะไม่เพิ่มเลขซ้ำ
 
@@ -85,7 +85,7 @@ Design ทำงานแบบ passive ในคำสั่งที่เห�
 
 สกิลตรวจความเข้ากันได้ของ CLI ก่อน prepare ด้วย: source CLI ที่ตรวจพบยังสร้าง notes ตาม environment ในบาง mode และตรวจ Tag metadata ใน notes จึงไม่ถือว่า CLI ที่ติดตั้งได้จะรองรับ Flow ใหม่ครบโดยอัตโนมัติ หากเป็นข้อขัดแย้งกับ gate ที่ target บังคับ จะเก็บหลักฐานและหยุดขั้นที่เกี่ยวข้อง ไม่สร้าง notes ผิดฝั่งหรืออ้างว่าตรวจผ่าน
 
-**จุดยืนยันอยู่ก่อน push Production จริง:** `pipeline production` เตรียมจนพร้อม แล้ว `promote` จึงถามยืนยัน SHA ปลายทางและ tag ที่แน่นอน การพิมพ์ `promote` หรือ `release` ยังไม่ใช่คำยืนยันนี้ หาก candidate เปลี่ยนต้องยืนยันแผนใหม่
+**คำสั่งคือการยืนยัน (5.0.1):** พิมพ์ `$agm-release release full --flash` แล้ว Agent ทำจนจบทั้ง Inhouse, Production, tag และแจ้งเตือน โดยไม่ถาม Agent ถามหนึ่งครั้งก่อน push แรกเฉพาะเมื่อผิดปกติ: (1) ระบุเลขเองที่ไม่ใช่ +0.0.1 เช่น Production ตอนนี้ 1.0.3 แต่สั่ง `version 1.0.5` (ข้ามเลข) หรือเลขต่ำกว่าที่ออกไปแล้ว (2) มีงานที่ไม่ได้อยู่ในรอบนี้เข้ามาใน candidate หรือ SHA/tag ปลายทางเปลี่ยนจากแผน ส่วน conflict, test ไม่ผ่าน, tag ชน หรือไม่มีสิทธิ์ ไม่ใช่คำถาม: Agent หยุดเฉพาะขั้นนั้นพร้อมหลักฐาน ถ้าโครงการใดต้องการให้ถามก่อน Production ให้เขียนกฎนั้นใน `PROJECT CUSTOM` ของ `AGENTS.release.md`
 
 Pipeline ในตารางหมายถึงส่ง Git branch ตามลำดับภายใต้ trigger ที่ server ตั้งไว้ ไม่ต้องรอ Jenkins เขียว และไม่ใช่หลักฐานว่า deploy ขึ้น server สำเร็จ หลังจบจะบันทึกผล audit ตามกฎของโครงการ; audit commit บน develop จะไม่ถูก promote/tag เพิ่ม คำสั่งใหม่ไม่เหมารวมสิทธิ์เผยแพร่งานค้างที่ไม่เกี่ยวข้อง
 

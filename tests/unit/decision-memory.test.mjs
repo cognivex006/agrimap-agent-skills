@@ -106,7 +106,7 @@ test('promotion "team" writes a decision that later suppresses the card',async t
   assert.equal(again.suppressed?.option.value,'UM_<ENTITY>_Q');
 });
 
-test('calibration thresholds; autoDecided only for R1 medium; alwaysAsk wins (AC29)',async t=>{
+test('calibration thresholds; autonomy weight auto-decides R0/R1 and reversible R2; ask and alwaysAsk win (AC29, 5.0.1)',async t=>{
   const {repo:root,state}=await repo(t);
   const key=userKey();
   const sig=accepted=>({kind:'convention',topic:`t/${Math.random()}`,risk:'R1',recommendedChosen:accepted});
@@ -114,11 +114,18 @@ test('calibration thresholds; autoDecided only for R1 medium; alwaysAsk wins (AC
   assert.equal(calibration([sig(true),sig(true),sig(true),sig(true),sig(false)]).convention.mode,'decide-and-report');
   assert.equal(calibration([sig(false),sig(false),sig(false),sig(true),sig(true)]).convention.mode,'ask');
   assert.equal(calibration([...Array(10)].map(()=>sig(false)).concat([...Array(10)].map(()=>sig(true)))).convention.acceptRate,1);
-  for(let i=0;i<6;i+=1)await recordSignal(root,sig(true),key);
   const r1=card({topic:'fe/new-topic',paths:[]});
-  assert.equal((await preflightCard(root,r1,{key})).autoDecided.option.id,'1');
+  // No history yet: the owner's trust is the default, not a calibration result.
+  assert.match((await preflightCard(root,r1,{key})).autoDecided.reason,/^autonomy R1 medium/);
+  assert.equal((await preflightCard(root,{...r1,confidence:'high'},{key})).autoDecided.option.id,'1');
+  assert.equal((await preflightCard(root,{...r1,confidence:'low'},{key})).autoDecided,undefined);
   assert.equal((await preflightCard(root,{...r1,risk:'R2'},{key})).autoDecided,undefined);
-  assert.equal((await preflightCard(root,{...r1,confidence:'high'},{key})).autoDecided,undefined);
+  assert.match((await preflightCard(root,{...r1,risk:'R2',reversible:true},{key})).autoDecided.reason,/reversible/);
+  for(let i=0;i<6;i+=1)await recordSignal(root,sig(true),key);
+  assert.match((await preflightCard(root,r1,{key})).autoDecided.reason,/^calibration convention/);
+  for(let i=0;i<10;i+=1)await recordSignal(root,sig(false),key);
+  assert.equal((await preflightCard(root,r1,{key})).calibrationMode,'ask');
+  for(let i=0;i<10;i+=1)await recordSignal(root,sig(true),key);
   await savePreferences(root,{alwaysAsk:['convention']},key);
   const asked=await preflightCard(root,r1,{key});
   assert.equal(asked.autoDecided,undefined);assert.equal(asked.alwaysAsk,true);
@@ -128,7 +135,8 @@ test('calibration thresholds; autoDecided only for R1 medium; alwaysAsk wins (AC
 test('decide record writes a signal; recall/list/correction commands; decisionMemory:false skips recall',async t=>{
   const {h,repo:root,state}=await repo(t);
   const cli=args=>JSON.parse(h.spawn(h.scripts.workspace,[...args,'--cwd',root]).stdout);
-  const input=path.join(h.temp,'card.json');await writeFile(input,JSON.stringify(card({topic:'sql/new-thing',paths:[]})));
+  // R2 without "reversible" still asks; an R1 medium card would be auto-decided (5.0.1).
+  const input=path.join(h.temp,'card.json');await writeFile(input,JSON.stringify(card({topic:'sql/new-thing',paths:[],risk:'R2'})));
   const stored=cli(['decide','card','--session','s1','--input',input]);
   assert.ok(stored.cardId,JSON.stringify(stored));
   assert.equal(cli(['decide','record','--session','s1','--card',stored.cardId,'--choice','2','--requested-by','owner']).ok,true);

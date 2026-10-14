@@ -98,7 +98,7 @@ release สนใจแค่ `develop`, `jenkins`, `jenkins-release` และ 
 | `jenkins`/`jenkins-release` มีประวัติหรือ hotfix ที่ develop ไม่มี | back-merge เข้า develop เองแล้วรายงานไฟล์ที่ได้มา ถ้าชนก็แก้ให้เอง |
 | branch อื่นที่ไม่ใช่ของงานนี้ | ไม่ยุ่ง (ถ้าอยากรวมทุก branch ให้สั่ง `--scope all`) |
 
-- คำถามที่เหลือมีแค่ยืนยัน Production ครั้งเดียว ถามเพิ่มเฉพาะเมื่อสองฝั่งแก้ business logic เดียวกันขัดกันจนต้องให้คนเลือก
+- ไม่มีการยืนยัน Production (5.0.1): คำสั่งคือการยืนยัน ถามเฉพาะเมื่อระบุเลข version ที่ไม่ใช่ +0.0.1 หรือ candidate มีเนื้อหาที่ไม่ได้เตรียมในรอบนี้ และเมื่อสองฝั่งแก้ business logic เดียวกันขัดกันจนต้องให้คนเลือก
 - merge ทุกตัวเป็น merge commit ของ Git ใน local ไม่ rebase, squash, force, stash หรือลบ branch และขึ้น remote พร้อมการ push develop ครั้งเดียวของ release
 - release ที่ค้างแล้วสั่งต่อใช้กติกาชุดเดิมจนจบ
 - `--flash` อ่านเฉพาะส่วนที่ต้องใช้ ใช้ผล preflight แทนการตรวจทีละคำสั่ง ใช้ผลตรวจเครื่องมือ .NET ที่บันทึกไว้ได้ 7 วัน และไม่สร้าง audit commit ย่อยระหว่างทาง

@@ -17,6 +17,6 @@ Use this file only to select one dedicated `agm-*` skill; pick by intent x lane 
 | `agm-qa` | `qa` | Verify an artifact under a product-read-only, execution-restricted QA contract | `verification-only` | default `light`; allowed `light`, `standard`, `regulated` |
 | `agm-prompt` | `prompt` | Analyze and refine requester intent into one immutable versioned Prompt Result with explicit Main and Subagent ownership | `workflow-write-only` | default `light`; allowed `light` |
 | `agm-exec` | `execute` | Implement an authorized objective, approved Prompt Result, or resumable task with proportional verification and scoped delivery | `product-write` | default `light`; allowed `light`, `standard`, `regulated` |
-| `agm-release` | `release` | Upgrade project bootstrap while preserving custom rules, replace contracts explicitly, index projects, prepare versions, publish Inhouse pipelines and confirm Production promotion | `product-write` | default `light`; allowed `light`, `standard`, `regulated` |
+| `agm-release` | `release` | Upgrade project bootstrap while preserving custom rules, replace contracts explicitly, index projects, prepare versions, publish Inhouse pipelines and promote Production | `product-write` | default `light`; allowed `light`, `standard`, `regulated` |
 
 After selecting one row, hand off to that skill and stop the router. One operation skill per turn: its entrypoint loads the lane references it needs, and cross-lane changes use `agm-exec`. Load a second operation skill only when the requester asks.
