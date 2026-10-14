@@ -196,6 +196,16 @@ test('relevant Gemini submit retries archive once without mixing AI output',asyn
  const text=await readFile(path.join(root,'.agrimap-agent/prompts',periods[0],'one/history.md'),'utf8');
  assert.equal(text.split(input.prompt).length-1,1);assert.equal(text.includes('Confirmed requester'),false);
 });
+test('harness task notifications never enter raw prompt history',async t=>{
+ const h=await fixture(t);const root=path.join(h.temp,'agrimap-example');await initRepo(root);
+ const note='<task-notification>\n<task-id>b1</task-id>\n<status>completed</status>\n<summary>Background command "cd agrimap-example; node --test tests/unit/git-flow.test.mjs; git push origin develop" completed (exit code 0)</summary>\n</task-notification>';
+ const send=(prompt,id)=>h.run(h.scripts.hook,['--provider','claude'],{cwd:root,session_id:'one',hook_event_name:'UserPromptSubmit',prompt,prompt_id:id});
+ send('ช่วยอธิบายโค้ดในโครงการ','1');send(note,'2');send(note+'\nแก้ validation ในโค้ด service นี้','3');
+ const periods=await readdir(path.join(root,'.agrimap-agent/prompts'));
+ const text=await readFile(path.join(root,'.agrimap-agent/prompts',periods[0],'one/history.md'),'utf8');
+ assert.equal(text.includes('task-notification'),false);assert.equal(text.includes('git push'),false);
+ assert.equal(text.split('### [').length-1,2);assert.ok(text.includes('แก้ validation ในโค้ด service นี้'));
+});
 test('prompt explanation/no-op does not create versions; revisions need source evidence',async t=>{
  const h=await fixture(t);const opts={cwd:h.temp,conversationId:'one',context:'feature',requester:'006006',provider:'codex',model:'actual'};
  assert.equal((await createPromptVersion({...opts,intent:'explain'})).created,false);

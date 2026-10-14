@@ -145,8 +145,17 @@ function zonedParts(timestamp = new Date().toISOString(), timeZone = "Asia/Bangk
   };
 }
 
+// Background-task completions reach UserPromptSubmit as <task-notification>
+// blocks. They carry the agent's own commands, not requester text, so they never
+// enter raw history (memory-and-logs.md); a prompt left empty is not archived.
+const HARNESS_BLOCK = /<task-notification>[\s\S]*?<\/task-notification>/g;
+
+function requesterText(prompt) {
+  return prompt.includes("<task-notification>") ? prompt.replace(HARNESS_BLOCK, "").trim() : prompt;
+}
+
 async function archiveRawPrompt(stateRoot, config, input) {
-  const prompt = typeof input.prompt === "string" ? redactText(input.prompt) : "";
+  const prompt = typeof input.prompt === "string" ? redactText(requesterText(input.prompt)) : "";
   const eventName = input.hook_event_name || input.hookEventName || "";
   if (!['UserPromptSubmit', 'BeforeAgent'].includes(eventName) || !prompt) return null;
   // A host submission ID deduplicates retries, not repeated human submissions.
