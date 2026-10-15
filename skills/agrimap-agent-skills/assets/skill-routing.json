@@ -549,8 +549,12 @@
           "steps": "never obtain them; relay the result or error `reveal_handoff` (`sql`, `user_steps`) verbatim so the user runs it outside the session; never run `sqlctx query --reveal` or rewrite a query around `QUERY_SENSITIVE_USAGE_RESTRICTED`"
         },
         {
+          "need": "which tables and procedures this repository uses, and which DDL is missing locally",
+          "steps": "`agm-sql context check`: `scripts/sql-context-scan.mjs --cwd <repo>` (read-only, no database)"
+        },
+        {
           "need": "full DDL or routine body",
-          "steps": "read local `sql/**` or db-schema references first; if missing, name the gap and suggest the owner run an explicit `$sql-context-pack` capture; never materialize it from an AgriMap operation"
+          "steps": "read local `sql/**` or db-schema references first; if missing, name the gap and offer `agm-sql context migrate` (run it only when the requester asks); never materialize it from any other AgriMap operation"
         }
       ],
       "ownerOperations": [
@@ -576,8 +580,23 @@
         "จัดหมวด",
         "ติดตั้ง"
       ],
-      "supportingRule": "Inside any agm-* operation sql-context-pack (3.0.0 or later) is supporting evidence only: its read-only tools and recipes (metadata and protected SELECT). No DDL/DML, EXEC/CALL, export, metadata sync, classification, routine deployment or reveal of protected values.",
-      "ownerRule": "A direct owner request to sql-context-pack (its invocation, or naming it with an owner operation) is that package's turn: follow its own SKILL and approval gates. AgriMap adds no authority, lifecycle or prohibition to that turn and never runs those operations inside an agm-* operation."
+      "supportingRule": "Inside any agm-* operation sql-context-pack (3.1.0 or later) is supporting evidence only: its read-only tools and recipes (metadata and protected SELECT). No DDL/DML, EXEC/CALL, metadata sync, classification, routine deployment or reveal of protected values; export only through agm-sql context migrate.",
+      "ownerRule": "A direct owner request to sql-context-pack (its invocation, or naming it with an owner operation) is that package's turn: follow its own SKILL and approval gates. AgriMap adds no authority, lifecycle or prohibition to that turn and never runs those operations inside an agm-* operation.",
+      "migrateRule": "agm-sql context migrate (owner decision 2026-10-14; the requester asks for it explicitly) may run the catalog/export tools to write the DDL of the objects this repository uses, and the tables one hop behind them, into the registered db-schema managed folder, then formats each exported `table_metadata` YAML into the AgriMap golden layout with `scripts/sql-golden-format.mjs` (needs sql-context-pack 3.1.0+; database truth kept, `golden_deviation`/`metadata_gap` reported). It never syncs DB_METADATA_CONTEXT, classifies, deploys, connects or changes a profile, or reveals values; it reports the owner's inventory-sync command instead.",
+      "migrateTools": [
+        "sqlctx_get_capabilities",
+        "sqlctx_get_active_profile",
+        "sqlctx_list_managed_folders",
+        "sqlctx_list_context_index",
+        "sqlctx_create_catalog",
+        "sqlctx_get_catalog_status",
+        "sqlctx_get_materialization_plan",
+        "sqlctx_list_sitemap",
+        "sqlctx_export_batch",
+        "sqlctx_get_export_status",
+        "sqlctx_list_exports",
+        "sqlctx_validate_exports"
+      ]
     }
   ]
 }

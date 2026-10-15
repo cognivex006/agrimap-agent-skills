@@ -196,6 +196,11 @@
           "when": "the project profile is spec-first or hybrid and the question concerns specified behavior",
           "path": "spec-driven.md",
           "why": "spec items are the source of truth for specified behavior"
+        },
+        {
+          "when": "the analysis proposes an execution order for two or more units",
+          "path": "subagents-and-branches.md",
+          "why": "parallel or sequential order and agent sizing"
         }
       ]
     },
@@ -321,7 +326,8 @@
       "example": "$agm-plan objective=\"Add order cancellation\" target_files=src/orders.ts",
       "instructions": [
         "Reverse-engineer current behavior, dependencies, callers, tests, and integration order before planning.",
-        "Each step names target, action, reason, verification, and decision-owner gate; do not implement."
+        "Each step names target, action, reason, verification, and decision-owner gate; do not implement.",
+        "Two or more units: end with the orchestration decision of subagents-and-branches.md — ordered work graph, contract-first steps, parallel or sequential, agents and model tier — ready to drive a long-running execution."
       ],
       "references": [
         {
@@ -391,6 +397,11 @@
           "when": "the project profile is spec-first or hybrid and the question concerns specified behavior",
           "path": "spec-driven.md",
           "why": "spec items are the source of truth for specified behavior"
+        },
+        {
+          "when": "the plan has two or more units",
+          "path": "subagents-and-branches.md",
+          "why": "work graph, parallel or sequential, rolling dispatch and job worktrees"
         }
       ]
     },
@@ -949,6 +960,28 @@
             "regulated"
           ],
           "purpose": "Explain SQL purpose, contracts, reads/writes, flow, transactions, errors, assumptions, and risks without execution or edits"
+        },
+        {
+          "name": "context-check",
+          "mode": "product-read-only",
+          "activation": "explicit-or-safe-default",
+          "depths": [
+            "light",
+            "standard",
+            "regulated"
+          ],
+          "purpose": "List used tables/procedures and missing local DDL; no database"
+        },
+        {
+          "name": "context-migrate",
+          "mode": "product-write",
+          "activation": "explicit",
+          "depths": [
+            "light",
+            "standard",
+            "regulated"
+          ],
+          "purpose": "Export missing DDL via sql-context-pack into db-schema; no sync or deploy"
         }
       ],
       "instructions": [
@@ -957,9 +990,9 @@
         "Edit/refactor requires an exact existing target; otherwise stop SQL_EDIT_TARGET_NOT_FOUND. Never switch to create; preserve the existing path unless migration is authorized.",
         "Create requires output_owner=product|owner-reference|knowledge-draft; otherwise stop SQL_OUTPUT_OWNER_REQUIRED. The absence of a directory is never create authority.",
         "Skill-package meta work never authorizes root product SQL; fixtures/examples require an explicit package-owned path.",
-        "Every created or edited stored procedure must declare CREATE OR ALTER PROCEDURE; replace standalone CREATE PROCEDURE, ALTER PROCEDURE, CREATE PROC, or ALTER PROC and validate the complete changed SQL path set.",
+        "Every created or edited procedure uses CREATE OR ALTER PROCEDURE, never standalone CREATE/ALTER PROC(EDURE); validate the complete changed SQL path set.",
         "For authorized create/edit, load relevant schema/callers and use proportional tracking.",
-        "For action=refactor, require exactly one mode before editing; when materially ambiguous, ask about the behavior boundary. Preserve result sets, transactions, side effects, error mapping, and deployment idempotency unless recorded authority and the selected mode explicitly allow a change, then format and validate every declared changed SQL path."
+        "For action=refactor, follow refactor-modes.md: one mode; preserve result sets, transactions, side effects, errors and deployment idempotency unless that mode allows a change; format and validate every changed SQL path."
       ],
       "references": [
         {
@@ -1001,9 +1034,9 @@
           "why": "resolve only consequential ambiguity"
         },
         {
-          "when": "database context is needed",
+          "when": "database context is needed or action is context-check/context-migrate",
           "path": "sql-context-readonly.md",
-          "why": "managed read-only metadata and SELECT; never database writes"
+          "why": "read-only metadata and SELECT; the migrate export exception"
         },
         {
           "when": "an action writes files or a requester decision is needed",
@@ -1169,7 +1202,7 @@
       ],
       "conditionalReferences": [
         {
-          "when": "the Prompt Result defines Subagent assignments",
+          "when": "the Prompt Result has two or more units or Subagent assignments",
           "path": "subagents-and-branches.md",
           "why": "Main/Subagent ownership, visibility, and integration boundaries"
         },
@@ -1260,7 +1293,8 @@
       "instructions": [
         "Use recorded requester authorization; a generated prompt is optional. Preserve binding scope, dependencies and acceptance while adapting implementation steps to evidence.",
         "Select tracking/assurance from actual work; keep the savepoint current (checkpoint --done/--remaining/--next).",
-        "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request."
+        "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request.",
+        "Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree."
       ],
       "references": [
         {
@@ -1358,7 +1392,7 @@
           "why": "service gateway keys, Kubernetes Services and health; no DB or IP data"
         },
         {
-          "when": "Subagent assignments are dispatched",
+          "when": "the work has two or more units or delegation is considered",
           "path": "subagents-and-branches.md",
           "why": "delegation packet, workspace mode, visibility, and integration boundaries"
         },

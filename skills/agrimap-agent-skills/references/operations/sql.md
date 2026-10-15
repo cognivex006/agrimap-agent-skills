@@ -20,6 +20,8 @@ Resolve exactly one action before target inspection or product writes. Safe defa
 | `edit` | `product-write` | `explicit` | `light`, `standard`, `regulated` | Modify a bounded existing SQL object or slice |
 | `refactor` | `product-write` | `explicit` | `light`, `standard`, `regulated` | Refactor SQL under exactly one behavior mode while preserving declared results, transactions, side effects, errors, and deployment behavior |
 | `explain` | `product-read-only` | `explicit-or-safe-default` | `light`, `standard`, `regulated` | Explain SQL purpose, contracts, reads/writes, flow, transactions, errors, assumptions, and risks without execution or edits |
+| `context-check` | `product-read-only` | `explicit-or-safe-default` | `light`, `standard`, `regulated` | List used tables/procedures and missing local DDL; no database |
+| `context-migrate` | `product-write` | `explicit` | `light`, `standard`, `regulated` | Export missing DDL via sql-context-pack into db-schema; no sync or deploy |
 
 ## Inputs and help
 
@@ -34,9 +36,9 @@ Resolve exactly one action before target inspection or product writes. Safe defa
 3. Edit/refactor requires an exact existing target; otherwise stop SQL_EDIT_TARGET_NOT_FOUND. Never switch to create; preserve the existing path unless migration is authorized.
 4. Create requires output_owner=product|owner-reference|knowledge-draft; otherwise stop SQL_OUTPUT_OWNER_REQUIRED. The absence of a directory is never create authority.
 5. Skill-package meta work never authorizes root product SQL; fixtures/examples require an explicit package-owned path.
-6. Every created or edited stored procedure must declare CREATE OR ALTER PROCEDURE; replace standalone CREATE PROCEDURE, ALTER PROCEDURE, CREATE PROC, or ALTER PROC and validate the complete changed SQL path set.
+6. Every created or edited procedure uses CREATE OR ALTER PROCEDURE, never standalone CREATE/ALTER PROC(EDURE); validate the complete changed SQL path set.
 7. For authorized create/edit, load relevant schema/callers and use proportional tracking.
-8. For action=refactor, require exactly one mode before editing; when materially ambiguous, ask about the behavior boundary. Preserve result sets, transactions, side effects, error mapping, and deployment idempotency unless recorded authority and the selected mode explicitly allow a change, then format and validate every declared changed SQL path.
+8. For action=refactor, follow refactor-modes.md: one mode; preserve result sets, transactions, side effects, errors and deployment idempotency unless that mode allows a change; format and validate every changed SQL path.
 
 ## Load now
 
@@ -51,7 +53,7 @@ Resolve exactly one action before target inspection or product writes. Safe defa
 - When any golden/sql entry is used as evidence: [patterns/checklists/sql.md](../patterns/checklists/sql.md) — per-entry authority map for the mixed SQL collection
 - When any table, view, or procedure outside the edited file is read, joined, or written: [db-schema-context.md](../db-schema-context.md) — owner DDL evidence for every referenced object
 - When material intent remains unresolved: [elicitation.md](../elicitation.md) — resolve only consequential ambiguity
-- When database context is needed: [sql-context-readonly.md](../sql-context-readonly.md) — managed read-only metadata and SELECT; never database writes
+- When database context is needed or action is context-check/context-migrate: [sql-context-readonly.md](../sql-context-readonly.md) — read-only metadata and SELECT; the migrate export exception
 - When an action writes files or a requester decision is needed: [autonomy.md](../autonomy.md) — decide, ask or confirm; decision card format
 - When the action writes product files in a Git repository: [git-workflow.md](../git-workflow.md) — work branch, delivery and next-step card per the team workflow policy
 - When the project profile is spec-first or hybrid: [spec-driven.md](../spec-driven.md) — development mode, spec locations and spec-first request handling

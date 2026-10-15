@@ -32,7 +32,7 @@
 | ติดตั้ง / อัปเดต skills | `agm-doctor` |
 
 - ไม่อยู่ใน lane ใช้ skill ตามเจตนา; เลือกไม่ได้ใช้ `agrimap-agent-skills`; operation skill เดียวต่อรอบ ห้ามโหลดตัวที่สองเองโดยไม่ได้สั่ง
-- `sql-context-pack` เสริมเมื่อต้องการ schema/ข้อมูลจริงที่ไฟล์ใน repo ตอบไม่ได้: ใน agm-* อ่านอย่างเดียว; คำสั่งตรงถึง package นั้นใช้ approval gate ของมัน
+- `sql-context-pack` เสริมเมื่อต้องการ schema/ข้อมูลจริงที่ไฟล์ใน repo ตอบไม่ได้: ใน agm-* อ่านอย่างเดียว ยกเว้น `agm-sql context migrate` ที่ export DDL ลง db-schema; คำสั่งตรงถึง package นั้นใช้ approval gate ของมัน
 - บรรทัดแรกของคำตอบหรือก่อนเขียนไฟล์: `Skill: <skill> · Lane: <lane> · Golden: <entries ที่เปิดจริง>`; ยังไม่โหลดหรือไม่ตรง golden ให้แก้ก่อนส่ง
 - Golden เป็นค่าเริ่มต้นตั้งแต่ร่างแรก (SQL: `[agrimap_app]`, `CREATE OR ALTER PROCEDURE`, SQLFluff)
 - Host ไม่มี AgriMap skills: แจ้งให้ติดตั้งผ่าน `agm-doctor` ห้ามอ้างว่า style ทั่วไปคือ AgriMap; ชื่อ skill ที่ยกมาเป็นตัวอย่าง

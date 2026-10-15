@@ -7,6 +7,7 @@
 - [Structure over logic](#structure-over-logic-owner-stance-2026-07-16)
 - [Design source of trust](#design-source-of-trust)
 - [Reuse-first decision](#reuse-first-decision)
+- [Core-first for multi-screen work](#core-first-for-multi-screen-work)
 - [Reuse index](#reuse-index)
 - [Phase 1: foundation](#phase-1-foundation)
 - [Phase 2: active-development](#phase-2-active-development)
@@ -70,6 +71,15 @@ Before creating reusable code:
    - create a new local artifact with explicit ownership and scope.
 5. Avoid forced reuse that creates boolean-option explosions, hidden coupling, or an abstraction with only a hypothetical future consumer.
 6. Record the decision and update the index.
+
+## Core-first for multi-screen work
+
+Owner decision 2026-10-14: shared parts first, then screens that compose them.
+
+1. Before two or more screens (or one beside similar ones), list their parts: table/filter/paging, form sections, dialogs, badges, states, actions, facade/store shape.
+2. A part in two or more screens (requested or existing) is built or extended first in `shared/` (`core/` for services; the library in `fe-library`); screens compose it; single-use parts stay in the feature.
+3. Change shared look or behavior once there; report copies across screens with a consolidation proposal.
+4. Current-request screens count as proven consumers; unrequested options stay forbidden.
 
 ## Reuse index
 

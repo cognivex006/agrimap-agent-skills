@@ -43,6 +43,16 @@
 
 พิมพ์เรื่องอื่นแทรกระหว่างทำงาน: ถ้าเกี่ยวกับงานเดิม Agent รวมเข้าไปและอัปเดต savepoint ถ้าไม่เกี่ยว Agent ตอบเรื่องนั้นแล้วเตือนหนึ่งบรรทัดว่างานเดิมยังค้างอยู่ session ที่เพิ่งใช้งานใน 10 นาทีจะไม่ถูกย้ายงานไปโดยไม่ยืนยัน และ session ที่มีงานอื่นค้างอยู่จะไม่ถูกเขียนทับ
 
+## Orchestration: Leader กับ subagent (5.0.1)
+
+งานที่มีตั้งแต่ 2 ส่วนขึ้นไป Agent จะตัดสินทุกครั้งว่าทำขนานหรือทีละขั้น และบอกในบรรทัดเดียว (`Orchestration: sequential` หรือ `Orchestration: 3 agents — ...`) โดยไม่ถามจำนวน agent
+
+- **แผน:** แตกงานเป็น work graph (lane, repo, ไฟล์, งานที่ต้องรอ, contract ที่สร้าง/ใช้) Leader กำหนด contract ร่วม (SP, DTO/API, input ของ component) ก่อน แล้วงานที่ไฟล์/repo ไม่ทับกันจึงขนานกัน
+- **Leader:** จ่ายงาน ตรวจหลักฐาน และรวมงาน subagent เป็นคนเขียน มีได้สูงสุด 5 ตัว และ **เติมงานใหม่ทันที** เมื่อตัวใดเสร็จ ไม่รอให้ครบทุกตัว
+- **Model ของ subagent** (เบาไปหนัก ตามความยากของงานย่อย): Claude `haiku` medium → `sonnet` low → `opus` low · Codex GPT-6 Luna low → GPT-5.6 Terra low → GPT-5.6 Luna medium · Antigravity Gemini 3.8 Flash · host ที่เลือก model ไม่ได้ใช้ค่าเริ่มต้น (แก้ได้ที่ `model-capability-matrix.yaml`)
+- **Worktree เป็นของชั่วคราว:** subagent ที่เขียนพร้อมกันได้ worktree ของตัวเองข้าง repo (`<repo>.worktrees/<job-id>`) บน branch `feature/<slug>-<id>` จากงานที่รวมแล้วล่าสุดของ Leader งานเดี่ยวใช้ branch ปกติ ไม่สร้าง worktree
+- **รวมแล้วลบ:** Leader ตรวจผ่านแล้วรวมเข้า branch ของ Leader บันทึกลง log แล้ว **ลบ worktree และ branch ชั่วคราวเอง** ถ้า test ไม่ผ่าน มีไฟล์ค้าง หรือ conflict จะไม่ลบอะไร การแก้รอบใหม่สร้าง job ใหม่ที่อ้าง job เดิม ไม่ใช้ worktree เก่าซ้ำ และ worktree ที่ host สร้างเองก็ต้องรวมแล้วลบเช่นกัน
+
 ## ทำงานบน work branch และส่งงาน (4.6.0)
 
 - งานแรกที่แก้ repository: Agent อ่าน `AGENTS.md` ของ repo (และระดับบน) ก่อน แล้วถาม workflow ของทีม **ครั้งเดียว** บันทึกเป็น `.agrimap-agent/policy/workflow.json` (commit เข้า repo)

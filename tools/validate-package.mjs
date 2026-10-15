@@ -364,7 +364,7 @@ if (operations) {
   if (new Set(names).size !== names.length) errors.push("Operation aliases are not unique.");
   if (names.includes("agm-fe-engineer")) errors.push("Passive frontend discipline must not expose agm-fe-engineer.");
   for (const removed of ["agm-design","agm-simulate","agm-review","agm-history"]) if (names.includes(removed)) errors.push(`${removed} is removed from the public surface.`);
-  for (const [name, actions] of Object.entries({ "agm-fe": ["analyze", "design", "create", "edit", "refactor", "test"], "agm-be": ["analyze", "design", "create", "edit", "refactor", "test"], "agm-sql": ["analyze", "design", "create", "edit", "refactor", "explain"] })) {
+  for (const [name, actions] of Object.entries({ "agm-fe": ["analyze", "design", "create", "edit", "refactor", "test"], "agm-be": ["analyze", "design", "create", "edit", "refactor", "test"], "agm-sql": ["analyze", "design", "create", "edit", "refactor", "explain", "context-check", "context-migrate"] })) {
     const item = operations.operations.find((candidate) => candidate.name === name);
     if (item?.mode !== "action-routed") errors.push(`${name} must be action-routed.`);
     if (JSON.stringify(item?.actions?.map((action) => action.name)) !== JSON.stringify(actions)) errors.push(`${name} action list is invalid.`);

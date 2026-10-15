@@ -30,7 +30,7 @@
 
 ## Load only when the condition matches
 
-- When the Prompt Result defines Subagent assignments: [subagents-and-branches.md](../subagents-and-branches.md) — Main/Subagent ownership, visibility, and integration boundaries
+- When the Prompt Result has two or more units or Subagent assignments: [subagents-and-branches.md](../subagents-and-branches.md) — Main/Subagent ownership, visibility, and integration boundaries
 - When target_kind is fe-main or fe-library: [frontend-engineer.md](../frontend-engineer.md) — frontend fundamentals that every generated handoff must carry
 - When target_kind is be-main or be-library: [backend-engineer.md](../backend-engineer.md) — backend fundamentals that every generated handoff must carry
 - When the backend handoff contains C#: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# rules that every generated handoff must carry
