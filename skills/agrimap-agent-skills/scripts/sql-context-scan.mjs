@@ -102,6 +102,12 @@ export async function scanRepository(root, { schema = "agrimap_app" } = {}) {
     return objects.get(name);
   };
   const definitions = new Map();
+  // The agm-sql golden copy (sql-golden-format.mjs) is read before the raw export.
+  const golden = (entry) => entry.path.includes("/db-schema/agm-golden/");
+  const define = (name, entry) => {
+    const current = definitions.get(name);
+    if (!current || !golden(current) || golden(entry)) definitions.set(name, entry);
+  };
   const procedureTables = new Map();
   let codeFiles = 0;
   let sqlFiles = 0;
@@ -116,8 +122,8 @@ export async function scanRepository(root, { schema = "agrimap_app" } = {}) {
       sqlFiles += 1;
       const scanned = scanSql(text, { schema });
       const stem = path.basename(file, ".sql").toUpperCase();
-      for (const item of scanned.defined) definitions.set(item.name, { path: relative, type: item.type });
-      if (!scanned.defined.length && /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(stem) && !definitions.has(stem)) definitions.set(stem, { path: relative, type: "unknown" });
+      for (const item of scanned.defined) define(item.name, { path: relative, type: item.type });
+      if (!scanned.defined.length && /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(stem) && !definitions.has(stem)) define(stem, { path: relative, type: "unknown" });
       for (const item of scanned.defined.filter((entry) => entry.type === "procedure")) procedureTables.set(item.name, scanned.tables);
     } else {
       codeFiles += 1;

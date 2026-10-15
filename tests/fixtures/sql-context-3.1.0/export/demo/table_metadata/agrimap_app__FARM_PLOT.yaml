@@ -1,0 +1,267 @@
+object_id: table:agrimap_app.FARM_PLOT
+schema: agrimap_app
+table: FARM_PLOT
+description: แปลงเพาะปลูก
+columns:
+- name: ID
+  data_type: numeric
+  nullable: false
+  ordinal: 1
+  sensitivity: public
+  type_sql: numeric(38,0)
+  max_length: null
+  precision: 38
+  scale: 0
+  collation: null
+  identity:
+    seed: '1'
+    increment: '1'
+  computed: null
+  default: null
+  sparse: false
+  description: รหัสภายในของแปลง
+- name: FARM_PLOT_ID
+  data_type: uniqueidentifier
+  nullable: false
+  ordinal: 2
+  sensitivity: public
+  type_sql: uniqueidentifier
+  max_length: null
+  precision: null
+  scale: null
+  collation: null
+  identity: null
+  computed: null
+  default:
+    name: DF_FARM_PLOT_FARM_PLOT_ID
+    definition: (newsequentialid())
+    system_named: false
+  sparse: false
+  description: รหัสสาธารณะของแปลง
+- name: PLOT_CODE
+  data_type: nvarchar
+  nullable: false
+  ordinal: 3
+  sensitivity: public
+  type_sql: nvarchar(50)
+  max_length: 100
+  precision: null
+  scale: null
+  collation: null
+  identity: null
+  computed: null
+  default: null
+  sparse: false
+  description: รหัสแปลง 'ภายใน'
+- name: CROP_TYPE_ID
+  data_type: int
+  nullable: false
+  ordinal: 4
+  sensitivity: public
+  type_sql: int
+  max_length: null
+  precision: null
+  scale: null
+  collation: null
+  identity: null
+  computed: null
+  default: null
+  sparse: false
+  description: ประเภทพืช
+- name: DATE_CREATED
+  data_type: datetime2
+  nullable: false
+  ordinal: 5
+  sensitivity: public
+  type_sql: datetime2(7)
+  max_length: null
+  precision: null
+  scale: 7
+  collation: null
+  identity: null
+  computed: null
+  default:
+    name: DF_FARM_PLOT_DATE_CREATED
+    definition: (sysutcdatetime())
+    system_named: false
+  sparse: false
+  description: วันที่สร้าง
+- name: AREA_RAI
+  data_type: decimal
+  nullable: true
+  ordinal: 6
+  sensitivity: public
+  type_sql: decimal(18,4)
+  max_length: null
+  precision: 18
+  scale: 4
+  collation: null
+  identity: null
+  computed: null
+  default: null
+  sparse: false
+  description: พื้นที่ (ไร่)
+- name: DATE_MODIFIED
+  data_type: datetime2
+  nullable: true
+  ordinal: 7
+  sensitivity: public
+  type_sql: datetime2(7)
+  max_length: null
+  precision: null
+  scale: 7
+  collation: null
+  identity: null
+  computed: null
+  default: null
+  sparse: false
+  description: วันที่แก้ไข
+- name: USER_CREATED
+  data_type: numeric
+  nullable: false
+  ordinal: 8
+  sensitivity: public
+  type_sql: numeric(38,0)
+  max_length: null
+  precision: 38
+  scale: 0
+  collation: null
+  identity: null
+  computed: null
+  default: null
+  sparse: false
+  description: ผู้สร้าง
+- name: USER_MODIFIED
+  data_type: numeric
+  nullable: true
+  ordinal: 9
+  sensitivity: public
+  type_sql: numeric(38,0)
+  max_length: null
+  precision: 38
+  scale: 0
+  collation: null
+  identity: null
+  computed: null
+  default: null
+  sparse: false
+  description: ผู้แก้ไข
+- name: DEL_FLAG
+  data_type: bit
+  nullable: false
+  ordinal: 10
+  sensitivity: public
+  type_sql: bit
+  max_length: null
+  precision: null
+  scale: null
+  collation: null
+  identity: null
+  computed: null
+  default:
+    name: DF__FARM_PLOT__DEL_F__5EBF139D
+    definition: ((0))
+    system_named: true
+  sparse: false
+  description: สถานะลบ
+- name: AREA_SQM
+  data_type: decimal
+  nullable: true
+  ordinal: 11
+  sensitivity: public
+  type_sql: null
+  max_length: null
+  precision: null
+  scale: null
+  collation: null
+  identity: null
+  computed:
+    definition: ([AREA_RAI]*(1600))
+    persisted: false
+  default: null
+  sparse: false
+  description: null
+constraints:
+- name: PK_FARM_PLOT
+  constraint_type: primary_key
+  columns:
+  - ID
+  expression: null
+  clustered: true
+  column_orders:
+  - ASC
+  enabled: null
+  trusted: null
+  system_named: null
+- name: UQ_FARM_PLOT_FARM_PLOT_ID
+  constraint_type: unique
+  columns:
+  - FARM_PLOT_ID
+  expression: null
+  clustered: false
+  column_orders:
+  - ASC
+  enabled: null
+  trusted: null
+  system_named: null
+- name: CK_FARM_PLOT_AREA
+  constraint_type: check
+  columns:
+  - AREA_RAI
+  expression: ([AREA_RAI]>=(0))
+  clustered: null
+  column_orders: []
+  enabled: true
+  trusted: true
+  system_named: false
+foreign_keys:
+- name: FK_FARM_PLOT_LUT_CROP_TYPE
+  source_object_id: table:agrimap_app.FARM_PLOT
+  source_columns:
+  - CROP_TYPE_ID
+  target_object_id: table:agrimap_app.LUT_CROP_TYPE
+  target_columns:
+  - ID
+  on_delete: NO_ACTION
+  on_update: NO_ACTION
+  enabled: true
+  trusted: true
+indexes:
+- name: PK_FARM_PLOT
+  unique: true
+  primary: true
+  key_columns:
+  - ID
+  included_columns: []
+  clustered: true
+  index_type: CLUSTERED
+  key_orders:
+  - ASC
+  filter_definition: null
+  unique_constraint: false
+- name: UQ_FARM_PLOT_FARM_PLOT_ID
+  unique: true
+  primary: false
+  key_columns:
+  - FARM_PLOT_ID
+  included_columns: []
+  clustered: false
+  index_type: NONCLUSTERED
+  key_orders:
+  - ASC
+  filter_definition: null
+  unique_constraint: true
+- name: UX_FARM_PLOT_PLOT_CODE
+  unique: true
+  primary: false
+  key_columns:
+  - PLOT_CODE
+  included_columns:
+  - CROP_TYPE_ID
+  clustered: false
+  index_type: NONCLUSTERED
+  key_orders:
+  - ASC
+  filter_definition: ([DEL_FLAG]=(0))
+  unique_constraint: false
+unsupported_features: []

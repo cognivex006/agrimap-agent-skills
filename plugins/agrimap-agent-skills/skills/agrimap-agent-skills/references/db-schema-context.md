@@ -6,7 +6,7 @@ Most AgriMap work reaches data through stored procedures, so this gate is on by 
 
 Resolve database truth in this order and record which level answered:
 
-1. `.agrimap-agent/knowledge/references/db-schema/**/*.sql`: owner-provided DDL for tables, views, and procedures. Load matching files as `FACT`.
+1. `.agrimap-agent/knowledge/references/db-schema/**/*.sql`: owner-provided DDL for tables, views, and procedures. Load matching files as `FACT`. When a table has both, read the agm-sql golden copy `db-schema/agm-golden/sql/<SCHEMA>/table/<TABLE>.sql` before the raw sql-context-pack export (managed `-- sqlctx-context:` header) beside it; both are the same database facts.
 2. Product SQL inside the repository, typically `sql/<GROUP_OR_DOMAIN>/procedure/<PROCEDURE>.sql`, `sql/<GROUP_OR_DOMAIN>/table/<TABLE>.sql`, and `sql/<GROUP_OR_DOMAIN>/messages.sql`.
 3. `.agrimap-agent/knowledge/drafts/sql/`: AI-generated and `tentative`. Never schema `FACT` and never evidence for a conclusion.
 4. Nothing matches: name the exact missing object, keep the claim at `HYPOTHESIS`/`UNKNOWN`, and ask the owner.
