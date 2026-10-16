@@ -14,7 +14,7 @@ Owner decision 2026-10-14: decide this for every plan or execution with two or m
 
 ## Leader loop
 
-The Leader dispatches, integrates and verifies evidence; subagents write. Keep a rolling queue: when one agent returns, verify and integrate its job, then dispatch the next ready unit at once while at most five run. Never wait for a whole wave to finish. A unit is ready when everything it depends on is integrated. Keep the Leader savepoint current (done, remaining, next) after each integration.
+The Leader dispatches, integrates and verifies evidence; subagents write. Keep a rolling queue: when one agent returns, verify and integrate its job, then dispatch the next ready unit at once while at most five run. Never wait for a whole wave to finish. A unit is ready when everything it depends on is integrated. Keep the Leader savepoint current (done, remaining, next) after each integration. Work broken into goals takes its ready tasks, gates and goal IDs from [goal-planning.md](goal-planning.md).
 
 ## Worktree lifecycle: ephemeral worktree, durable job context
 
