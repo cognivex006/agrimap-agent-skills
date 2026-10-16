@@ -30,7 +30,7 @@
 
 ## Load only when the condition matches
 
-- When the Prompt Result defines Subagent assignments: [subagents-and-branches.md](../subagents-and-branches.md) — Main/Subagent ownership, visibility, and integration boundaries
+- When the Prompt Result has two or more units or Subagent assignments: [subagents-and-branches.md](../subagents-and-branches.md) — Main/Subagent ownership, visibility, and integration boundaries
 - When target_kind is fe-main or fe-library: [frontend-engineer.md](../frontend-engineer.md) — frontend fundamentals that every generated handoff must carry
 - When target_kind is be-main or be-library: [backend-engineer.md](../backend-engineer.md) — backend fundamentals that every generated handoff must carry
 - When the backend handoff contains C#: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# rules that every generated handoff must carry
@@ -43,5 +43,6 @@
 - When database context is needed: [sql-context-readonly.md](../sql-context-readonly.md) — managed read-only metadata and SELECT; never database writes
 - When project bootstrap, versioning, branches or release are requested: [release-and-bootstrap.md](../release-and-bootstrap.md) — project-specific adoption and release knowledge
 - When you are about to ask the requester a question: [autonomy.md](../autonomy.md) — ask only requester-owned material choices, with a decision card
+- When the Prompt Result has goals or tasks: [goal-planning.md](../goal-planning.md) — GA/GB goals, entry paths and gates in Subagent assignments
 
 Do not read the router `SKILL.md` during operation execution. If this generated entrypoint is missing or corrupt, stop with `PACKAGE_ENTRYPOINT_MISSING` and ask for package sync/reinstallation; never broaden into the router.

@@ -20,9 +20,12 @@ test('bootstrap preserves the complete owner-submitted canonical contract',async
   // 4.9.6: owner-requested mandatory §10.6 team commit style for every Agent commit (guard G7).
   // 4.9.8: owner-requested Thai commit descriptions (§10.6) and the --flash read scope in §2.
   // 4.9.9: owner-requested non-blocking bootstrap auto-merge and technical terms kept as-is in §10.6.
+  // 5.0.1: owner decision 2026-10-14 — §9 prompt history local only, memory/current is the savepoint,
+  // reports only on request, no new tasks/; §10.3 work branches are feature/ or hotfix/ only;
+  // §0 sql-context-pack stays read-only except agm-sql context migrate.
   // Package bumps only change the generated version marker; freeze every other byte.
   const sourceBytes=Buffer.from(bytes.toString('utf8').replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->'));
-  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'ec81abd2af7d35997df67e434558363c52564d8a58198083314ac2bf2aa2e527');
+  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'dea81783a67a5bc1802019ead78bbbab71bc699b15bee429d382e701a8ba3f66');
   const manifest=JSON.parse(await readFile(path.join(bundle,'manifest.json'),'utf8'));
   assert.ok(bytes.toString('utf8').includes(`<!-- AGRIMAP BOOTSTRAP VERSION: ${manifest.version} -->`));
   assert.equal(manifest.files.find(f=>f.source==='AGENTS.md').sha256,createHash('sha256').update(bytes).digest('hex'));
@@ -53,6 +56,24 @@ test('release stages synchronize stale local branches and re-evaluate in one inv
   assert.doesNotMatch(workflow,/autonomously establish isolated|use an isolated develop worktree\/clone/);
 });
 
+
+test('owner release command is the confirmation; only a version or candidate anomaly asks (5.0.1)',async()=>{
+  const references=path.join(projectRoot,'skills/agrimap-agent-skills/references');
+  const workflow=await readFile(path.join(references,'release-workflow.md'),'utf8');
+  const steps=await readFile(path.join(references,'release-steps.md'),'utf8');
+  const flash=await readFile(path.join(references,'release-flash.md'),'utf8');
+  const template=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/assets/bootstrap/AGENTS.release.md'),'utf8');
+  const release=JSON.parse(await readFile(path.join(projectRoot,'config/operations.json'),'utf8')).operations.find(item=>item.operation==='release');
+  assert.match(workflow,/the owner-typed command is the confirmation/);
+  assert.match(workflow,/Version anomaly: an owner-supplied version is not its environment's PATCH\+1/);
+  assert.match(workflow,/A bare command with the default PATCH\+1 versions is never an anomaly/);
+  assert.match(steps,/ask its questions in one round \(AGENTS\.release\.md §6\.5\), together with a version anomaly/);
+  assert.match(template,/คำสั่งของ owner คือการยืนยัน/);
+  for(const text of [workflow,steps,flash,JSON.stringify(release)]){
+    assert.doesNotMatch(text,/not concrete Production approval|is not confirmation\.|Never infer that confirmation|one Production confirmation/);
+  }
+  assert.doesNotMatch(template,/ต้องยืนยันกับ owner หนึ่งครั้งก่อนรัน|คำถามที่เหลือมีแค่ยืนยัน Production/);
+});
 
 test('operation policy reaches every first-read adapter without leaking to unrelated skills', async()=>{
   const {renderAliasSkill,renderAntigravitySkill,renderGeminiCommandPrompt,renderOperationEntrypoint,operationConfigIssues}=await import('../../tools/operation-entrypoints.mjs');
@@ -106,7 +127,8 @@ test('instruction diet: core AGENTS.md at most 24,000 chars; core + release keep
   const entry=manifest.files.find(f=>f.source==='AGENTS.release.md');
   assert.equal(entry.target,'AGENTS.release.md');assert.equal(entry.sha256,createHash('sha256').update(release).digest('hex'));
   const frozen=release.replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->');
-  assert.equal(createHash('sha256').update(frozen).digest('hex'),'ed0219574c35f6ee1f771207d0829116792c1243ad82dfe475dd4d0f41ef1c23');
+  // 5.0.1: owner decision 2026-10-14 — §2.1/§6.5 the owner command is the confirmation; only anomalies ask.
+  assert.equal(createHash('sha256').update(frozen).digest('hex'),'5f69c517a55b0a9713973f31f8e68a28f95919b20c2c44e6e06df821e05477c5');
   const headings=['## 0.','## 1.','## 2.','### 2.1','### 2.2','### 2.3','## 3.','## 4.','## 5.','### 5.1','### 5.2','## 6.','### 6.1','### 6.2','### 6.3','## 7.','## 8.','### 8.1','## 9.','### 9.1','### 9.5','## 10.','### 10.5','## Bootstrap contract freshness'];
   const all=(core+'\n'+release).split('\n');
   for(const h of headings)assert.ok(all.some(line=>line.startsWith(h)),h);

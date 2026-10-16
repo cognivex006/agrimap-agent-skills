@@ -32,7 +32,7 @@
 | `agm-architect` | ตัดสินใจ boundary, contract, migration | trade-off และแบบระบบ; ไม่แก้ product |
 | `agm-fe` | งาน frontend | action เป็นตัวกำหนดว่าอ่านหรือเขียน |
 | `agm-be` | งาน backend | action เป็นตัวกำหนดว่าอ่านหรือเขียน |
-| `agm-sql` | อธิบาย/ออกแบบ/แก้ **ไฟล์ SQL** | ไม่อนุญาต execute database writes |
+| `agm-sql` | อธิบาย/ออกแบบ/แก้ **ไฟล์ SQL**; `context check` ดูว่า repo ใช้ SP/ตารางอะไรและตัวไหนยังไม่มี DDL ในเครื่อง; `context migrate` ดึง DDL ที่ขาดผ่าน sql-context-pack ลงโฟลเดอร์ db-schema (5.0.1) | ไม่อนุญาต execute database writes, metadata sync หรือ deploy |
 | `agm-qa` | ตรวจตาม acceptance | หลักฐานผ่าน/ไม่ผ่าน/ติดข้อจำกัด; ไม่แก้ product |
 | `agm-prompt` | กลั่นโจทย์เป็นคำสั่งเก็บและส่งต่อ | Prompt Result เมื่อพร้อม; ไม่ implement |
 | `agm-exec` | ลงมือทำโจทย์ที่อนุมัติแล้ว หรืองานแก้ข้าม lane (BE+SQL, FE+BE) | แก้ไขใน scope และตรวจผล; ไม่บังคับมี prompt file |
@@ -55,6 +55,8 @@
 | `เพิ่มคอลัมน์ในตารางหน้า user list` ใน `agmwa-*` | `agm-fe` (คำว่าตาราง/คอลัมน์ในบริบทหน้าจอไม่ใช่ SQL) |
 | `เพิ่ม API สร้าง order และ SP ORDER_H_I` | `agm-exec` (ข้าม lane) |
 | `ขอดูโครงสร้างตาราง ORDER_H ใน database จริง` | `agm-sql` + sql-context-pack แบบอ่านอย่างเดียว |
+| `$agm-sql context check` | รายการ SP/ตารางที่ repo ใช้ พร้อมไฟล์ DDL ในเครื่องและรายการที่ขาด (ไม่แตะ database) |
+| `$agm-sql context migrate` | check แล้ว export DDL เฉพาะตัวที่ขาด (และตารางหลัง SP หนึ่งชั้น) ลง `.agrimap-agent/knowledge/references/db-schema` ผ่าน sql-context-pack แล้ว check ซ้ำ; ไม่ sync metadata ไม่ deploy |
 
 - Claude Code: hook เติมบรรทัด `Skill for this turn: …` ให้ทุกคำขอที่เป็นงาน code/SQL ทั้งใน repo และที่โฟลเดอร์รวมหลาย repo และก่อนแก้ไฟล์ `.sql`/`.cs`/`.ts`/`.html` ใน repo AgriMap จะมี gate ปฏิเสธครั้งแรกถ้ายังไม่ได้โหลด skill ของ lane นั้น (หรือ `agm-exec`) ดู [Troubleshooting](TROUBLESHOOTING.md#skill-gate)
 - Codex / Antigravity: ใช้ตาราง `AGENTS.md` §0 และคำใน description ของแต่ละ skill (ยังไม่มี gate)
@@ -71,8 +73,8 @@
 | Type | Agent ใช้เมื่อ | ตัวอย่าง |
 | --- | --- | --- |
 | `feature:` | ส่งงานที่เพิ่มความสามารถใหม่ให้ผู้ใช้ (branch `feature/*`) | `feature: เพิ่มรับ User หลายช่องทาง` |
-| `fix:` | ส่งงานที่แก้สิ่งที่ทำงานผิด รวม hotfix (branch `fix/*`, `hotfix/*`) | `fix: แก้ dynamic form เพิ่มวันที่ ช่วงเวลา` |
-| `comment:` | ปรับตาม comment หรือปรับปรุงที่ไม่ใช่ความสามารถใหม่ เช่น หน้าตา ข้อความ ปรับโครงสร้าง เอกสาร (`refactor/*`, `docs/*`) | `comment: ปรับโทนสีปุ่มเป็นสีม่วง` |
+| `fix:` | ส่งงานที่แก้สิ่งที่ทำงานผิด (branch `feature/*`; ด่วนบน Production ใช้ `hotfix/*`) | `fix: แก้ dynamic form เพิ่มวันที่ ช่วงเวลา` |
+| `comment:` | ปรับตาม comment หรือปรับปรุงที่ไม่ใช่ความสามารถใหม่ เช่น หน้าตา ข้อความ ปรับโครงสร้าง เอกสาร (branch `feature/*`) | `comment: ปรับโทนสีปุ่มเป็นสีม่วง` |
 | `bump:` | agm-release แก้เลข version ใน `Jenkinsfile*` และ release notes/changelog ของ version นั้น | `bump: Production 1.4.2` |
 | `audit:` | agm-release บันทึกประวัติ/รายงาน `.agrimap-agent` หลังปิด release แล้ว push develop ครั้งเดียว | `audit: บันทึกประวัติ release 1.4.2` |
 | `ci:` | แก้ pipeline, governance หรือ bootstrap เช่น `AGENTS.md`, `tools/agrimap/*` | `ci: อัปเดต bootstrap 4.9.4` |
@@ -92,13 +94,13 @@ release สนใจแค่ `develop`, `jenkins`, `jenkins-release` และ 
 
 | เจอสถานการณ์ | Agent ทำ |
 | --- | --- |
-| อยู่บน `feature/xxx` หรือ `fix/xxx` แล้วสั่ง release | deliver ไฟล์ที่ค้าง แล้วรวม branch นั้นเข้า develop และ release ต่อ |
+| อยู่บน `feature/xxx` หรือ `hotfix/xxx` (หรือ `fix/xxx` ที่สร้างก่อน 5.0.1) แล้วสั่ง release | deliver ไฟล์ที่ค้าง แล้วรวม branch นั้นเข้า develop และ release ต่อ |
 | branch ของงานนี้ชนกับ develop | merge develop เข้า branch นั้น **แก้ conflict ให้เอง** รัน test แล้ว commit ไม่ถาม |
 | มีคน push develop ระหว่าง release | merge `origin/develop` เข้ามาเองแล้ว push ใหม่ ไม่เกิน 2 ครั้ง |
 | `jenkins`/`jenkins-release` มีประวัติหรือ hotfix ที่ develop ไม่มี | back-merge เข้า develop เองแล้วรายงานไฟล์ที่ได้มา ถ้าชนก็แก้ให้เอง |
 | branch อื่นที่ไม่ใช่ของงานนี้ | ไม่ยุ่ง (ถ้าอยากรวมทุก branch ให้สั่ง `--scope all`) |
 
-- คำถามที่เหลือมีแค่ยืนยัน Production ครั้งเดียว ถามเพิ่มเฉพาะเมื่อสองฝั่งแก้ business logic เดียวกันขัดกันจนต้องให้คนเลือก
+- ไม่มีการยืนยัน Production (5.0.1): คำสั่งคือการยืนยัน ถามเฉพาะเมื่อระบุเลข version ที่ไม่ใช่ +0.0.1 หรือ candidate มีเนื้อหาที่ไม่ได้เตรียมในรอบนี้ และเมื่อสองฝั่งแก้ business logic เดียวกันขัดกันจนต้องให้คนเลือก
 - merge ทุกตัวเป็น merge commit ของ Git ใน local ไม่ rebase, squash, force, stash หรือลบ branch และขึ้น remote พร้อมการ push develop ครั้งเดียวของ release
 - release ที่ค้างแล้วสั่งต่อใช้กติกาชุดเดิมจนจบ
 - `--flash` อ่านเฉพาะส่วนที่ต้องใช้ ใช้ผล preflight แทนการตรวจทีละคำสั่ง ใช้ผลตรวจเครื่องมือ .NET ที่บันทึกไว้ได้ 7 วัน และไม่สร้าง audit commit ย่อยระหว่างทาง
@@ -249,7 +251,7 @@ $agm-be -h
 
 <!-- BEGIN GENERATED TASK ARTIFACT SCHEMA -->
 Ordinary answers: no execution/task artifacts. Bounded writes: concise memory/audit.
-Tracked v3 work: one task.md with scope, acceptance, progress, evidence and result.
+Tracked v3 work: the savepoint in memory/current (goal, done, remaining, next step, decisions); no new tasks/ directories.
 Separate analysis/QA/results/reports are consumer-requested deliverables, not a five-file gate.
 Legacy v2 five-file validation remains in assets/task-artifact-schema.json for existing executions only; it is not the new-work checklist.
 <!-- END GENERATED TASK ARTIFACT SCHEMA -->

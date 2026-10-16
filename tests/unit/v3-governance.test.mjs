@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {mkdir,readFile,readdir,writeFile,stat} from 'node:fs/promises';
+import {mkdir,readFile,readdir,writeFile,stat,rm} from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {createHarness,projectRoot} from '../helpers/harness.mjs';
@@ -152,22 +152,56 @@ test('light completion derives null taskId and creates no report or task tree',a
  assert.equal(await present(path.join(h.temp,'.agrimap-agent/tasks')),false);
  assert.equal(await present(path.join(h.temp,'.agrimap-agent/reports')),false);
 });
-test('tracked work uses one useful task and rejects premature/failed closure',async t=>{
+test('tracked work keeps one savepoint instead of tasks/ and rejects failed closure (5.0.1)',async t=>{
  const h=await fixture(t);
  h.run(h.scripts.workspace,['identify','--session','one','--owner','006006']);
- const a=h.run(h.scripts.workspace,['start','--session','one','--operation','execute','--tracking','--title','Implement two dependent slices']).activeTask;
- const dir=path.join(h.temp,'.agrimap-agent',a.taskPath);
- assert.deepEqual(await readdir(dir),['task.md']);
+ const a=h.run(h.scripts.workspace,['start','--session','one','--operation','execute','--tracking','--title','Implement two dependent slices','--remaining','slice A;slice B']).activeTask;
+ assert.equal(a.taskPath,null);assert.ok(a.taskId);
+ const current=path.join(h.temp,'.agrimap-agent',a.currentMemoryPath);
+ assert.match(await readFile(current,'utf8'),/## Remaining\n- slice A\n- slice B/);
  assert.equal(h.spawn(h.scripts.workspace,['complete','--session','one','--execution',a.executionId]).status,1);
- await writeFile(path.join(dir,'task.md'),'# Task\n- [x] Both slices verified\n\n## Result\nImplemented and verified both requested slices.\n');
- await writeFile(path.join(dir,'result.md'),'# Requested optional result\nEvidence for a real consumer.\n');
+ h.run(h.scripts.workspace,['checkpoint','--session','one','--execution',a.executionId,'--files','src/a.js','--summary','Slice A done','--remaining','slice B','--next','write slice B']);
+ const mid=await readFile(current,'utf8');
+ assert.match(mid,/## Done\n- Slice A done/);assert.match(mid,/## Remaining\n- slice B\n/);assert.match(mid,/## Next step\nwrite slice B/);
  h.run(h.scripts.workspace,['checkpoint','--session','one','--execution',a.executionId,'--event','verified','--status','failed','--summary','Regression fails']);
  assert.equal(h.spawn(h.scripts.workspace,['complete','--session','one','--execution',a.executionId]).status,1);
  h.run(h.scripts.workspace,['checkpoint','--session','one','--execution',a.executionId,'--event','verified','--status','passed','--summary','Regression passes after correction','--verification','targeted regression passed']);
+ const check=h.run(h.scripts.workspace,['validate','--session','one','--execution',a.executionId]);
+ assert.equal(check.ok,true);assert.deepEqual(check.warnings,['savepoint-remaining-items']);
  const done=h.run(h.scripts.workspace,['complete','--session','one','--execution',a.executionId]);assert.equal(done.ok,true);
+ assert.equal(await present(current),false);
+ assert.match(await readFile(path.join(h.temp,'.agrimap-agent',a.recentMemoryPath),'utf8'),/Completion gate passed\. Done: Slice A done/);
  assert.equal(h.run(h.scripts.workspace,['validate','--execution',a.executionId]).ok,true);
- assert.equal(await present(path.join(h.temp,'.agrimap-agent/tasks/complete',a.period,a.taskId,'task.md')),true);
+ assert.equal(await present(path.join(h.temp,'.agrimap-agent/tasks')),false);
  const history=h.run(h.scripts.workspace,['history','--requester','006006']);assert.equal(history.ok,true);
+});
+test('pending lists unfinished work and resume moves it to a new session safely (5.0.1)',async t=>{
+ const h=await fixture(t);
+ for(const s of ['one','two','three','four'])h.run(h.scripts.workspace,['identify','--session',s,'--owner','006006']);
+ const a=h.run(h.scripts.workspace,['start','--session','one','--operation','execute','--persist','--title','Add export button']).activeTask;
+ const saved=h.run(h.scripts.workspace,['savepoint','--session','one','--execution',a.executionId,'--done','API ready','--remaining','FE button;tests','--next','build the FE button']);
+ assert.equal(saved.ok,true);assert.deepEqual(saved.remaining,['FE button','tests']);
+ const listed=h.run(h.scripts.workspace,['pending']).pending;
+ assert.equal(listed.length,1);assert.equal(listed[0].executionId,a.executionId);assert.equal(listed[0].attached,true);
+ assert.equal(listed[0].session,'one');assert.equal(listed[0].next,'build the FE button');assert.deepEqual(listed[0].remaining,['FE button','tests']);
+ // A session touched moments ago is not taken over silently.
+ assert.equal(h.spawn(h.scripts.workspace,['resume','--session','two','--execution',a.executionId]).status,1);
+ const moved=h.run(h.scripts.workspace,['resume','--session','two','--execution',a.executionId,'--take-over']);
+ assert.equal(moved.ok,true);assert.equal(moved.next,'build the FE button');assert.deepEqual(moved.done,['API ready']);
+ const active=path.join(h.temp,'.agrimap-agent/runtime/active');
+ assert.equal(await present(path.join(active,'one.json')),false);assert.equal(await present(path.join(active,'two.json')),true);
+ assert.match(await readFile(path.join(h.temp,'.agrimap-agent',a.currentMemoryPath),'utf8'),/- Session: two/);
+ // Runtime state is local: without it the savepoint and created event rebuild the execution.
+ await rm(path.join(active,'two.json'));
+ const rebuilt=h.run(h.scripts.workspace,['resume','--session','three','--execution',a.executionId]);
+ assert.equal(rebuilt.ok,true);assert.equal(JSON.parse(await readFile(path.join(active,'three.json'),'utf8')).objective,'Add export button');
+ // A session that owns another execution is never overwritten.
+ h.run(h.scripts.workspace,['start','--session','four','--operation','execute','--persist','--title','Other work']);
+ const busy=h.spawn(h.scripts.workspace,['resume','--session','four','--execution',a.executionId]);
+ assert.equal(busy.status,1);assert.match(busy.stdout,/SESSION_BUSY/);
+ h.run(h.scripts.workspace,['checkpoint','--session','three','--execution',a.executionId,'--event','verified','--status','passed','--summary','Button works','--verification','manual check']);
+ assert.equal(h.run(h.scripts.workspace,['complete','--session','three','--execution',a.executionId]).ok,true);
+ assert.deepEqual(h.run(h.scripts.workspace,['pending']).pending.map(item=>item.objective),['Other work']);
 });
 test('unrelated conversation and quoted aliases are not activation',()=>{
  assert.equal(classifyRequest({recognized:true,prompt:'วันนี้กินอะไรดี'}).active,false);
@@ -195,6 +229,16 @@ test('relevant Gemini submit retries archive once without mixing AI output',asyn
  const periods=await readdir(path.join(root,'.agrimap-agent/prompts'));
  const text=await readFile(path.join(root,'.agrimap-agent/prompts',periods[0],'one/history.md'),'utf8');
  assert.equal(text.split(input.prompt).length-1,1);assert.equal(text.includes('Confirmed requester'),false);
+});
+test('harness task notifications never enter raw prompt history',async t=>{
+ const h=await fixture(t);const root=path.join(h.temp,'agrimap-example');await initRepo(root);
+ const note='<task-notification>\n<task-id>b1</task-id>\n<status>completed</status>\n<summary>Background command "cd agrimap-example; node --test tests/unit/git-flow.test.mjs; git push origin develop" completed (exit code 0)</summary>\n</task-notification>';
+ const send=(prompt,id)=>h.run(h.scripts.hook,['--provider','claude'],{cwd:root,session_id:'one',hook_event_name:'UserPromptSubmit',prompt,prompt_id:id});
+ send('ช่วยอธิบายโค้ดในโครงการ','1');send(note,'2');send(note+'\nแก้ validation ในโค้ด service นี้','3');
+ const periods=await readdir(path.join(root,'.agrimap-agent/prompts'));
+ const text=await readFile(path.join(root,'.agrimap-agent/prompts',periods[0],'one/history.md'),'utf8');
+ assert.equal(text.includes('task-notification'),false);assert.equal(text.includes('git push'),false);
+ assert.equal(text.split('### [').length-1,2);assert.ok(text.includes('แก้ validation ในโค้ด service นี้'));
 });
 test('prompt explanation/no-op does not create versions; revisions need source evidence',async t=>{
  const h=await fixture(t);const opts={cwd:h.temp,conversationId:'one',context:'feature',requester:'006006',provider:'codex',model:'actual'};

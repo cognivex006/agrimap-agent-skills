@@ -10,8 +10,8 @@
 | --- | --- |
 | อธิบาย เปรียบเทียบ ขอ help หรือ review ที่ไม่ขอรายงานถาวร | ไม่มี execution/task; raw submit ที่เกี่ยวข้องอาจอยู่ใน prompt history |
 | แก้งานขนาดจำกัดที่อนุมัติแล้ว | light: memory ปัจจุบัน/ล่าสุดและ milestone audit แบบสั้น ไม่มี tasks |
-| ต้อง resume, handoff หรือผู้ใช้ขอติดตาม | standard: task.md หนึ่งไฟล์ |
-| มี boundary ข้อมูล/ความปลอดภัย/public contract, external publication หรือ independent assurance จริง | regulated: task เดียวพร้อมหลักฐานที่ความเสี่ยงนั้นต้องใช้ |
+| ต้อง resume, handoff หรือผู้ใช้ขอติดตาม | standard: savepoint ใน memory/current |
+| มี boundary ข้อมูล/ความปลอดภัย/public contract, external publication หรือ independent assurance จริง | regulated: savepoint เดียวพร้อมหลักฐานที่ความเสี่ยงนั้นต้องใช้ |
 
 จำนวนไฟล์และอายุ model ไม่ใช้ตัดสิน depth งานเอกสารหลายหน้าก็ไม่จำเป็นต้อง regulated ส่วนการแก้ contract เพียงไฟล์เดียวอาจต้องใช้ assurance สูง
 
@@ -19,23 +19,44 @@
 
 | ที่เก็บใต้ .agrimap-agent | ใช้เมื่อ |
 | --- | --- |
-| prompts/YYYY-MM/conversation/history.md | เก็บ raw user submissions ที่เกี่ยวข้อง ไม่ปนคำตอบ AI |
+| prompts/YYYY-MM/conversation/history.md | เก็บ raw user submissions ที่เกี่ยวข้อง ไม่ปนคำตอบ AI; อยู่ในเครื่องเท่านั้น ไม่ขึ้น Git (5.0.1) |
 | prompts/YYYY-MM/conversation/context-vNNN.md | มี Prompt Result ที่พร้อมใช้; immutable |
-| memory/current | สิ่งที่ต้องรู้เพื่อทำ execution ปัจจุบันต่อ |
+| memory/current | savepoint: เป้าหมาย, ทำแล้ว, ที่เหลือ, ขั้นถัดไป, การตัดสินใจ และ branch ของงานที่ยังไม่จบ |
 | memory/recent | ผลและหลักฐานเมื่อจบ/เปลี่ยน milestone |
 | memory/project.md | ความรู้ระยะยาวที่งานต่อไปนำกลับมาใช้ได้ |
 | logs/YYYY-MM | attribution และเหตุการณ์ของ durable work |
-| tasks/YYYY-MM/run-id/task.md | scope, acceptance, progress, evidence, result ของงาน tracked |
 | reports / เอกสาร QA หรือ analysis แยก | มีผู้อ่าน/ผู้รับผลลัพธ์ต้องการจริง ไม่สร้างเพียงเพื่อครบชุด |
 
-เมื่อจบงาน tracked จะย้ายไป tasks/complete; ไม่ย้ายหรือลบ prompt history งาน 2.x เดิมอาจมีห้าไฟล์และใช้ validator เดิม อย่าลบเพื่อให้เหมือนงานใหม่
+เมื่องานจบ รายการที่ทำแล้วจะคัดลงใน memory/recent และลบ savepoint ส่วนงานที่ค้างหรือ blocked จะเก็บ savepoint ไว้ งานใหม่ไม่สร้าง tasks/ แล้ว ส่วน tasks/ เดิมและงาน 2.x ห้าไฟล์ยังอ่านและใช้ validator เดิม อย่าลบเพื่อให้เหมือนงานใหม่
 
-สำหรับ repo ที่รับ bootstrap AGENTS ฉบับ owner-supplied ล่าสุด ให้ใช้ project-specific portable recording §9: งานแก้ repository ต้องมี terminal report และ allowlist ตาม contract นั้น ตารางข้างต้นเป็นค่าเริ่มต้นของ package ไม่ใช้ลบข้อกำหนด project หรือเปิด lifecycle ซ้ำ ดู [Release](RELEASE.md)
+สำหรับ repo ที่รับ bootstrap AGENTS ฉบับ owner-supplied ล่าสุด ให้ใช้ project-specific portable recording §9: report ทำเมื่อ owner ขอ และใช้ allowlist ตาม contract นั้น ตารางข้างต้นเป็นค่าเริ่มต้นของ package ไม่ใช้ลบข้อกำหนด project หรือเปิด lifecycle ซ้ำ ดู [Release](RELEASE.md)
+
+## งานค้างและการทำต่อ (savepoint, 5.0.1)
+
+งานที่ยังไม่จบมี savepoint ใน `.agrimap-agent/memory/current/` บอกว่าทำอะไรไปแล้ว เหลืออะไร และขั้นถัดไปคืออะไร Agent อัปเดตทุก milestone และก่อนพักงาน พอเปิด session ใหม่ บรรทัดแรกของ context จะแสดง `⏸ Pending work` ให้เห็นทันที
+
+| พิมพ์ | ผล |
+| --- | --- |
+| `งานค้าง`, `มีงานค้างไหม`, `สรุปงานที่เหลือ` | แสดงรายการงานค้างพร้อมเลข: สิ่งที่ทำแล้ว, ที่เหลือ, ขั้นถัดไป, branch, อายุ |
+| `ทำต่อ`, `resume`, `ทำต่อ 14093012` | ย้ายงานค้างมาที่ session นี้ สลับ branch ถ้าต้อง แล้วทำต่อจากขั้นถัดไป (มีหลายงานจะถามก่อนว่าจะทำงานไหน) |
+| `savepoint`, `เซฟงานไว้`, `พักไว้` | บันทึกจุดที่งานอยู่ตอนนี้ก่อนพัก |
+
+พิมพ์เรื่องอื่นแทรกระหว่างทำงาน: ถ้าเกี่ยวกับงานเดิม Agent รวมเข้าไปและอัปเดต savepoint ถ้าไม่เกี่ยว Agent ตอบเรื่องนั้นแล้วเตือนหนึ่งบรรทัดว่างานเดิมยังค้างอยู่ session ที่เพิ่งใช้งานใน 10 นาทีจะไม่ถูกย้ายงานไปโดยไม่ยืนยัน และ session ที่มีงานอื่นค้างอยู่จะไม่ถูกเขียนทับ
+
+## Orchestration: Leader กับ subagent (5.0.1)
+
+งานที่มีตั้งแต่ 2 ส่วนขึ้นไป Agent จะตัดสินทุกครั้งว่าทำขนานหรือทีละขั้น และบอกในบรรทัดเดียว (`Orchestration: sequential` หรือ `Orchestration: 3 agents — ...`) โดยไม่ถามจำนวน agent
+
+- **แผน:** แตกงานเป็น work graph (lane, repo, ไฟล์, งานที่ต้องรอ, contract ที่สร้าง/ใช้) Leader กำหนด contract ร่วม (SP, DTO/API, input ของ component) ก่อน แล้วงานที่ไฟล์/repo ไม่ทับกันจึงขนานกัน
+- **Leader:** จ่ายงาน ตรวจหลักฐาน และรวมงาน subagent เป็นคนเขียน มีได้สูงสุด 5 ตัว และ **เติมงานใหม่ทันที** เมื่อตัวใดเสร็จ ไม่รอให้ครบทุกตัว
+- **Model ของ subagent** (เบาไปหนัก ตามความยากของงานย่อย): Claude `haiku` medium → `sonnet` low → `opus` low · Codex GPT-6 Luna low → GPT-5.6 Terra low → GPT-5.6 Luna medium · Antigravity Gemini 3.8 Flash · host ที่เลือก model ไม่ได้ใช้ค่าเริ่มต้น (แก้ได้ที่ `model-capability-matrix.yaml`)
+- **Worktree เป็นของชั่วคราว:** subagent ที่เขียนพร้อมกันได้ worktree ของตัวเองข้าง repo (`<repo>.worktrees/<job-id>`) บน branch `feature/<slug>-<id>` จากงานที่รวมแล้วล่าสุดของ Leader งานเดี่ยวใช้ branch ปกติ ไม่สร้าง worktree
+- **รวมแล้วลบ:** Leader ตรวจผ่านแล้วรวมเข้า branch ของ Leader บันทึกลง log แล้ว **ลบ worktree และ branch ชั่วคราวเอง** ถ้า test ไม่ผ่าน มีไฟล์ค้าง หรือ conflict จะไม่ลบอะไร การแก้รอบใหม่สร้าง job ใหม่ที่อ้าง job เดิม ไม่ใช้ worktree เก่าซ้ำ และ worktree ที่ host สร้างเองก็ต้องรวมแล้วลบเช่นกัน
 
 ## ทำงานบน work branch และส่งงาน (4.6.0)
 
 - งานแรกที่แก้ repository: Agent อ่าน `AGENTS.md` ของ repo (และระดับบน) ก่อน แล้วถาม workflow ของทีม **ครั้งเดียว** บันทึกเป็น `.agrimap-agent/policy/workflow.json` (commit เข้า repo)
-- เมื่อ policy ยืนยันแล้ว งานใหม่จะอยู่บน `feature/…`, `fix/…`, `hotfix/…` และเมื่อจบงาน Agent จะ commit + push **เฉพาะ work branch** แล้วตรวจ SHA บน remote ไม่ push/merge `develop`, `main`, `jenkins*` เอง
+- เมื่อ policy ยืนยันแล้ว งานใหม่จะอยู่บน `feature/…` หรือ `hotfix/…` เท่านั้น (5.0.1: งานแก้ bug, refactor, docs, chore ใช้ `feature/…` ส่วน commit ยังใช้ `fix:`/`comment:` ตามชนิดงาน; guard G9 ปฏิเสธ `fix/…`, `chore/…`) และเมื่อจบงาน Agent จะ commit + push **เฉพาะ work branch** แล้วตรวจ SHA บน remote ไม่ push/merge `develop`, `main`, `jenkins*` เอง
 - ไฟล์ที่ค้างอยู่ก่อนเริ่มงานจะไม่ถูกรวมใน commit; test ไม่ผ่านยังส่งขึ้น work branch ได้แต่จะมี `⚠️ ต้องตามต่อ` และไม่เสนอ merge
 - `.agrimap-agent/policy/project.json` บอกว่า project เป็น Not AI-First (code-first), AI-First (spec-first) หรือ hybrid; path ของ spec นอก repo จำไว้เฉพาะเครื่องใน `.agrimap-agent/local/memory.md` ซึ่งไม่ถูก commit
 

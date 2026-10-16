@@ -10,6 +10,7 @@ import { parseCliArgs } from "./cli-args.mjs";
 import { readConfirmedIdentity } from "./identity.mjs";
 import { classifyRequest, resolveShortIntent, unquotedIntent } from './governance-policy.mjs';
 import { sessionPointerPath } from './session-state.mjs';
+import { listPending, resolveWorkIntent } from './savepoint.mjs';
 import { AGRIMAP_OPERATION_ALIASES, AGRIMAP_ROUTER_ALIAS } from "./operation-aliases.mjs";
 import { laneById, loadRouting, recognizedProjectName, repositoryLane, routeLine, routeRequest, supportingLine } from "./skill-routing.mjs";
 
@@ -145,8 +146,17 @@ function zonedParts(timestamp = new Date().toISOString(), timeZone = "Asia/Bangk
   };
 }
 
+// Background-task completions reach UserPromptSubmit as <task-notification>
+// blocks. They carry the agent's own commands, not requester text, so they never
+// enter raw history (memory-and-logs.md); a prompt left empty is not archived.
+const HARNESS_BLOCK = /<task-notification>[\s\S]*?<\/task-notification>/g;
+
+function requesterText(prompt) {
+  return prompt.includes("<task-notification>") ? prompt.replace(HARNESS_BLOCK, "").trim() : prompt;
+}
+
 async function archiveRawPrompt(stateRoot, config, input) {
-  const prompt = typeof input.prompt === "string" ? redactText(input.prompt) : "";
+  const prompt = typeof input.prompt === "string" ? redactText(requesterText(input.prompt)) : "";
   const eventName = input.hook_event_name || input.hookEventName || "";
   if (!['UserPromptSubmit', 'BeforeAgent'].includes(eventName) || !prompt) return null;
   // A host submission ID deduplicates retries, not repeated human submissions.
@@ -331,6 +341,32 @@ async function shortReplyContext() {
 }
 const shortReply = await shortReplyContext();
 
+const clip = (value, size) => {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  return text.length > size ? text.slice(0, size - 1) + '…' : text;
+};
+const pendingWork = isRepo ? await listPending(stateRoot).catch(() => []) : [];
+
+// Savepoint (5.0.1): short requests about unfinished work need no lifecycle.
+function workIntentContext() {
+  const resolved = resolveWorkIntent(prompt);
+  if (!resolved || !isRepo) return null;
+  const mine = pendingWork.find((item) => item.session === sessionId && item.attached);
+  if (resolved.intent === 'savepoint') {
+    return mine
+      ? `Write a savepoint for ${mine.executionId}: agm-workspace.mjs savepoint --execution ${mine.executionId} --session ${sessionId} --done "<finished items>" --remaining "<what is left>" --next "<first next step>", then confirm it in three lines.`
+      : 'This session has no open execution, so there is nothing to savepoint; list unfinished work with agm-workspace.mjs pending instead.';
+  }
+  if (resolved.intent === 'pending' || (resolved.intent === 'resume' && !resolved.executionId && pendingWork.length !== 1)) {
+    if (!pendingWork.length) return 'No unfinished savepoint exists in this project; say so in one line.';
+    return `Unfinished work (${pendingWork.length}): run agm-workspace.mjs pending and show a numbered list — objective, done count, remaining, next step, branch, age${resolved.intent === 'resume' ? ' — then ask which one to resume' : '; offer to resume one'}.`;
+  }
+  const target = pendingWork.find((item) => item.executionId === resolved.executionId) || (!resolved.executionId ? pendingWork[0] : null);
+  if (!target) return `No unfinished execution ${resolved.executionId}; run agm-workspace.mjs pending.`;
+  return `Resume ${target.executionId} "${clip(target.objective, 60)}": run agm-workspace.mjs resume --execution ${target.executionId} --session ${sessionId}, switch to ${target.branch || 'its branch'} if needed, show done/remaining/next in up to five lines, then continue from the next step.`;
+}
+const workContext = workIntentContext();
+
 // Session digest (ACG C7 §10.7): at most three lines / 600 chars, emitted when
 // its hash changes. Reads a handful of JSON files and .git/HEAD; no git, no scan.
 async function sessionDigest(active) {
@@ -342,12 +378,15 @@ async function sessionDigest(active) {
   const branch = String(head || '').match(/ref:\s*refs\/heads\/(\S+)/)?.[1] || 'detached';
   const sessionFile = path.join(stateRoot, 'runtime', 'sessions', sessionId + '.json');
   const sessionState = await readJson(sessionFile) || {};
-  const hash = fingerprint(JSON.stringify([policy?.status, policy?.profile, policy?.delivery, index?.fileCount, index?.maxMtimeMs, branch, active?.executionId, active?.verificationStatus, active?.delivery?.commit, project?.developmentMode]));
+  const others = pendingWork.filter((item) => item.executionId !== active?.executionId);
+  const hash = fingerprint(JSON.stringify([policy?.status, policy?.profile, policy?.delivery, index?.fileCount, index?.maxMtimeMs, branch, active?.executionId, active?.verificationStatus, active?.delivery?.commit, project?.developmentMode, others.map((item) => item.executionId + item.updated)]));
   if (sessionState.digestHash === hash) return null;
   const approved = (index?.entries || []).filter((entry) => entry.status === 'approved');
   const topics = [...new Set(approved.slice().sort((a, b) => String(b.date).localeCompare(String(a.date))).map((entry) => entry.topic).filter(Boolean))].slice(0, 3);
   const lines = [
     'AGM digest: target ' + path.basename(cwd) + ' · branch ' + branch + (policy ? ' · policy ' + (policy.profile || 'custom') + ' (' + (policy.status || 'draft') + '; commit+push on complete: ' + (policy.delivery?.commitOnComplete ? 'yes' : 'no') + ')' : ' · no workflow policy') + (project?.developmentMode ? ' · mode ' + project.developmentMode : ''),
+    // Unfinished work comes right after the target line so it is never missed (5.0.1).
+    ...(others.length ? ['⏸ Pending work ' + others.length + ': ' + others.slice(0, 2).map((item) => item.executionId + ' "' + clip(item.objective, 40) + '" next: ' + clip(item.next || 'see savepoint', 50)).join('; ') + '. Tell the requester once; ทำต่อ resumes it.'] : []),
     'Decisions: ' + (index ? approved.length + ' approved' + (topics.length ? '; recent topics: ' + topics.join(', ') : '') : 'index not built') + '. Recall at decision points: agm-workspace.mjs recall --topic <t> --paths <p>.',
     ...(active?.executionId ? ['Open execution: ' + active.executionId + ' "' + String(active.objective || '').slice(0, 60) + '" (' + (active.verificationStatus || 'not verified') + ', ' + (active.delivery?.commit ? 'delivered' : 'not delivered') + ')'] : []),
   ];
@@ -357,7 +396,7 @@ async function sessionDigest(active) {
 }
 // SessionStart is intentionally silent. Current-turn intent precedes identity,
 // old execution state and all persistence. Names/cwd alone are insufficient.
-if (selection.active || shortReply) {
+if (selection.active || shortReply || workContext) {
   if (isRepo && selection.active) await archiveRawPrompt(stateRoot, config, input);
   const active = sessionId ? await readJson(path.join(stateRoot, 'runtime', 'active', sessionId + '.json')) : null;
   const identity = await readConfirmedIdentity(stateRoot, sessionId, {defaultProvider: provider});
@@ -365,7 +404,7 @@ if (selection.active || shortReply) {
   const context = [
     'AgriMap skills: choose one skill per turn by intent x lane (references/skill-routing.md, AGENTS.md §0). Quoted commands are examples, not authorization.',
     'Questions about repository code still load the lane skill for its golden references; questions and explanations create no lifecycle, task files, identity prompt or tests. Start execution only for authorized durable work.',
-    ...(ownerTurn ? [] : ['Inside AgriMap operations SQL context is read-only (managed metadata and protected SELECT; never reveal real sensitive values, relay reveal_handoff; no DDL/DML, EXEC, export, metadata sync or routine deployment); supporting skills never grant database writes or release authority.']),
+    ...(ownerTurn ? [] : ['Inside AgriMap operations SQL context is read-only (managed metadata and protected SELECT; never reveal real sensitive values, relay reveal_handoff; no DDL/DML, EXEC, metadata sync or routine deployment; export only in agm-sql context migrate); supporting skills never grant database writes or release authority.']),
     packageWork ? 'Workspace kind: skill-package. Package work never creates root product FE/BE/SQL artifacts.' : 'Use only the applicable project contracts.',
     identity && !identity.expired ? 'Confirmed requester: ' + identity.requestedBy + '. Identity is not approval authority.'
       : 'For attributed writes, reuse confirmed conversation identity via --requested-by before asking once. Missing local state is not missing human confirmation. Git author alone is not requester evidence; do not ask for ordinary questions.',
@@ -375,7 +414,10 @@ if (selection.active || shortReply) {
   const digest = selection.active ? await sessionDigest(active) : null;
   if (turn) context.push(...routingLines(turn, HOOK_HOSTS[provider] || 'claude'));
   if (digest) context.push(digest);
-  if (active) context.push('Existing execution ' + (active.executionId || active.taskId) + ': resume only if this request concerns it; unrelated conversation does not replace it.');
+  if (active) {
+    const own = pendingWork.find((item) => item.executionId === active.executionId);
+    context.push('Open execution ' + (active.executionId || active.taskId) + ' "' + clip(active.objective, 60) + '"' + (own?.next ? ' next: ' + clip(own.next, 80) : '') + '. A related message folds into it and updates its savepoint; an unrelated one is answered on its own, then one line reminds that this execution is still open (ทำต่อ resumes it).');
+  }
   if (!isRepo) {
     context.push('Session cwd is outside any Git repository. Before any write run `agm-workspace.mjs context --cwd "' + cwd.replaceAll('\\', '/') + '" --hint "<project>"`, then read and ack the target AGENTS.md chain. Repositories below: ' + (children.slice(0, 5).map((dir) => path.basename(dir)).join(', ') || 'none found') + '.');
     if (children.length && !(await stat(path.join(cwd, 'AGENTS.md')).then(() => true, () => false))) {
@@ -391,8 +433,9 @@ if (selection.active || shortReply) {
     }
   }
   if (shortReply) context.push(shortReply);
-  // A bare short reply ("1", "merge") gets only its own line.
-  const lines = selection.active ? context : [shortReply];
+  if (workContext) context.push(workContext);
+  // A bare short reply ("1", "merge", "งานค้าง") gets only its own lines.
+  const lines = selection.active ? context : [shortReply, workContext].filter(Boolean);
   output.hookSpecificOutput = { hookEventName: input.hook_event_name || input.hookEventName || 'UserPromptSubmit', additionalContext: lines.join('\n') };
 }
 process.stdout.write(JSON.stringify(output));

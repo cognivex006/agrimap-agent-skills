@@ -26,7 +26,7 @@ Change only the logic required to eliminate a proven defect. Capture the failing
 
 ## Required refactor brief
 
-For tracked refactors, keep the relevant boundary in the existing `task.md`; a separate analysis file needs an actual consumer. Light refactors create no task artifact. Use only the relevant fields:
+For tracked refactors, keep the relevant boundary in the savepoint's decisions; a separate analysis file needs an actual consumer. Light refactors create no task artifact. Use only the relevant fields:
 
 - `mode`
 - `objective`

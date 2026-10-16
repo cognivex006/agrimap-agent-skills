@@ -106,7 +106,7 @@ test('promotion "team" writes a decision that later suppresses the card',async t
   assert.equal(again.suppressed?.option.value,'UM_<ENTITY>_Q');
 });
 
-test('calibration thresholds; autoDecided only for R1 medium; alwaysAsk wins (AC29)',async t=>{
+test('calibration thresholds; autonomy weight auto-decides R0/R1 and reversible R2; ask and alwaysAsk win (AC29, 5.0.1)',async t=>{
   const {repo:root,state}=await repo(t);
   const key=userKey();
   const sig=accepted=>({kind:'convention',topic:`t/${Math.random()}`,risk:'R1',recommendedChosen:accepted});
@@ -114,11 +114,18 @@ test('calibration thresholds; autoDecided only for R1 medium; alwaysAsk wins (AC
   assert.equal(calibration([sig(true),sig(true),sig(true),sig(true),sig(false)]).convention.mode,'decide-and-report');
   assert.equal(calibration([sig(false),sig(false),sig(false),sig(true),sig(true)]).convention.mode,'ask');
   assert.equal(calibration([...Array(10)].map(()=>sig(false)).concat([...Array(10)].map(()=>sig(true)))).convention.acceptRate,1);
-  for(let i=0;i<6;i+=1)await recordSignal(root,sig(true),key);
   const r1=card({topic:'fe/new-topic',paths:[]});
-  assert.equal((await preflightCard(root,r1,{key})).autoDecided.option.id,'1');
+  // No history yet: the owner's trust is the default, not a calibration result.
+  assert.match((await preflightCard(root,r1,{key})).autoDecided.reason,/^autonomy R1 medium/);
+  assert.equal((await preflightCard(root,{...r1,confidence:'high'},{key})).autoDecided.option.id,'1');
+  assert.equal((await preflightCard(root,{...r1,confidence:'low'},{key})).autoDecided,undefined);
   assert.equal((await preflightCard(root,{...r1,risk:'R2'},{key})).autoDecided,undefined);
-  assert.equal((await preflightCard(root,{...r1,confidence:'high'},{key})).autoDecided,undefined);
+  assert.match((await preflightCard(root,{...r1,risk:'R2',reversible:true},{key})).autoDecided.reason,/reversible/);
+  for(let i=0;i<6;i+=1)await recordSignal(root,sig(true),key);
+  assert.match((await preflightCard(root,r1,{key})).autoDecided.reason,/^calibration convention/);
+  for(let i=0;i<10;i+=1)await recordSignal(root,sig(false),key);
+  assert.equal((await preflightCard(root,r1,{key})).calibrationMode,'ask');
+  for(let i=0;i<10;i+=1)await recordSignal(root,sig(true),key);
   await savePreferences(root,{alwaysAsk:['convention']},key);
   const asked=await preflightCard(root,r1,{key});
   assert.equal(asked.autoDecided,undefined);assert.equal(asked.alwaysAsk,true);
@@ -128,7 +135,8 @@ test('calibration thresholds; autoDecided only for R1 medium; alwaysAsk wins (AC
 test('decide record writes a signal; recall/list/correction commands; decisionMemory:false skips recall',async t=>{
   const {h,repo:root,state}=await repo(t);
   const cli=args=>JSON.parse(h.spawn(h.scripts.workspace,[...args,'--cwd',root]).stdout);
-  const input=path.join(h.temp,'card.json');await writeFile(input,JSON.stringify(card({topic:'sql/new-thing',paths:[]})));
+  // R2 without "reversible" still asks; an R1 medium card would be auto-decided (5.0.1).
+  const input=path.join(h.temp,'card.json');await writeFile(input,JSON.stringify(card({topic:'sql/new-thing',paths:[],risk:'R2'})));
   const stored=cli(['decide','card','--session','s1','--input',input]);
   assert.ok(stored.cardId,JSON.stringify(stored));
   assert.equal(cli(['decide','record','--session','s1','--card',stored.cardId,'--choice','2','--requested-by','owner']).ok,true);
@@ -156,6 +164,25 @@ test('hook digest: first prompt ≤ 600 chars, next prompt none, new branch agai
   assert.equal(digestOf(hook()),'');
   gitIn(root,['switch','-q','-c','feature/csv']);
   assert.match(digestOf(hook()),/branch feature\/csv/);
+});
+
+test('hook shows pending work first and answers งานค้าง / ทำต่อ / savepoint without a lifecycle (5.0.1)',async t=>{
+  const {h,repo:root}=await repo(t);
+  await mkdir(path.join(root,'.agrimap-agent'),{recursive:true});
+  await writeFile(path.join(root,'.agrimap-agent','config.json'),JSON.stringify({activation:{auto:true}}));
+  const ws=args=>JSON.parse(h.spawn(h.scripts.workspace,[...args,'--cwd',root]).stdout);
+  ws(['identify','--session','s1','--owner','006006']);
+  const id=ws(['start','--session','s1','--operation','execute','--persist','--title','Add CSV export']).activeTask.executionId;
+  assert.equal(ws(['savepoint','--session','s1','--execution',id,'--remaining','writer;tests','--next','write the CSV writer']).ok,true);
+  const hook=(session,prompt)=>h.run(h.scripts.hook,['--provider','claude'],{cwd:root,session_id:session,hook_event_name:'UserPromptSubmit',prompt},root).hookSpecificOutput?.additionalContext||'';
+  const lines=hook('d2','/agrimap-agent-skills:agm-exec แก้ export ให้รองรับ CSV').split('\n');
+  const digestStart=lines.findIndex(line=>line.startsWith('AGM digest:'));
+  assert.equal(lines[digestStart+1],`⏸ Pending work 1: ${id} "Add CSV export" next: write the CSV writer. Tell the requester once; ทำต่อ resumes it.`);
+  assert.match(hook('d2','งานค้าง'),/^Unfinished work \(1\): run agm-workspace\.mjs pending/);
+  assert.match(hook('d2','ทำต่อครับ'),new RegExp(`^Resume ${id} "Add CSV export": run agm-workspace\\.mjs resume --execution ${id} --session d2`));
+  assert.match(hook('s1','savepoint'),new RegExp(`^Write a savepoint for ${id}`));
+  assert.match(hook('s1','แก้ validation ในโค้ด service นี้'),new RegExp(`Open execution ${id} "Add CSV export" next: write the CSV writer`));
+  assert.equal(hook('d2','ตัวอย่างคำสั่ง "งานค้าง"'),'');
 });
 
 test('decide promote requires --topic and --value',async t=>{

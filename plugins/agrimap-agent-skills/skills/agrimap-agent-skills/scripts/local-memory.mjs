@@ -5,7 +5,8 @@ import path from "node:path";
 
 export const LOCAL_MEMORY_PATH = ".agrimap-agent/local/memory.md";
 export const LOCAL_MEMORY_MARKER = "<!-- agm-local-memory: v1 -->";
-const STATE_IGNORE_LINES = ["runtime/", "cache/", "local/"];
+// prompts/ holds raw requester history: local only since 5.0.1 (owner decision 2026-10-14).
+const STATE_IGNORE_LINES = ["runtime/", "cache/", "local/", "prompts/"];
 const SECTIONS = Object.freeze({ spec: "Spec locations", repo: "Related repositories" });
 const AGENT_NOTE = /^- \(agm \d{4}-\d{2}-\d{2}\)/;
 const MAX_AGENT_NOTES = 10;

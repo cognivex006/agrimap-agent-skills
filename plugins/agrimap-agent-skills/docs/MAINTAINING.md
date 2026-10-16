@@ -119,7 +119,7 @@ node "$agmScripts/agm-workspace.mjs" checkpoint --cwd "$agmProject" --session "[
 node "$agmScripts/agm-workspace.mjs" complete --cwd "$agmProject" --session "[actual-session]" --execution "[returned-execution-id]"
 ```
 
-อย่าใส่ passed ล่วงหน้า ถ้าล้มเหลวใช้ failed หรือ blocked ตามจริง สำหรับ tracked work ต้องทำ acceptance/result ใน task.md ให้เสร็จด้วย complete จะไม่ใช้ไฟล์เปล่าเป็นหลักฐานสำเร็จ ใช้ --report เฉพาะมีผู้รับรายงานแยกจริง
+อย่าใส่ passed ล่วงหน้า ถ้าล้มเหลวใช้ failed หรือ blocked ตามจริง สำหรับ tracked work ให้อัปเดต savepoint (checkpoint --done/--remaining/--next) ให้ตรงกับงานจริง; validate เตือนเมื่อยังมีรายการ Remaining ค้าง และ complete ไม่ใช้ไฟล์เปล่าเป็นหลักฐานสำเร็จ ใช้ --report เฉพาะมีผู้รับรายงานแยกจริง
 
 <a id="bootstrap-cli"></a>
 ## Bootstrap CLI

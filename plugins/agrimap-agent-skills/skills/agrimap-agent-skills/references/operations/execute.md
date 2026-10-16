@@ -17,8 +17,9 @@
 ## Execute this contract
 
 1. Use recorded requester authorization; a generated prompt is optional. Preserve binding scope, dependencies and acceptance while adapting implementation steps to evidence.
-2. Select tracking/assurance from actual work; one task.md only when resume/handoff is needed.
+2. Select tracking/assurance from actual work; keep the savepoint current (checkpoint --done/--remaining/--next).
 3. Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request.
+4. Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree. Work with goals: take ready tasks from goal-graph.mjs and refill free slots after each acceptance (goal-planning.md).
 
 ## Load now
 
@@ -44,12 +45,13 @@
 - When the authorized work touches a stored procedure, table, or persisted data: [db-schema-context.md](../db-schema-context.md) — schema evidence required before data changes
 - When the authorized work touches FE/BE URL, domain, redirect, or callback logic: [application-url-matrix.md](../application-url-matrix.md) — authoritative environment-specific execution values
 - When a service/job URL, gateway route, Pod-to-Pod call, base path or health endpoint is in scope: [service-url-matrix.md](../service-url-matrix.md) — service gateway keys, Kubernetes Services and health; no DB or IP data
-- When Subagent assignments are dispatched: [subagents-and-branches.md](../subagents-and-branches.md) — delegation packet, workspace mode, visibility, and integration boundaries
+- When the work has two or more units or delegation is considered: [subagents-and-branches.md](../subagents-and-branches.md) — delegation packet, workspace mode, visibility, and integration boundaries
 - When material intent remains unresolved: [elicitation.md](../elicitation.md) — resolve only consequential ambiguity
 - When database context is needed: [sql-context-readonly.md](../sql-context-readonly.md) — managed read-only metadata and SELECT; never database writes
 - When project bootstrap, versioning, branches or release are requested: [release-and-bootstrap.md](../release-and-bootstrap.md) — project-specific adoption and release knowledge
 - When the authorized work writes files in a Git repository: [git-workflow.md](../git-workflow.md) — work branch, delivery and next-step card per the team workflow policy
 - When the request is a short integration reply (merge, pr, รวม or a card option) for a delivered work branch: [git-workflow.md](../git-workflow.md) — short integration intents and their authorization boundary
 - When the project profile is spec-first or hybrid: [spec-driven.md](../spec-driven.md) — development mode, spec locations and spec-first request handling
+- When the work has goals or tasks: [goal-planning.md](../goal-planning.md) — readiness from accepted tasks, rolling dispatch per goal
 
 Do not read the router `SKILL.md` during operation execution. If this generated entrypoint is missing or corrupt, stop with `PACKAGE_ENTRYPOINT_MISSING` and ask for package sync/reinstallation; never broaden into the router.

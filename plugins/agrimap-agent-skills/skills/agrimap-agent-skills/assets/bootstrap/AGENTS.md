@@ -1,6 +1,6 @@
 # กติกากลาง: Skill routing, Workflow และ Release
 
-<!-- AGRIMAP BOOTSTRAP VERSION: 4.11.0 -->
+<!-- AGRIMAP BOOTSTRAP VERSION: 5.0.1 -->
 
 ไฟล์นี้เป็น canonical instruction ของ repository สำหรับ Codex, Claude Code, Gemini CLI, Cursor และผู้พัฒนา โดยไม่ต้องมี AgriMap skills หรือ local Git hook กติกา Markdown ช่วยกำกับพฤติกรรม; Agent ใช้ .NET Global Tool `agm-release` ตรวจ local gate และตรวจหลักฐาน Git ตามไฟล์นี้ ห้ามอนุมานว่า Jenkins บังคับ release gate อยู่ ส่วน GitLab Protected Branch/Tag ต้องตั้งค่าฝั่ง server แยกต่างหาก
 
@@ -32,7 +32,7 @@
 | ติดตั้ง / อัปเดต skills | `agm-doctor` |
 
 - ไม่อยู่ใน lane ใช้ skill ตามเจตนา; เลือกไม่ได้ใช้ `agrimap-agent-skills`; operation skill เดียวต่อรอบ ห้ามโหลดตัวที่สองเองโดยไม่ได้สั่ง
-- `sql-context-pack` เสริมเมื่อต้องการ schema/ข้อมูลจริงที่ไฟล์ใน repo ตอบไม่ได้: ใน agm-* อ่านอย่างเดียว; คำสั่งตรงถึง package นั้นใช้ approval gate ของมัน
+- `sql-context-pack` เสริมเมื่อต้องการ schema/ข้อมูลจริงที่ไฟล์ใน repo ตอบไม่ได้: ใน agm-* อ่านอย่างเดียว ยกเว้น `agm-sql context migrate` ที่ export DDL ลง db-schema; คำสั่งตรงถึง package นั้นใช้ approval gate ของมัน
 - บรรทัดแรกของคำตอบหรือก่อนเขียนไฟล์: `Skill: <skill> · Lane: <lane> · Golden: <entries ที่เปิดจริง>`; ยังไม่โหลดหรือไม่ตรง golden ให้แก้ก่อนส่ง
 - Golden เป็นค่าเริ่มต้นตั้งแต่ร่างแรก (SQL: `[agrimap_app]`, `CREATE OR ALTER PROCEDURE`, SQLFluff)
 - Host ไม่มี AgriMap skills: แจ้งให้ติดตั้งผ่าน `agm-doctor` ห้ามอ้างว่า style ทั่วไปคือ AgriMap; ชื่อ skill ที่ยกมาเป็นตัวอย่าง
@@ -105,8 +105,7 @@
   - `.agrimap-agent/policy/**`
   - `.agrimap-agent/reports/**`
 - คำว่า `decision` ในคำสั่งหมายถึง canonical directory `decisions/` ซึ่งเป็นพหูพจน์ ห้ามสร้าง `.agrimap-agent/decision/` ซ้ำ
-- สำหรับกลุ่ม B อนุญาต stage/commit audit artifacts ที่มีอยู่ใน `.agrimap-agent/prompts/**` และ `.agrimap-agent/tasks/**` เพิ่มเติมหลังตรวจเนื้อหาและข้อมูลลับ เพื่อไม่ทิ้งงานที่ runtime สร้างไว้ สิทธิ์นี้ไม่สั่งให้สร้าง artifact เหล่านี้เพิ่ม; raw requester input คงอยู่เฉพาะ prompt history ตาม contract ของ host
-- Mode อื่นยังห้ามสร้าง แก้ stage หรือ commit `.agrimap-agent/prompts/**`, `.agrimap-agent/tasks/**` เว้นแต่ owner สั่ง path นั้นชัดเจน; `.agrimap-agent/runtime/**` และ path อื่นนอก allowlist ไม่ถูก publish อัตโนมัติทุก mode หากปรากฏใน inventory ให้รายงาน blocked ตาม §6.3
+- `.agrimap-agent/prompts/**` (prompt history) อยู่ในเครื่องเท่านั้น ห้าม stage/commit ทุก mode; ถ้ายังถูก track ให้ `git rm --cached -r -- .agrimap-agent/prompts` ครั้งเดียวใน `audit:` commit งานใหม่ไม่สร้าง `tasks/**`; tasks เดิมกลุ่ม B commit ได้หลังตรวจข้อมูลลับ; `runtime/**` และ path นอก allowlist ไม่ publish อัตโนมัติ หากอยู่ใน inventory ให้รายงาน blocked ตาม §6.3
 - ไฟล์เดิมที่อยู่นอก allowlist ไม่ใช่สิทธิ์ให้ Agent แตะหรือลบ และห้ามล้าง artifact ของ Agent/ผู้พัฒนาคนอื่น
 - `.agrimap-agent/local/**` เป็นความจำเฉพาะเครื่อง (เช่น path ของ spec นอก repo) ถูก ignore และห้าม stage/commit ทุก mode; ไฟล์ที่ commit อ้าง spec นอก repo ด้วย id ใน `policy/project.json` เท่านั้น ห้ามใส่ absolute path ของเครื่อง
 
@@ -128,14 +127,14 @@
 | Artifact | เมื่อใด | เนื้อหาขั้นต่ำ |
 | --- | --- | --- |
 | `logs` | ทุก run: start, milestone ที่เปลี่ยน outcome และ terminal | JSONL append-only หนึ่ง object ต่อ event: `timestamp`, `runId`, `event`, `requestedBy`, `agent`, `model`, `summary`, `files`, `verification`; event ใช้ `created|decision|changed|verified|completed|blocked|cancelled` |
-| `memory/current` | สร้างเมื่อเริ่มงาน | requester, objective, scope/non-goals, branch/HEAD, status, last milestone, changed files, verification, concern และ next action; อัปเดตเฉพาะ durable milestone ไม่เก็บ transcript/raw output |
+| `memory/current` | savepoint: สร้างเมื่อเริ่มงาน อัปเดตทุก milestone และก่อนพักงาน | requester, objective, status, session, branch/HEAD, Done, Remaining, Next step, decisions, last checkpoint; งานค้างต้องดูและ resume ได้จากทุก session ไม่เก็บ transcript |
 | `memory/recent` | ทุก run | journal แบบสั้นของ created, material decision, changed, verified และ terminal พร้อม `RUN_ID` เดียวกัน |
-| `reports` | เมื่อ `completed|blocked|cancelled` | status, requester, agent/model, scope, baseline/candidate SHA, changed files, evidence/changelog coverage, commands กับผลจริง, omitted actions, concerns และ next decision |
+| `reports` | เมื่อ owner ขอ | status, requester, agent/model, scope, baseline/candidate SHA, changed files, evidence/changelog coverage, commands กับผลจริง, omitted actions, concerns และ next decision |
 | `decisions` | เฉพาะเมื่อมี material trade-off/owner decision | context, options, selected decision, decision owner, rationale, consequences, evidence และ superseded decision ถ้ามี |
 | `instructions` | เฉพาะเมื่อ owner อนุมัติ reusable/execution instruction | objective, authorized scope, inputs, exact steps, stop conditions, verification และ expected result; ห้ามเก็บ raw prompt หรือ transcript |
 | `knowledge` | เฉพาะข้อเท็จจริง reusable ข้ามงาน | `FACT|UNKNOWN|tentative`, source path/commit/report, status/currentness และขอบเขตการใช้; ห้ามสรุปจาก commit subject อย่างเดียว |
 
-ทุก run ที่แก้ repository ต้องสร้าง `logs + memory/current + memory/recent` ระหว่าง lifecycle และปิดด้วย `report`; current memory ลบได้เฉพาะ terminal rule ด้านล่าง ส่วน `decisions`, `instructions`, `knowledge` สร้างเมื่อเข้าเงื่อนไขเท่านั้น ห้ามสร้างไฟล์เปล่าเพื่อให้ดูว่าครบ
+ทุก run ที่แก้ repository ต้องสร้าง `logs + memory/current + memory/recent` ระหว่าง lifecycle; current memory ลบได้เฉพาะ terminal rule ด้านล่าง ส่วน `decisions`, `instructions`, `knowledge` สร้างเมื่อเข้าเงื่อนไขเท่านั้น ห้ามสร้างไฟล์เปล่าเพื่อให้ดูว่าครบ
 
 ### 9.4 Portable lifecycle
 
@@ -144,7 +143,7 @@
 3. ก่อน mutation ระบุ objective/non-goals, exact write boundary, logic ที่เปลี่ยน/ต้องคงเดิม, วิธีที่เล็กสุด และ acceptance/verification
 4. ระหว่างทำงาน บันทึกเฉพาะ material decision หรือ milestone ที่ outcome เปลี่ยน; raw command output อยู่ใน terminal ไม่คัดลอกลง memory/log
 5. ก่อนปิดงานรัน verification ที่เหมาะสมและ `git diff --check`; docs-only ใช้ `tests: not applicable` ได้แต่ห้ามอ้างว่าทดสอบ feature แล้ว
-6. ปิดงานด้วย report, terminal log, recent-memory event และเพิ่ม fact ใน `memory/project.md` `## Facts` เฉพาะเมื่อเป็นข้อเท็จจริงที่ใช้ซ้ำข้ามงาน (ไม่ใช่รายการงานที่เสร็จ); `completed|cancelled` ให้ลบ current memory ของ run นั้น ส่วน `blocked` ต้องเก็บ current memory พร้อม blocker/next action
+6. ปิดงานด้วย terminal log, recent-memory event (report เมื่อ owner ขอ) และเพิ่ม fact ใน `memory/project.md` `## Facts` เฉพาะเมื่อเป็นข้อเท็จจริงที่ใช้ซ้ำข้ามงาน (ไม่ใช่รายการงานที่เสร็จ); `completed|cancelled` ให้ลบ current memory ของ run นั้น ส่วน `blocked` ต้องเก็บ current memory พร้อม blocker/next action
 7. Artifact เป็น append-only ตามธรรมชาติของ log/history; การแก้ข้อเท็จจริงใช้ correction/supersedes ที่อ้างไฟล์เดิม ห้าม rewrite audit history หรือลบหลักฐานเพื่อให้ผลดูผ่าน
 
 ### 9.5 Git coverage gate
@@ -175,7 +174,7 @@
 ### 10.3 เริ่มงานและส่งงาน
 
 1. ก่อนเขียน: บันทึก `git status --porcelain` ไว้เป็นรายการไฟล์ที่ค้างก่อนเริ่ม
-2. ถ้าอยู่บน protected branch: `git fetch origin`, ถ้า tree สะอาดให้ `git merge --ff-only origin/<base>` แล้ว `git switch -c <prefix><english-kebab-slug>`; ถ้า tree ไม่สะอาดให้ `git switch -c` จาก HEAD เดิมโดยไม่ pull ห้าม stash/reset/สร้าง worktree
+2. ถ้าอยู่บน protected branch: `git fetch origin`, ถ้า tree สะอาดให้ `git merge --ff-only origin/<base>` แล้ว `git switch -c <prefix><english-kebab-slug>` (prefix `feature/` หรือ `hotfix/` เท่านั้น; fix/refactor/docs/chore ใช้ `feature/`); ถ้า tree ไม่สะอาดให้ `git switch -c` จาก HEAD เดิมโดยไม่ pull ห้าม stash/reset/สร้าง worktree
 3. Branch ที่ host สร้างเอง (เช่น `claude/*`, `codex/*`) ไม่ต้องเปลี่ยนชื่อ local แต่ push ด้วยชื่อทีม: `git push -u origin HEAD:refs/heads/<prefix><slug>`
 4. เมื่อ verification ผ่าน: เติม changelog ตาม §5, stage เฉพาะไฟล์ของงานนี้ด้วย `git add -- <paths>` (ห้ามรวมไฟล์ที่ค้างก่อนเริ่มโดยไม่ถาม), `git diff --cached --check`, commit ตาม §10.6, push work branch แล้วตรวจ `git ls-remote --heads origin <branch>` ให้ SHA ตรง
 5. สรุปจบงานไม่เกิน 12 บรรทัด: branch/commit/remote, ไฟล์และผลทดสอบ, สิ่งที่ตัดสินใจแทน, ไฟล์ที่ไม่ได้รวม แล้วปิดด้วยตัวเลือกถัดไปแบบมีเลข (ข้อ 1 คือที่แนะนำ)

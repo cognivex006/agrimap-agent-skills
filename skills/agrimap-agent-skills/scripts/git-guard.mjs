@@ -129,6 +129,51 @@ export function commitMessageOf(args, readMessageFile = null) {
 }
 
 const shortFlags = (args, letter) => args.some(arg => /^-[A-Za-z]+$/.test(arg) && arg.includes(letter));
+
+// G9 (5.0.1): the branch a command creates, with its start point when given.
+// switch -c/-C/--create, checkout -b/-B, branch <name> [start] (not list/delete/
+// copy/move flags except -m/-M, whose last name is the new branch), worktree add -b/-B.
+export function createdBranchOf({ sub, args }) {
+  const positional = list => list.filter(arg => !arg.startsWith("-"));
+  const after = (flags) => {
+    for (let index = 0; index < args.length; index += 1) {
+      const arg = args[index];
+      const inline = arg.match(/^--(?:create|force-create)=(.+)$/);
+      if (inline) return { name: inline[1], start: positional(args.slice(index + 1))[0] || null };
+      if (flags.includes(arg)) return { name: args[index + 1] || null, rest: args.slice(index + 2) };
+    }
+    return null;
+  };
+  if (sub === "switch" || sub === "checkout") {
+    const hit = after(sub === "switch" ? ["-c", "-C", "--create", "--force-create"] : ["-b", "-B"]);
+    return hit ? { name: hit.name, start: hit.start ?? positional(hit.rest || [])[0] ?? null } : null;
+  }
+  if (sub === "worktree" && args[0] === "add") {
+    const hit = after(["-b", "-B"]);
+    return hit ? { name: hit.name, start: positional(hit.rest || [])[1] ?? null } : null;
+  }
+  if (sub === "branch") {
+    if (args.some(arg => /^-[mM]$|^--move$/.test(arg))) return { name: positional(args).at(-1) || null, start: null };
+    if (args.some(arg => arg.startsWith("-") && !/^(?:-t|--track(?:=.*)?|--no-track|-f|--force)$/.test(arg))) return null;
+    const [name, start = null] = positional(args);
+    return name ? { name, start } : null;
+  }
+  return null;
+}
+
+const ALLOWED_WORK_PREFIXES = ["feature/", "hotfix/"];
+const HOST_BRANCH = /^(?:claude|codex|cursor|gemini|antigravity)\/|^worktree-/;
+
+function workBranchVerdict(created, context) {
+  const name = String(created?.name || "");
+  if (!name || name.includes("$")) return null;
+  const policy = { branching: { protected: context.protectedList || DEFAULT_PROTECTED } };
+  if (ALLOWED_WORK_PREFIXES.some(prefix => name.startsWith(prefix)) || isProtected(policy, name) || HOST_BRANCH.test(name)) return null;
+  // Checking out a branch that already exists on the remote keeps its name.
+  if (created.start && String(created.start).replace(/^(?:refs\/remotes\/)?[^/]+\//, "") === name) return null;
+  const slug = name.includes("/") ? name.slice(name.indexOf("/") + 1) : name;
+  return { decision: DENY, rule: "G9", reason: `work branch "${name}" is not allowed; work branches are feature/<slug> or hotfix/<slug> only (fix, refactor, docs and chore use feature/); use "feature/${slug}"` };
+}
 const stripRef = value => String(value || "").replace(/^\+/, "").replace(/^refs\/heads\//, "");
 const isTag = value => /^refs\/tags\//.test(value) || /^v?\d+\.\d+(?:\.\d+)?/.test(value);
 
@@ -177,6 +222,10 @@ export function evaluate(invocation, context) {
     if (hit) return { decision: DENY, rule: "G5", reason: `deleting protected branch ${hit}` };
     return null;
   }
+  if (context.workBranchRule) {
+    const verdict = workBranchVerdict(createdBranchOf(invocation), context);
+    if (verdict) return verdict;
+  }
   if (sub === "tag" && (args.includes("--delete") || shortFlags(args, "d"))) return { decision: DENY, rule: "G5", reason: "deleting a tag" };
   if (sub === "stash" && !["list", "show"].includes(args[0])) return { decision: ASK, rule: "G6", reason: "stash hides the requester's work" };
   if (sub === "commit" && context.commitConvention) {
@@ -216,11 +265,15 @@ export async function guardCommand(command, { cwd, session = null } = {}) {
   }
   const loaded = root ? await loadPolicy(root) : null;
   const active = root && safeSession(session) ? await readJson(path.join(root, ".agrimap-agent", "runtime", "active", `${safeSession(session)}.json`)) : null;
+  const commitConvention = await commitConventionFor(root, loaded);
+  // The skill-package repository itself develops on fix/* (DEVELOPMENT.md), so G9 is product-only.
+  const packageName = root ? (await readJson(path.join(root, "package.json")))?.name : null;
   const context = {
     protectedList: loaded?.validation?.ok ? loaded.policy.branching?.protected || DEFAULT_PROTECTED : DEFAULT_PROTECTED,
     currentBranch: root ? git(root, ["branch", "--show-current"]) : null,
     release: active?.operation === "release",
-    commitConvention: await commitConventionFor(root, loaded),
+    commitConvention,
+    workBranchRule: Boolean(commitConvention) && packageName !== "agrimap-agent-skills",
     commitLanguage: loaded?.validation?.ok ? loaded.policy.delivery?.commitLanguage || "th" : "th",
     readMessageFile: (file, gitCwd) => readFileSync(path.resolve(cwd, gitCwd || ".", file), "utf8"),
   };

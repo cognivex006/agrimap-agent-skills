@@ -196,6 +196,16 @@
           "when": "the project profile is spec-first or hybrid and the question concerns specified behavior",
           "path": "spec-driven.md",
           "why": "spec items are the source of truth for specified behavior"
+        },
+        {
+          "when": "the analysis proposes an execution order for two or more units",
+          "path": "subagents-and-branches.md",
+          "why": "parallel or sequential order and agent sizing"
+        },
+        {
+          "when": "the analysis breaks work into goals or tasks",
+          "path": "goal-planning.md",
+          "why": "A/B goal classification by real dependencies"
         }
       ]
     },
@@ -321,12 +331,18 @@
       "example": "$agm-plan objective=\"Add order cancellation\" target_files=src/orders.ts",
       "instructions": [
         "Reverse-engineer current behavior, dependencies, callers, tests, and integration order before planning.",
-        "Each step names target, action, reason, verification, and decision-owner gate; do not implement."
+        "Each step names target, action, reason, verification, and decision-owner gate; do not implement.",
+        "Break the work into goals and tasks and classify them with goal-planning.md (scripts/goal-graph.mjs); always show Group A and Group B, an empty group says empty.",
+        "Two or more units: end with the orchestration decision of subagents-and-branches.md — ordered work graph, contract-first steps, parallel or sequential, agents and model tier — ready to drive a long-running execution."
       ],
       "references": [
         {
           "path": "goal-rules.md",
           "why": "mandatory Think/Simplicity/Surgical/Goal-Driven discipline"
+        },
+        {
+          "path": "goal-planning.md",
+          "why": "A/B goal planning: goals of 3-5 hours, entry gates, GA/GB IDs"
         },
         {
           "path": "analysis-discipline.md",
@@ -391,6 +407,11 @@
           "when": "the project profile is spec-first or hybrid and the question concerns specified behavior",
           "path": "spec-driven.md",
           "why": "spec items are the source of truth for specified behavior"
+        },
+        {
+          "when": "the plan has two or more units",
+          "path": "subagents-and-branches.md",
+          "why": "work graph, parallel or sequential, rolling dispatch and job worktrees"
         }
       ]
     },
@@ -949,6 +970,28 @@
             "regulated"
           ],
           "purpose": "Explain SQL purpose, contracts, reads/writes, flow, transactions, errors, assumptions, and risks without execution or edits"
+        },
+        {
+          "name": "context-check",
+          "mode": "product-read-only",
+          "activation": "explicit-or-safe-default",
+          "depths": [
+            "light",
+            "standard",
+            "regulated"
+          ],
+          "purpose": "List used tables/procedures and missing local DDL; no database"
+        },
+        {
+          "name": "context-migrate",
+          "mode": "product-write",
+          "activation": "explicit",
+          "depths": [
+            "light",
+            "standard",
+            "regulated"
+          ],
+          "purpose": "Export missing DDL via sql-context-pack into db-schema; no sync or deploy"
         }
       ],
       "instructions": [
@@ -957,9 +1000,9 @@
         "Edit/refactor requires an exact existing target; otherwise stop SQL_EDIT_TARGET_NOT_FOUND. Never switch to create; preserve the existing path unless migration is authorized.",
         "Create requires output_owner=product|owner-reference|knowledge-draft; otherwise stop SQL_OUTPUT_OWNER_REQUIRED. The absence of a directory is never create authority.",
         "Skill-package meta work never authorizes root product SQL; fixtures/examples require an explicit package-owned path.",
-        "Every created or edited stored procedure must declare CREATE OR ALTER PROCEDURE; replace standalone CREATE PROCEDURE, ALTER PROCEDURE, CREATE PROC, or ALTER PROC and validate the complete changed SQL path set.",
+        "Every created or edited procedure uses CREATE OR ALTER PROCEDURE, never standalone CREATE/ALTER PROC(EDURE); validate the complete changed SQL path set.",
         "For authorized create/edit, load relevant schema/callers and use proportional tracking.",
-        "For action=refactor, require exactly one mode before editing; when materially ambiguous, ask about the behavior boundary. Preserve result sets, transactions, side effects, error mapping, and deployment idempotency unless recorded authority and the selected mode explicitly allow a change, then format and validate every declared changed SQL path."
+        "For action=refactor, follow refactor-modes.md: one mode; preserve result sets, transactions, side effects, errors and deployment idempotency unless that mode allows a change; format and validate every changed SQL path."
       ],
       "references": [
         {
@@ -1001,9 +1044,9 @@
           "why": "resolve only consequential ambiguity"
         },
         {
-          "when": "database context is needed",
+          "when": "database context is needed or action is context-check/context-migrate",
           "path": "sql-context-readonly.md",
-          "why": "managed read-only metadata and SELECT; never database writes"
+          "why": "read-only metadata and SELECT; the migrate export exception"
         },
         {
           "when": "an action writes files or a requester decision is needed",
@@ -1169,7 +1212,7 @@
       ],
       "conditionalReferences": [
         {
-          "when": "the Prompt Result defines Subagent assignments",
+          "when": "the Prompt Result has two or more units or Subagent assignments",
           "path": "subagents-and-branches.md",
           "why": "Main/Subagent ownership, visibility, and integration boundaries"
         },
@@ -1232,6 +1275,11 @@
           "when": "you are about to ask the requester a question",
           "path": "autonomy.md",
           "why": "ask only requester-owned material choices, with a decision card"
+        },
+        {
+          "when": "the Prompt Result has goals or tasks",
+          "path": "goal-planning.md",
+          "why": "GA/GB goals, entry paths and gates in Subagent assignments"
         }
       ]
     },
@@ -1259,8 +1307,9 @@
       "example": "$agm-exec objective=\"Implement the accepted change\"",
       "instructions": [
         "Use recorded requester authorization; a generated prompt is optional. Preserve binding scope, dependencies and acceptance while adapting implementation steps to evidence.",
-        "Select tracking/assurance from actual work; one task.md only when resume/handoff is needed.",
-        "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request."
+        "Select tracking/assurance from actual work; keep the savepoint current (checkpoint --done/--remaining/--next).",
+        "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request.",
+        "Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree. Work with goals: take ready tasks from goal-graph.mjs and refill free slots after each acceptance (goal-planning.md)."
       ],
       "references": [
         {
@@ -1358,7 +1407,7 @@
           "why": "service gateway keys, Kubernetes Services and health; no DB or IP data"
         },
         {
-          "when": "Subagent assignments are dispatched",
+          "when": "the work has two or more units or delegation is considered",
           "path": "subagents-and-branches.md",
           "why": "delegation packet, workspace mode, visibility, and integration boundaries"
         },
@@ -1391,6 +1440,11 @@
           "when": "the project profile is spec-first or hybrid",
           "path": "spec-driven.md",
           "why": "development mode, spec locations and spec-first request handling"
+        },
+        {
+          "when": "the work has goals or tasks",
+          "path": "goal-planning.md",
+          "why": "readiness from accepted tasks, rolling dispatch per goal"
         }
       ]
     },
@@ -1405,22 +1459,22 @@
           "regulated"
         ]
       },
-      "description": "Upgrade project bootstrap while preserving custom rules, replace contracts explicitly, index projects, prepare versions, publish Inhouse pipelines and confirm Production promotion",
+      "description": "Upgrade project bootstrap while preserving custom rules, replace contracts explicitly, index projects, prepare versions, publish Inhouse pipelines and promote Production",
       "triggers": "version, changelog, release, นำขึ้น Jenkins, Inhouse/Production",
       "mode": "product-write",
-      "deliverable": "verified checkpoints for the selected release command; explicit confirmation before Production promotion and tag publication",
+      "deliverable": "verified checkpoints for the selected release command; only a version or candidate anomaly is asked",
       "requiredInputs": [
         "target repository and one explicit release command"
       ],
       "conditionalInputs": [
-        "confirmation of the concrete Production SHA, version, remote branch and tag immediately before promote"
+        "an answer only for a version or candidate anomaly"
       ],
       "example": "$agm-release release production",
       "instructions": [
         "Explicit --flash: follow release-flash.md for aliases, delta-only scope and supported actions.",
         "Resolve bootstrap upgrade (preserve project customizations), explicit upgrade (local contract replacement with backup), indexing, prepare inhouse|production, pipeline inhouse|production, promote, or release full|production|inhouse using release-workflow.md. These are Agent commands, not CLI subcommands. Quoted examples and help never authorize release. Use an explicit owner Version/Patch target before the PATCH+1 default; follow release-workflow.md and release-tools.md for revised candidates and PATCH-only CLI fallback without repeated version approval.",
         "For bootstrap upgrade or legacy upgrade, use only the selected local bootstrap procedure and verification, then finish. For the nine release actions: Check tools and target bootstrap prerequisites before audit; install missing tools and apply compatible missing bootstrap files within the selected command using release-and-bootstrap.md. Resolve existing-file conflicts through a concrete adoption decision when needed. Continue the same invocation after repair; resume recorded candidates without bumping again.",
-        "Complete all preparation before asking for Production confirmation. Never infer that confirmation from promote/release invocation or legacy Version + Tags authorization. Changed candidate or destination invalidates confirmation.",
+        "The owner command confirms every publication step its row lists (jenkins-release, Production tag, notify); show the plan and continue. Ask once only for a version anomaly (R) or candidate anomaly (C) per release-workflow.md.",
         "For the nine release actions, read release-steps.md and release-tools.md before execution. Production alone owns versioned notes, release.md and tags. Standalone pipeline/promote never invent missing preparation; enforce exact owner diffs and stage-specific completion."
       ],
       "references": [
@@ -1469,7 +1523,7 @@
           "when": "a release action without --flash, or flash tool evidence is missing, stale or incompatible"
         }
       ],
-      "entrypointPolicy": "Select bootstrap upgrade (preserve custom rules), legacy upgrade (replacement with backup), or nine release actions. Bootstrap ends locally without release CLI/publication. Indexing includes reachable-history Backfill, changelog, project.md and README/API inventory; reuse coverage. Stay in the requested directory; never clone/worktree. Before writes, fetch/check develop/jenkins/jenkins-release and safely pull behind-only branches --ff-only. Review dirty ownership; merge finished branches first (M); publishing includes all pending work and ends with develop clean. Explicit owner Version/Patch overrides PATCH+1 and older default prohibitions; verify baselines, never repeat version approval or require governance migration. Read bundled policy before claiming blockers; release-tools.md covers unsupported CLIs. Verify bootstrap freshness. Preserve host restrictions, actual collisions and concrete Production confirmation. Before requester lookup, follow release-timing.md: measure work/waits, fold eligible history into one push per ref, show timing in final answers, even --flash."
+      "entrypointPolicy": "Select bootstrap upgrade (preserve custom rules), legacy upgrade (replacement with backup), or nine release actions. Bootstrap ends locally without release CLI/publication. Indexing includes reachable-history Backfill, changelog, project.md and README/API inventory; reuse coverage. Stay in the requested directory; never clone/worktree. Before writes, fetch/check develop/jenkins/jenkins-release and safely pull behind-only branches --ff-only. Review dirty ownership; merge finished branches first (M); publishing includes all pending work and ends with develop clean. Explicit owner Version/Patch overrides PATCH+1 and older default prohibitions; verify baselines, never repeat version approval or require governance migration. Read bundled policy before claiming blockers; release-tools.md covers unsupported CLIs. Verify bootstrap freshness. Preserve host restrictions and actual collisions; ask only anomalies. Before requester lookup, follow release-timing.md: measure work/waits, fold eligible history into one push per ref, show timing in final answers, even --flash."
     }
   ]
 }

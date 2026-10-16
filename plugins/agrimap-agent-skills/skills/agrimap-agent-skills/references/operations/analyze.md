@@ -39,5 +39,7 @@
 - When database context is needed: [sql-context-readonly.md](../sql-context-readonly.md) — managed read-only metadata and SELECT; never database writes
 - When you are about to ask the requester a question: [autonomy.md](../autonomy.md) — ask only requester-owned material choices, with a decision card
 - When the project profile is spec-first or hybrid and the question concerns specified behavior: [spec-driven.md](../spec-driven.md) — spec items are the source of truth for specified behavior
+- When the analysis proposes an execution order for two or more units: [subagents-and-branches.md](../subagents-and-branches.md) — parallel or sequential order and agent sizing
+- When the analysis breaks work into goals or tasks: [goal-planning.md](../goal-planning.md) — A/B goal classification by real dependencies
 
 Do not read the router `SKILL.md` during operation execution. If this generated entrypoint is missing or corrupt, stop with `PACKAGE_ENTRYPOINT_MISSING` and ask for package sync/reinstallation; never broaden into the router.

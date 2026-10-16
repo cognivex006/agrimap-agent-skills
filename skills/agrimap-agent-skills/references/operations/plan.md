@@ -18,10 +18,13 @@
 
 1. Reverse-engineer current behavior, dependencies, callers, tests, and integration order before planning.
 2. Each step names target, action, reason, verification, and decision-owner gate; do not implement.
+3. Break the work into goals and tasks and classify them with goal-planning.md (scripts/goal-graph.mjs); always show Group A and Group B, an empty group says empty.
+4. Two or more units: end with the orchestration decision of subagents-and-branches.md — ordered work graph, contract-first steps, parallel or sequential, agents and model tier — ready to drive a long-running execution.
 
 ## Load now
 
 - [goal-rules.md](../goal-rules.md) — mandatory Think/Simplicity/Surgical/Goal-Driven discipline
+- [goal-planning.md](../goal-planning.md) — A/B goal planning: goals of 3-5 hours, entry gates, GA/GB IDs
 - [analysis-discipline.md](../analysis-discipline.md) — evidence-backed plan assumptions
 - [input-and-scope.md](../input-and-scope.md) — scope ledger
 - [recommendations.md](../recommendations.md) — visible evidence-calibrated recommendations and routine uncertainty disclosure
@@ -38,5 +41,6 @@
 - When material intent remains unresolved: [elicitation.md](../elicitation.md) — resolve only consequential ambiguity
 - When you are about to ask the requester a question: [autonomy.md](../autonomy.md) — ask only requester-owned material choices, with a decision card
 - When the project profile is spec-first or hybrid and the question concerns specified behavior: [spec-driven.md](../spec-driven.md) — spec items are the source of truth for specified behavior
+- When the plan has two or more units: [subagents-and-branches.md](../subagents-and-branches.md) — work graph, parallel or sequential, rolling dispatch and job worktrees
 
 Do not read the router `SKILL.md` during operation execution. If this generated entrypoint is missing or corrupt, stop with `PACKAGE_ENTRYPOINT_MISSING` and ask for package sync/reinstallation; never broaden into the router.

@@ -28,3 +28,21 @@ host_recording_examples:
     model: unknown
     modelLabel: not-configured
 # Antigravity CLI is a host, not a model identifier. Keep legacy gemini records unchanged.
+
+# Owner decision 2026-10-14 (5.0.1): models for delegated execution, lightest first.
+# The Leader keeps the session model. First entry: mechanical units with a fixed contract
+# and golden pattern; second: normal units; third: units that need design judgement.
+# A host without model choice (for example an API key) uses its default. Never ask the
+# requester how many agents to use: at most five, sized to the ready units.
+subagent_execution:
+  claude:   # Agent tool model + effort
+    - { model: haiku, effort: medium }
+    - { model: sonnet, effort: low }
+    - { model: opus, effort: low }
+  codex:
+    - { model: GPT6-Luna, effort: low }
+    - { model: GPT5.6-Terra, effort: low }
+    - { model: GPT5.6-Luna, effort: medium }
+  antigravity:
+    - { model: Gemini-3.8-Flash, effort: default }
+  no_model_choice: host-default
