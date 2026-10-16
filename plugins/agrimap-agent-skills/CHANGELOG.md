@@ -2,7 +2,9 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased
+## 5.0.1 — 2026-10-16
+
+Less asking and less recording, work that resumes across sessions, orchestration decided every time with A/B goals, and agm-sql context migrate on sql-context-pack 3.3.1.
 
 - Raw prompt history keeps requester text only: `hook-context.mjs` removes Claude Code `<task-notification>` blocks (background-task completions that carry the agent's own commands, such as `gh workflow run …` or `git push …`) before archiving to `prompts/YYYY-MM/<conversation>/history.md`, and archives nothing when no requester text remains. Before, 11 of 24 histories in this repository held such blocks, and product repositories committed them. Existing histories are not rewritten.
 - Release asks only for anomalies (owner decision 2026-10-14): `release full|production|inhouse`, `pipeline` and `promote`, with or without `--flash`, are the confirmation for every step they cover — Inhouse, `jenkins-release`, the Production tag and notify. The one possible question, before the first push, is a version anomaly (an owner version that is not PATCH+1, such as baseline 1.0.3 with `version 1.0.5`) or a candidate anomaly (content the run did not prepare, or a changed destination or tag). Stop conditions stay stops, not questions; a `PROJECT CUSTOM` confirmation rule still applies. Before, rules in `AGENTS.release.md` §2.1, the Production step C and autonomy R3 asked one to five times per release. Changed: `release-workflow.md` (Command authority and anomaly confirmation), `release-steps.md` R/C, `release-flash.md`, `AGENTS.release.md` §2.1/§6.5, `config/operations.json`, README and docs.
