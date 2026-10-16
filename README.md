@@ -1,4 +1,4 @@
-# AgriMap Agent Skills 5.0.1
+# AgriMap Agent Skills 5.0.2
 
 [รุ่นล่าสุด](https://github.com/orchex006/agrimap-agent-skills/releases/latest) · [Tags รุ่นก่อน](https://github.com/orchex006/agrimap-agent-skills/tags) · [เลือกเวอร์ชันและ source ย้อนหลัง](docs/VERSIONS.md)
 
@@ -85,7 +85,7 @@ Design ทำงานแบบ passive ในคำสั่งที่เห�
 
 สกิลตรวจความเข้ากันได้ของ CLI ก่อน prepare ด้วย: source CLI ที่ตรวจพบยังสร้าง notes ตาม environment ในบาง mode และตรวจ Tag metadata ใน notes จึงไม่ถือว่า CLI ที่ติดตั้งได้จะรองรับ Flow ใหม่ครบโดยอัตโนมัติ หากเป็นข้อขัดแย้งกับ gate ที่ target บังคับ จะเก็บหลักฐานและหยุดขั้นที่เกี่ยวข้อง ไม่สร้าง notes ผิดฝั่งหรืออ้างว่าตรวจผ่าน
 
-**คำสั่งคือการยืนยัน (5.0.1):** พิมพ์ `$agm-release release full --flash` แล้ว Agent ทำจนจบทั้ง Inhouse, Production, tag และแจ้งเตือน โดยไม่ถาม Agent ถามหนึ่งครั้งก่อน push แรกเฉพาะเมื่อผิดปกติ: (1) ระบุเลขเองที่ไม่ใช่ +0.0.1 เช่น Production ตอนนี้ 1.0.3 แต่สั่ง `version 1.0.5` (ข้ามเลข) หรือเลขต่ำกว่าที่ออกไปแล้ว (2) มีงานที่ไม่ได้อยู่ในรอบนี้เข้ามาใน candidate หรือ SHA/tag ปลายทางเปลี่ยนจากแผน ส่วน conflict, test ไม่ผ่าน, tag ชน หรือไม่มีสิทธิ์ ไม่ใช่คำถาม: Agent หยุดเฉพาะขั้นนั้นพร้อมหลักฐาน ถ้าโครงการใดต้องการให้ถามก่อน Production ให้เขียนกฎนั้นใน `PROJECT CUSTOM` ของ `AGENTS.release.md`
+**คำสั่งคือการยืนยัน (5.0.2):** พิมพ์ `$agm-release release full --flash` แล้ว Agent ทำจนจบทั้ง Inhouse, Production, tag และแจ้งเตือน โดยไม่ถาม Agent ถามหนึ่งครั้งก่อน push แรกเฉพาะเมื่อผิดปกติ: (1) ระบุเลขเองที่ไม่ใช่ +0.0.1 เช่น Production ตอนนี้ 1.0.3 แต่สั่ง `version 1.0.5` (ข้ามเลข) หรือเลขต่ำกว่าที่ออกไปแล้ว (2) มีงานที่ไม่ได้อยู่ในรอบนี้เข้ามาใน candidate หรือ SHA/tag ปลายทางเปลี่ยนจากแผน ส่วน conflict, test ไม่ผ่าน, tag ชน หรือไม่มีสิทธิ์ ไม่ใช่คำถาม: Agent หยุดเฉพาะขั้นนั้นพร้อมหลักฐาน ถ้าโครงการใดต้องการให้ถามก่อน Production ให้เขียนกฎนั้นใน `PROJECT CUSTOM` ของ `AGENTS.release.md`
 
 Pipeline ในตารางหมายถึงส่ง Git branch ตามลำดับภายใต้ trigger ที่ server ตั้งไว้ ไม่ต้องรอ Jenkins เขียว และไม่ใช่หลักฐานว่า deploy ขึ้น server สำเร็จ หลังจบจะบันทึกผล audit ตามกฎของโครงการ; audit commit บน develop จะไม่ถูก promote/tag เพิ่ม คำสั่งใหม่ไม่เหมารวมสิทธิ์เผยแพร่งานค้างที่ไม่เกี่ยวข้อง
 

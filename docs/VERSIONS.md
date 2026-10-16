@@ -2,7 +2,7 @@
 
 [เริ่มใช้งาน](GETTING-STARTED.md) · [ตรวจ installation](DOCTOR.md)
 
-เอกสารชุดนี้สำหรับ **5.0.1** — [Latest release](https://github.com/orchex006/agrimap-agent-skills/releases/latest) · [Tags ทั้งหมด](https://github.com/orchex006/agrimap-agent-skills/tags)
+เอกสารชุดนี้สำหรับ **5.0.2** — [Latest release](https://github.com/orchex006/agrimap-agent-skills/releases/latest) · [Tags ทั้งหมด](https://github.com/orchex006/agrimap-agent-skills/tags)
 
 ## Tags ของ source รุ่นเก่า
 

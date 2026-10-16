@@ -1,11 +1,17 @@
 # A/B goal planning
 
-Owner decision 2026-10-16 (5.0.1): the default for every analysis, plan, Prompt Result and execution that breaks work into goals and tasks, one goal included. The requester does not have to ask for it again. Goals and tasks live in the plan or Prompt Result and in the savepoint; no `tasks/` directory or new file.
+Owner decision 2026-10-16 (5.0.1): owned by agm-plan and agm-prompt, the default whenever they write a spec, so the requester never has to ask for subagents again. agm-exec follows the goals an approved plan or Prompt Result carries and never invents goals for a direct request. agm-analyze, agm-diagnose and the agm-fe/be/sql lanes do not plan goals. Goals and tasks live in the plan or Prompt Result and in the savepoint; no `tasks/` directory or new file.
+
+## Size gate
+
+- About three hours or less in one lane: one goal, no script, no Group A/B lines, no subagents. Keep the spec short.
+- Larger, or crossing lanes or repositories: split into goals as below.
+- Subagents only when at least two ready tasks can run in parallel without touching the same files; otherwise Main works alone.
 
 ## Goals and tasks
 
 - Task: one result with acceptance criteria, `depends_on` from the inputs it really uses, and an estimate in hours.
-- Goal: a group of tasks with one outcome, sized to finish within a day; 3–5 hours is the target and 8 the ceiling. Split a larger goal along its dependencies; merge a goal under 3 hours into a neighbour when that does not join unrelated ownership.
+- Goal: a group of tasks with one outcome, of about three hours at most; a little over (up to 3.5) is acceptable. Split a larger goal along its dependencies. A small goal is fine; never pad or merge goals to reach a minimum.
 - Accepted: verified and integrated by the Leader (subagents-and-branches.md). Only accepted tasks unlock downstream work.
 
 ## Classify with the script

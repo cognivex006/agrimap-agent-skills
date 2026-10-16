@@ -9,7 +9,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseCliArgs } from "./cli-args.mjs";
 
-export const GOAL_HOURS = { min: 3, max: 8 };
+export const GOAL_HOURS = { target: 3, max: 3.5 };
 const GOAL_ID = /^G([AB])?(\d+)$/;
 
 const list = (value) => (Array.isArray(value) ? value : value ? [value] : []).map(String);
@@ -97,7 +97,6 @@ export function analyzeGoals({ goals = [], tasks = [] } = {}, { accepted = [] } 
     const cls = entries.some((entry) => entry.gates.length === 0) ? "A" : "B";
     const hours = list(goal.tasks).reduce((sum, id) => sum + (Number(taskMap.get(id).hours) || 0), 0);
     if (hours && hours > GOAL_HOURS.max) warnings.push({ code: "GOAL_TOO_LARGE", goal: goal.id, hours, max: GOAL_HOURS.max });
-    if (hours && hours < GOAL_HOURS.min && goals.length > 1) warnings.push({ code: "GOAL_SMALL", goal: goal.id, hours, min: GOAL_HOURS.min });
     return {
       id: goalId(goal.id, cls),
       given: String(goal.id),
