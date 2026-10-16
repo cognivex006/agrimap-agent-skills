@@ -68,13 +68,13 @@ sql/
 - For one file, run:
 
 ```powershell
-sqlfluff format --exclude-rules "CP02, LT01, RF06" --dialect tsql <FILE>.sql
+sqlfluff format --exclude-rules "CP02, CV02, LT01, RF06" --dialect tsql <FILE>.sql
 ```
 
 - For multiple files inside one approved folder containing no out-of-scope SQL, run there:
 
 ```powershell
-sqlfluff format --exclude-rules "CP02, LT01, RF06" --dialect tsql .
+sqlfluff format --exclude-rules "CP02, CV02, LT01, RF06" --dialect tsql .
 ```
 
 - Otherwise run the single-file command for every `format_set` path. If the executable disappears after the version check, missing `sqlfluff` (`CommandNotFound`, `ENOENT`, `127`, `9009`) triggers `node <skill-root>/scripts/install-sqlfluff.mjs` and one retry; other failures never install.

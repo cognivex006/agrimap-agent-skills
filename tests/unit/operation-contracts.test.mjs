@@ -144,8 +144,8 @@ test("stored-procedure work forces owner DDL evidence and SP to table tracing", 
 });
 
 test("SQL writers install lazily only on command-not-found and fail closed when folder parsing stops", () => {
-  const single = 'sqlfluff format --exclude-rules "CP02, LT01, RF06" --dialect tsql <FILE>.sql';
-  const folder = 'sqlfluff format --exclude-rules "CP02, LT01, RF06" --dialect tsql .';
+  const single = 'sqlfluff format --exclude-rules "CP02, CV02, LT01, RF06" --dialect tsql <FILE>.sql';
+  const folder = 'sqlfluff format --exclude-rules "CP02, CV02, LT01, RF06" --dialect tsql .';
   assert.ok(sqlPolicy.includes(single));
   assert.ok(sqlPolicy.includes(folder));
   assert.match(sqlPolicy, /install-sqlfluff\.mjs/);
@@ -176,8 +176,8 @@ test("unified SQL refactor loads the complete command owner and proves format co
   assert.ok(operation.actions.some((item) => item.name === "refactor"));
   for (const marker of [
     "sql-contract-preflight.mjs --target-kind sql-table|sql-procedure --object <OBJECT>",
-    'sqlfluff format --exclude-rules "CP02, LT01, RF06" --dialect tsql <FILE>.sql',
-    'sqlfluff format --exclude-rules "CP02, LT01, RF06" --dialect tsql .',
+    'sqlfluff format --exclude-rules "CP02, CV02, LT01, RF06" --dialect tsql <FILE>.sql',
+    'sqlfluff format --exclude-rules "CP02, CV02, LT01, RF06" --dialect tsql .',
     "install-sqlfluff.mjs",
     "validate-sql-artifacts.mjs --files",
     "format_set",

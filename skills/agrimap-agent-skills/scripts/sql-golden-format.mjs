@@ -13,7 +13,7 @@ import { parseCliArgs } from "./cli-args.mjs";
 
 export const MANAGED_HEADER_PREFIX = "-- sqlctx-context: ";
 export const DEFAULT_OUT = ".agrimap-agent/knowledge/references/db-schema/agm-golden";
-const SQLFLUFF_ARGS = ["format", "--exclude-rules", "CP02, LT01, RF06", "--dialect", "tsql"];
+const SQLFLUFF_ARGS = ["format", "--exclude-rules", "CP02, CV02, LT01, RF06", "--dialect", "tsql"];
 const AUDIT = ["DATE_CREATED", "DATE_MODIFIED", "USER_CREATED", "USER_MODIFIED"];
 const LIFECYCLE = new Set([...AUDIT, "DATE_EXPIRED"]);
 const SOFT_DELETE = new Set(["DEL_FLAG", "ROW_VERSION"]);
