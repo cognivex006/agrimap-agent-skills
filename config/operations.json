@@ -201,6 +201,11 @@
           "when": "the analysis proposes an execution order for two or more units",
           "path": "subagents-and-branches.md",
           "why": "parallel or sequential order and agent sizing"
+        },
+        {
+          "when": "the analysis breaks work into goals or tasks",
+          "path": "goal-planning.md",
+          "why": "A/B goal classification by real dependencies"
         }
       ]
     },
@@ -327,12 +332,17 @@
       "instructions": [
         "Reverse-engineer current behavior, dependencies, callers, tests, and integration order before planning.",
         "Each step names target, action, reason, verification, and decision-owner gate; do not implement.",
+        "Break the work into goals and tasks and classify them with goal-planning.md (scripts/goal-graph.mjs); always show Group A and Group B, an empty group says empty.",
         "Two or more units: end with the orchestration decision of subagents-and-branches.md — ordered work graph, contract-first steps, parallel or sequential, agents and model tier — ready to drive a long-running execution."
       ],
       "references": [
         {
           "path": "goal-rules.md",
           "why": "mandatory Think/Simplicity/Surgical/Goal-Driven discipline"
+        },
+        {
+          "path": "goal-planning.md",
+          "why": "A/B goal planning: goals of 3-5 hours, entry gates, GA/GB IDs"
         },
         {
           "path": "analysis-discipline.md",
@@ -1265,6 +1275,11 @@
           "when": "you are about to ask the requester a question",
           "path": "autonomy.md",
           "why": "ask only requester-owned material choices, with a decision card"
+        },
+        {
+          "when": "the Prompt Result has goals or tasks",
+          "path": "goal-planning.md",
+          "why": "GA/GB goals, entry paths and gates in Subagent assignments"
         }
       ]
     },
@@ -1294,7 +1309,7 @@
         "Use recorded requester authorization; a generated prompt is optional. Preserve binding scope, dependencies and acceptance while adapting implementation steps to evidence.",
         "Select tracking/assurance from actual work; keep the savepoint current (checkpoint --done/--remaining/--next).",
         "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request.",
-        "Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree."
+        "Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree. Work with goals: take ready tasks from goal-graph.mjs and refill free slots after each acceptance (goal-planning.md)."
       ],
       "references": [
         {
@@ -1425,6 +1440,11 @@
           "when": "the project profile is spec-first or hybrid",
           "path": "spec-driven.md",
           "why": "development mode, spec locations and spec-first request handling"
+        },
+        {
+          "when": "the work has goals or tasks",
+          "path": "goal-planning.md",
+          "why": "readiness from accepted tasks, rolling dispatch per goal"
         }
       ]
     },

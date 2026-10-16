@@ -18,11 +18,13 @@
 
 1. Reverse-engineer current behavior, dependencies, callers, tests, and integration order before planning.
 2. Each step names target, action, reason, verification, and decision-owner gate; do not implement.
-3. Two or more units: end with the orchestration decision of subagents-and-branches.md — ordered work graph, contract-first steps, parallel or sequential, agents and model tier — ready to drive a long-running execution.
+3. Break the work into goals and tasks and classify them with goal-planning.md (scripts/goal-graph.mjs); always show Group A and Group B, an empty group says empty.
+4. Two or more units: end with the orchestration decision of subagents-and-branches.md — ordered work graph, contract-first steps, parallel or sequential, agents and model tier — ready to drive a long-running execution.
 
 ## Load now
 
 - [goal-rules.md](../goal-rules.md) — mandatory Think/Simplicity/Surgical/Goal-Driven discipline
+- [goal-planning.md](../goal-planning.md) — A/B goal planning: goals of 3-5 hours, entry gates, GA/GB IDs
 - [analysis-discipline.md](../analysis-discipline.md) — evidence-backed plan assumptions
 - [input-and-scope.md](../input-and-scope.md) — scope ledger
 - [recommendations.md](../recommendations.md) — visible evidence-calibrated recommendations and routine uncertainty disclosure
