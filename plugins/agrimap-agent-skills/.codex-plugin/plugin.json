@@ -1,6 +1,6 @@
 {
   "name": "agrimap-agent-skills",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "Routing skill plus dedicated one-operation AgriMap engineering skills",
   "author": {
     "name": "Billy",

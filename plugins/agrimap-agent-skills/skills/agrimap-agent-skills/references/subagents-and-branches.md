@@ -50,9 +50,11 @@ Every packet defines `workspace_need`: isolation, requested mode, `base_ref`, ex
 - Claude custom agents may use `isolation: worktree` when the installed version supports it.
 - A normal subagent starts in the current working directory unless the provider proves isolation.
 - Codex managed worktrees are surface-dependent; never infer them from agent creation alone.
+- Worktree location (5.0.2): Claude keeps `isolation: worktree`; other hosts put their worktrees under `%TEMP%`/`$TMPDIR`, never in the checkout, else use `branch apply --worktree`.
 - If required uncommitted parent state is absent from the base commit, use shared/sequential work or obtain an authorized commit boundary.
 - A host-created worktree branch follows the policy's `hostWorktreeBranch` (default: keep the local name, push under the team name).
 - Subagents never deliver or integrate; the Leader does.
+- Agent helper files (PR bodies, scripts, checkpoint copies) go in the scratchpad or `%TEMP%` and are deleted on delivery.
 
 ## Delegation packet
 

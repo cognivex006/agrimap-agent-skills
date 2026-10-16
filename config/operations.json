@@ -121,7 +121,8 @@
       "example": "$agm-analyze target_files=src/orders.ts objective=\"Explain duplicate requests; do not edit\"",
       "instructions": [
         "Inspect the full target and affected callers before conclusions. Database-linked conclusions require actual project code, the applicable db-schema, and representative local examples/data shapes; otherwise label the result preliminary and list the missing evidence without guessing. Managed read-only context retrieval follows sql-context-readonly.md; never create a direct connection or execute database writes.",
-        "Return evidence-backed findings at the requested level of detail. No mandatory headings or task artifacts for questions; never edit product artifacts."
+        "Return evidence-backed findings at the requested level of detail. No mandatory headings or task artifacts for questions; never edit product artifacts.",
+        "No goals or A/B groups here. When the evidence needs deep reading in three or more projects, fan out read-only subagents, one per project, and synthesize the conclusion as Main; smaller scopes Main reads itself. Hand a resulting larger change to agm-plan or agm-prompt for goal planning."
       ],
       "references": [
         {
@@ -201,11 +202,6 @@
           "when": "the analysis proposes an execution order for two or more units",
           "path": "subagents-and-branches.md",
           "why": "parallel or sequential order and agent sizing"
-        },
-        {
-          "when": "the analysis breaks work into goals or tasks",
-          "path": "goal-planning.md",
-          "why": "A/B goal classification by real dependencies"
         }
       ]
     },
@@ -332,7 +328,7 @@
       "instructions": [
         "Reverse-engineer current behavior, dependencies, callers, tests, and integration order before planning.",
         "Each step names target, action, reason, verification, and decision-owner gate; do not implement.",
-        "Break the work into goals and tasks and classify them with goal-planning.md (scripts/goal-graph.mjs); always show Group A and Group B, an empty group says empty.",
+        "Size first (goal-planning.md): work of about three hours or less in one lane is one goal without script, A/B groups or subagents. Larger or cross-lane work is broken into goals of about three hours, classified with scripts/goal-graph.mjs, shown as Group A and Group B with Main/Subagent ownership written into the plan so execution needs no repeated instruction.",
         "Two or more units: end with the orchestration decision of subagents-and-branches.md — ordered work graph, contract-first steps, parallel or sequential, agents and model tier — ready to drive a long-running execution."
       ],
       "references": [
@@ -342,7 +338,7 @@
         },
         {
           "path": "goal-planning.md",
-          "why": "A/B goal planning: goals of 3-5 hours, entry gates, GA/GB IDs"
+          "why": "A/B goal planning: size gate, goals of about 3 hours, entry gates, GA/GB IDs"
         },
         {
           "path": "analysis-discipline.md",
@@ -1186,7 +1182,8 @@
       "instructions": [
         "Classify continuation intent. Explain/compare/propose/acknowledge/approve never create a version.",
         "Create V1 for the first finalized executable result; create V2+ only for substantive requester-backed changes. Reuse identical content and preserve lineage.",
-        "Keep one file per version with Main/Subagent ownership; never create requirements or tasks."
+        "Keep one file per version with Main/Subagent ownership; never create requirements or tasks.",
+        "Apply the goal-planning.md size gate: small single-lane work stays one goal without subagents; larger work carries GA/GB goals of about three hours, gates and Subagent assignments in the Prompt Result."
       ],
       "references": [
         {
@@ -1277,7 +1274,7 @@
           "why": "ask only requester-owned material choices, with a decision card"
         },
         {
-          "when": "the Prompt Result has goals or tasks",
+          "when": "the Prompt Result breaks work into goals or tasks",
           "path": "goal-planning.md",
           "why": "GA/GB goals, entry paths and gates in Subagent assignments"
         }
@@ -1309,7 +1306,7 @@
         "Use recorded requester authorization; a generated prompt is optional. Preserve binding scope, dependencies and acceptance while adapting implementation steps to evidence.",
         "Select tracking/assurance from actual work; keep the savepoint current (checkpoint --done/--remaining/--next).",
         "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request.",
-        "Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree. Work with goals: take ready tasks from goal-graph.mjs and refill free slots after each acceptance (goal-planning.md)."
+        "Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree. Follow goals an approved spec carries: ready tasks from goal-graph.mjs, refill slots after each acceptance (goal-planning.md); a direct request gets no goals."
       ],
       "references": [
         {
@@ -1442,7 +1439,7 @@
           "why": "development mode, spec locations and spec-first request handling"
         },
         {
-          "when": "the work has goals or tasks",
+          "when": "an approved spec carries goals",
           "path": "goal-planning.md",
           "why": "readiness from accepted tasks, rolling dispatch per goal"
         }

@@ -18,6 +18,7 @@
 
 1. Inspect the full target and affected callers before conclusions. Database-linked conclusions require actual project code, the applicable db-schema, and representative local examples/data shapes; otherwise label the result preliminary and list the missing evidence without guessing. Managed read-only context retrieval follows sql-context-readonly.md; never create a direct connection or execute database writes.
 2. Return evidence-backed findings at the requested level of detail. No mandatory headings or task artifacts for questions; never edit product artifacts.
+3. No goals or A/B groups here. When the evidence needs deep reading in three or more projects, fan out read-only subagents, one per project, and synthesize the conclusion as Main; smaller scopes Main reads itself. Hand a resulting larger change to agm-plan or agm-prompt for goal planning.
 
 ## Load now
 
@@ -40,6 +41,5 @@
 - When you are about to ask the requester a question: [autonomy.md](../autonomy.md) — ask only requester-owned material choices, with a decision card
 - When the project profile is spec-first or hybrid and the question concerns specified behavior: [spec-driven.md](../spec-driven.md) — spec items are the source of truth for specified behavior
 - When the analysis proposes an execution order for two or more units: [subagents-and-branches.md](../subagents-and-branches.md) — parallel or sequential order and agent sizing
-- When the analysis breaks work into goals or tasks: [goal-planning.md](../goal-planning.md) — A/B goal classification by real dependencies
 
 Do not read the router `SKILL.md` during operation execution. If this generated entrypoint is missing or corrupt, stop with `PACKAGE_ENTRYPOINT_MISSING` and ask for package sync/reinstallation; never broaden into the router.

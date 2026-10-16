@@ -2,6 +2,17 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## 5.0.2 — 2026-10-16
+
+Goal planning belongs to agm-plan and agm-prompt only, sized to about three hours with a small-work gate.
+
+- agm-plan and agm-prompt apply a size gate: work of about three hours in one lane stays one goal with no script, A/B lines or subagents; larger or cross-lane work becomes goals of about three hours (warning above 3.5) with Main/Subagent ownership written into the spec.
+- agm-exec follows the goals an approved plan or Prompt Result carries and never invents goals for a direct request.
+- agm-analyze no longer plans goals; it fans out read-only subagents, one per project, when evidence spans three or more projects, and Main synthesizes.
+- goal-graph.mjs drops the GOAL_SMALL warning and the 3-hour minimum.
+- Worktrees created by hosts other than Claude (Codex, Gemini, Qwen, DeepSeek and others) live under the OS temp directory (%TEMP%), never inside the source checkout, and are removed after integration.
+- Helper files agents write to drive work (PR bodies, scripts, checkpoint copies) go in the scratchpad or %TEMP% and are deleted when the work is delivered (bootstrap §3 and subagents-and-branches.md).
+
 ## 5.0.1 — 2026-10-16
 
 Less asking and less recording, work that resumes across sessions, orchestration decided every time with A/B goals, and agm-sql context migrate on sql-context-pack 3.3.1.

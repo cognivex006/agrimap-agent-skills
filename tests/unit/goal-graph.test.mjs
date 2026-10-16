@@ -76,8 +76,10 @@ test('missing references, cycles and duplicate goal numbers block classification
   assert.equal(dup.errors[0].code,'GOAL_NUMBER_DUPLICATE');
 });
 
-test('a single goal is A with an empty B group and sizing is warned outside 3-8 hours',()=>{
-  const report=analyzeGoals({goals:[{id:'G001',tasks:['T1','T2']}],tasks:[{id:'T1',hours:6},{id:'T2',hours:4}]});
+test('a single goal is A with an empty B group and sizing is warned only above 3.5 hours',()=>{
+  const report=analyzeGoals({goals:[{id:'G001',tasks:['T1','T2']}],tasks:[{id:'T1',hours:2},{id:'T2',hours:2}]});
   assert.deepEqual(report.groups,{A:['GA001'],B:[]});
   assert.equal(report.warnings[0].code,'GOAL_TOO_LARGE');
+  const ok=analyzeGoals({goals:[{id:'G001',tasks:['T1']},{id:'G002',tasks:['T2']}],tasks:[{id:'T1',hours:3.2},{id:'T2',hours:0.5}]});
+  assert.deepEqual(ok.warnings,[]);
 });
