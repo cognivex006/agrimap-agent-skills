@@ -23,9 +23,10 @@ test('bootstrap preserves the complete owner-submitted canonical contract',async
   // 5.0.1: owner decision 2026-10-14 — §9 prompt history local only, memory/current is the savepoint,
   // reports only on request, no new tasks/; §10.3 work branches are feature/ or hotfix/ only;
   // §0 sql-context-pack stays read-only except agm-sql context migrate.
+  // 5.0.2: owner-requested §3 rule — agent helper files live in the scratchpad or %TEMP% and are deleted on delivery.
   // Package bumps only change the generated version marker; freeze every other byte.
   const sourceBytes=Buffer.from(bytes.toString('utf8').replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->'));
-  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'dea81783a67a5bc1802019ead78bbbab71bc699b15bee429d382e701a8ba3f66');
+  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'93026950bfdec55a4ca969d9c4a30354e9daba57e56c38ab4d897861396794e3');
   const manifest=JSON.parse(await readFile(path.join(bundle,'manifest.json'),'utf8'));
   assert.ok(bytes.toString('utf8').includes(`<!-- AGRIMAP BOOTSTRAP VERSION: ${manifest.version} -->`));
   assert.equal(manifest.files.find(f=>f.source==='AGENTS.md').sha256,createHash('sha256').update(bytes).digest('hex'));
