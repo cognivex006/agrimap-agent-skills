@@ -1306,7 +1306,7 @@
         "Use recorded requester authorization; a generated prompt is optional. Preserve binding scope, dependencies and acceptance while adapting implementation steps to evidence.",
         "Select tracking/assurance from actual work; keep the savepoint current (checkpoint --done/--remaining/--next).",
         "Verify proportionally and close after actual acceptance. Separate QA only for its real risk or an explicit request.",
-        "Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree. When an approved plan or Prompt Result carries goals: follow them, take ready tasks from goal-graph.mjs and refill free slots after each acceptance (goal-planning.md); never invent goals for a direct request."
+        "Two or more units: decide orchestration first (subagents-and-branches.md); as Leader dispatch with a rolling queue, verify and integrate each job, and remove its worktree. Follow goals an approved spec carries: ready tasks from goal-graph.mjs, refill slots after each acceptance (goal-planning.md); a direct request gets no goals."
       ],
       "references": [
         {
@@ -1439,7 +1439,7 @@
           "why": "development mode, spec locations and spec-first request handling"
         },
         {
-          "when": "an approved plan or Prompt Result carries goals",
+          "when": "an approved spec carries goals",
           "path": "goal-planning.md",
           "why": "readiness from accepted tasks, rolling dispatch per goal"
         }
