@@ -13,6 +13,21 @@ const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const json = async file => JSON.parse(await readFile(file, 'utf8'));
 const git = (root, ...args) => execFileSync('git', ['-c', `safe.directory=${path.resolve(root).replaceAll('\\','/')}`, ...args], {cwd:root, encoding:'utf8'}).trim();
 
+// Owner-authorized reissue on the NEW repository (2026-10-20). The old
+// repository/local tag is preserved, never repointed. No general tag override.
+export const migration502 = {
+  previousRepository:'orchex006/agrimap-agent-skills',
+  previousSourceSha:'2447be9bdbaf31d7c17b2e07c8718d5f8d4a42d7',
+  repository:'cognivex006/agrimap-agent-skills',
+};
+export function assertMigration502(version, runGit) {
+  if (version !== '5.0.2' || runGit('rev-parse','v5.0.2^{commit}') !== migration502.previousSourceSha) throw new Error('RELEASE_MIGRATION_FORBIDDEN');
+  for (const args of [['remote','get-url','--all','origin'], ['remote','get-url','--push','--all','origin']]) {
+    if (!new RegExp(`^https://github\\.com/${migration502.repository}(?:\\.git)?$`).test(runGit(...args))) throw new Error('RELEASE_MIGRATION_REMOTE_FORBIDDEN');
+  }
+  return {...migration502, reason:'Owner-authorized 5.0.2 reissue with repository migration and local publication; differs from the previous repository release.'};
+}
+
 export function releaseDecision({version, expectedVersion, ref, dirty, tagExists}) {
   // Deliberately narrow publication syntax; general package SemVer support remains unchanged.
   const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-rc\.(0|[1-9]\d*))?$/.exec(version || '');
@@ -94,7 +109,7 @@ export async function runtimePlan(root, host) {
   return entries;
 }
 
-export async function buildRelease(root, {publication = false, expectedVersion, ref} = {}) {
+export async function buildRelease(root, {publication = false, expectedVersion, ref, migrate502 = false} = {}) {
   root = path.resolve(root);
   const pkg = await json(path.join(root, 'package.json'));
   if (pkg.name !== 'agrimap-agent-skills') throw new Error('PACKAGE_SOURCE_REQUIRED');
@@ -103,8 +118,12 @@ export async function buildRelease(root, {publication = false, expectedVersion, 
   const sourceDirty = Boolean(git(root, 'status', '--porcelain', '--untracked-files=all'));
   const sourceRef = ref || git(root, 'branch', '--show-current');
   const tag = `v${pkg.version}`;
+  if (migrate502 && !publication) throw new Error('RELEASE_MIGRATION_REQUIRES_PUBLICATION_BUILD');
+  const migration = migrate502 ? assertMigration502(pkg.version, (...args)=>git(root,...args)) : null;
   if (publication) {
-    releaseDecision({version:pkg.version, expectedVersion, ref:sourceRef, dirty:sourceDirty, tagExists:Boolean(git(root, 'tag', '--list', tag))});
+    // A local legacy tag is allowed only for the pinned owner-authorized
+    // new-repository reissue. Remote tag creation still fails atomically.
+    releaseDecision({version:pkg.version, expectedVersion, ref:sourceRef, dirty:sourceDirty, tagExists:!migration && Boolean(git(root, 'tag', '--list', tag))});
     // Source ref must resolve to this very commit, not merely be a supplied branch label.
     if (git(root, 'rev-parse', `refs/remotes/origin/${sourceRef}`) !== sourceSha) throw new Error('RELEASE_SOURCE_REF_MISMATCH');
   }
@@ -155,7 +174,7 @@ export async function buildRelease(root, {publication = false, expectedVersion, 
   }
   const catalog = {schemaVersion:1, package:pkg.name, version:pkg.version, tag:publication ? tag : null,
     status:publication ? 'publication-build' : 'local-preview', prerelease:pkg.version.includes('-'),
-    sourceSha, sourceRef, sourceDirty, artifacts};
+    sourceSha, sourceRef, sourceDirty, ...(migration ? {migration} : {}), artifacts};
   const catalogBytes = JSON.stringify(catalog, null, 2) + '\n';
   await writeFile(path.join(output, 'release.json'), catalogBytes);
   await writeFile(path.join(output, 'SHA256SUMS'), [...artifacts.map(a => `${a.sha256}  ${a.archive}`), `${hash(catalogBytes)}  release.json`].join('\n') + '\n');
@@ -167,7 +186,7 @@ export async function buildRelease(root, {publication = false, expectedVersion, 
 if (path.resolve(process.argv[1] || '') === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   try {
-    if (args.length && !(args.length === 3 && args[0] === '--release')) throw new Error('Use no arguments for a local build, or --release <version> <branch> for publication preparation');
-    console.log(JSON.stringify(await buildRelease(process.cwd(), {publication:args[0] === '--release', expectedVersion:args[1], ref:args[2]}), null, 2));
+    if (args.length && !(args[0] === '--release' && (args.length === 3 || (args.length === 4 && args[3] === '--migrate-5.0.2')))) throw new Error('Use no arguments for a local build, or --release <version> <branch> [--migrate-5.0.2] for publication preparation');
+    console.log(JSON.stringify(await buildRelease(process.cwd(), {publication:args[0] === '--release', expectedVersion:args[1], ref:args[2], migrate502:args[3] === '--migrate-5.0.2'}), null, 2));
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
