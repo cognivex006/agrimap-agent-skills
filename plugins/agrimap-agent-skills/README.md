@@ -1,6 +1,6 @@
 # AgriMap Agent Skills 5.0.2
 
-[รุ่นล่าสุด](https://github.com/orchex006/agrimap-agent-skills/releases/latest) · [Tags รุ่นก่อน](https://github.com/orchex006/agrimap-agent-skills/tags) · [เลือกเวอร์ชันและ source ย้อนหลัง](docs/VERSIONS.md)
+[รุ่นล่าสุด](https://github.com/cognivex006/agrimap-agent-skills/releases/latest) · [Tags รุ่นก่อน](https://github.com/cognivex006/agrimap-agent-skills/tags) · [เลือกเวอร์ชันและ source ย้อนหลัง](docs/VERSIONS.md)
 
 ชุดคำสั่งสำหรับให้ Agent ช่วยงาน AgriMap ตั้งแต่วิเคราะห์ ออกแบบ แก้โค้ด ตรวจงาน จนถึงเตรียม release ใช้กับ Codex, Claude Code และ Antigravity CLI โดยเลือกคำสั่งตามงาน ไม่ต้องเดินครบทุก workflow
 
@@ -108,7 +108,7 @@ Legacy v2 five-file validation remains in assets/task-artifact-schema.json for e
 
 ต้นฉบับอยู่ใน `config/operations.json`, `skills/agrimap-agent-skills/`, `docs/` และ `examples/` แก้ต้นฉบับแล้วใช้ `npm run sync`; อย่าแก้ generated mirror แยกเอง อ่าน [วิธีตรวจและแจกจ่าย](docs/MAINTAINING.md) ก่อนรันคำสั่งผู้ดูแล
 
-Repository: [orchex006/agrimap-agent-skills](https://github.com/orchex006/agrimap-agent-skills) · [Changelog](CHANGELOG.md)
+Repository: [cognivex006/agrimap-agent-skills](https://github.com/cognivex006/agrimap-agent-skills) · [Changelog](CHANGELOG.md)
 
 เลขเวอร์ชันใน source ไม่ได้ยืนยันว่า remote หรือ plugin cache ของผู้ใช้ได้รับเวอร์ชันนั้นแล้ว
 

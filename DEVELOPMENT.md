@@ -18,9 +18,9 @@ Use this same working directory. Inspect status, branch/upstream and fetch when 
 
 An implementation request authorizes scoped local changes, not commits or external writes. A commit/push request covers its named development branch, not main, PR merge or publication. Explicit release approval can cover the complete named version/source/publication sequence without repeated questions. Never infer publication from a bump, successful tests or the word finish.
 
-Integration needs no human review (owner decision 2026-09-25, 4.9.3): the gate is passing local verification (below). Once the local checks pass, the Agent merges locally and pushes. While GitHub protection still requires a PR plus the `verify` checks (currently enforced, including for admins, with 0 required approvals), the Agent opens the PR itself and merges it as soon as the checks pass, without waiting for review. Only the owner changes that server protection.
+Integration needs no human review (owner decision 2026-09-25, 4.9.3): the gate is passing local verification (below). Integration, commits and pushes still need authorization for the named scope. Use PRs where server rules require them; do not wait for retired Actions checks or bypass a server rule. Only the owner changes server protection. The new repository settings are unknown until read back successfully.
 
-PR into main accepts develop, release/* or hotfix/* in this repository; PR into develop accepts feature/*, fix/* and release/hotfix synchronization. Direct develop-to-main integration still requires the normal PR checks and does not publish a release automatically. Review scope and verification; no blind conflict resolutions or history rewrites. Main/develop protection and required checks must also be configured on the server: Markdown alone cannot enforce them.
+PR into main accepts develop, release/* or hotfix/* in this repository; PR into develop accepts feature/*, fix/* and release/hotfix synchronization. Direct develop-to-main integration still requires local verification and applicable server PR rules and does not publish a release automatically. Review scope and verification; no blind conflict resolutions or history rewrites. Main/develop protection and required checks must also be configured on the server: Markdown alone cannot enforce them.
 
 ## Commit style
 
@@ -35,7 +35,7 @@ This repository uses the same team header as the product projects it governs (bo
 | `audit:` | Release history or `.agrimap-agent` records only |
 | `ci:` | `.github/workflows`, `tools/`, hooks wiring or repository governance |
 
-Split work of different types into separate commits. Merge and revert messages that Git writes stay as they are. Package CI (`tools/check-commit-style.mjs`) rejects any other header among the non-merge commits a PR adds; the Claude guard G7 denies them locally once the installed plugin is 4.9.6 or later. Commits already on main before 4.9.6 are not rewritten.
+Split work of different types into separate commits. Merge and revert messages that Git writes stay as they are. Local verification (`tools/check-commit-style.mjs`, when --base/--head are supplied) rejects any other header among the non-merge commits a PR adds; the Claude guard G7 denies them locally once the installed plugin is 4.9.6 or later. Commits already on main before 4.9.6 are not rewritten.
 
 ## Version lifecycle
 
@@ -59,15 +59,37 @@ package:build creates a fresh directory beneath ignored dist/ with one .tgz per 
 
 config/distribution.json is the user-document allowlist shared by sync and packaging. tools/package-release.mjs excludes maintainer files, rejects symlinks and unexpected instruction files, preserves the exact product bootstrap AGENTS template, verifies host versions and keeps provider hooks separate. GitHub's automatic source archives and full Git clones are source distributions, NOT sanitized runtime artifacts: root AGENTS scope protection still matters there. Do not claim .gitignore or export-ignore controls Git clones.
 
-## CI and publication
+## Local verification and publication (no GitHub Actions)
 
-package-ci.yml checks PR branch routing, generated drift, package tests, release tests, token budgets and artifact construction on Windows/Linux. It has read-only permissions and never publishes. Configure its checks as required for main/develop.
+The source remote is https://github.com/cognivex006/agrimap-agent-skills. This repository has no Actions workflows. Local scripts use Node, Git, tar and GitHub CLI; they do not dispatch workflows or consume Actions artifacts, environment approvals or automatic workflow credentials.
 
-package-release.yml is manual workflow_dispatch only. Select main for a stable release or release/<base-version> for an rc.N prerelease; supply the exact package version. It runs validation, rejects dirty/mismatched sources and existing version tags, then builds from that commit. Publication uses the package-release environment. Administrators must configure required reviewers and deployment branch restrictions before enabling publication; creating a workflow/environment name does not configure protection.
+```powershell
+npm run package:verify
+# Before a PR, additionally check route and commit headers against a current base ref:
+npm run package:verify -- --base develop --head feature/local-package-release
+# Preview only (also built by verification):
+npm run package:build
+```
 
-The publish job creates a draft GitHub release/tag targeting the verified SHA, uploads the archives/catalog/checksums, then publishes the draft. Stable latest promotion is an explicit input, disabled by default; use it only for the intended current stable version. A failed partial publication must be inspected and reconciled explicitly; do not delete/repoint tags, overwrite assets or rerun hoping to replace them. Source SHA and artifacts must remain paired. This workflow does not merge PRs or push source branches.
+Run sync first and review its output. Verification reruns sync and rejects newly generated drift; existing development edits are allowed. It runs package tests (at most two test-suite processes to limit Windows subprocess pressure), release tests, strict token budgets and preview construction. Route/commit checks require both --base and --head and an up-to-date origin/<base>. A successful run covers only its reported OS. There is no automatic Windows/Linux matrix; run the same checks on each OS when cross-platform evidence is required, and report the missing OS honestly.
 
-Server setup (separate authorized administration): require PRs/reviews and package CI for main/develop, prohibit force-push/deletion, protect v* tags against update/deletion, enable immutable releases where available, and restrict package-release environment to main and release/* with required reviewers. Until verified, report protection as not configured/unknown, not enforced.
+After explicit publication authorization, integrate the exact verified source through the approved branch/PR flow. Stable source must be a clean main commit already on the new origin; rc.N must be on release/<base-version>. Authenticate gh with an account allowed to publish to the new repository. Never expose a token in chat or logs.
+
+```powershell
+# Publication preparation only; no tag/release is created:
+node tools/package-release.mjs --release <version> main
+# This command writes a NEW tag and GitHub Release; explicit authorization required:
+npm run package:publish -- --version <version> --latest false
+# Owner-approved new-account 5.0.2 reissue only:
+npm run package:publish -- --version 5.0.2 --latest true --migrate-5.0.2
+# Use --latest true only when this stable version is intended as current latest.
+```
+
+package:publish validates fetch/push URLs, repository identity/write permission, the actual branch, unused local/remote tag and release, and a freshly fetched remote SHA. It reruns local checks and creates a publication-build with tools/package-release.mjs. It atomically creates the tag at that SHA, creates a draft with host archives/catalog/checksums and notes, downloads and checks every uploaded asset, then publishes. Prereleases cannot become latest stable. It never pushes source, merges PRs, force-updates tags or replaces release assets. Keep its build directory if publication fails: inspect the reported stage, tag, draft and SHA before any manual recovery; an unchanged retry must refuse an existing tag/release.
+
+npm run package:build alone produces local-preview, not a releasable publication-build. A version number in source does not establish that a release exists. Owner exception (2026-10-20): reissue the modified 5.0.2 on cognivex006/agrimap-agent-skills only, using --migrate-5.0.2. The script pins the legacy local tag to 2447be9bdbaf31d7c17b2e07c8718d5f8d4a42d7, preserves it unchanged, refuses any existing new-remote tag/release, and records the previous repository/SHA and changed-source reason in release.json. This does not permit overwriting published assets/tags on either repository. Normal releases still reject existing local tags; the exception cannot be used for another version or remote. Other historical releases require original verified source/assets and separate scope.
+
+Server setup is separate authorized administration. On main/develop remove retired required status contexts verify (ubuntu-latest) and verify (windows-latest), or their actual names shown in protection/rulesets, including any required-workflow rule for the removed Package CI. Retain PR rules, force-push/deletion restrictions, v* tag protection and immutable releases where supported. Do not assume the new repository copied any old settings. The former package-release Actions environment no longer gates local gh publication; authorization is enforced by the approved release instruction and GitHub account/repository permissions. Report this loss of environment approval explicitly; there is no replacement server approval configured by these scripts.
 
 ## Previous versions and adoption
 
@@ -79,4 +101,4 @@ Current adoption: preserve the existing uncommitted 3.7.0 work, create local dev
 
 Follow-up authorization on 2026-09-10: publish the prepared work on GitHub, show the latest documentation version and retain historical version tags. config/release-history.json records the 24 verified stable mappings for retrospective tagging, excluding the test prerelease and unpublished 3.7.0 draft. This publication request covers development/release PR integration and 4.1.0 publication, not bypassing checks or required reviewer approvals. Server protection setup remains a separate decision.
 
-References: [SemVer](https://semver.org/), [GitHub workflow triggers](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow), [GitHub release create](https://cli.github.com/manual/gh_release_create).
+References: [SemVer](https://semver.org/), [GitHub protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches), [GitHub release create](https://cli.github.com/manual/gh_release_create).

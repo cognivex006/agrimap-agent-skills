@@ -186,6 +186,8 @@ const claudeMarketplace = JSON.parse(await readFile(claudeMarketplacePath, "utf8
 const claudeMarketplaceEntry = claudeMarketplace.plugins?.find((plugin) => plugin.name === packageManifest.name);
 if (!claudeMarketplaceEntry) throw new Error(`Claude marketplace entry not found for ${packageManifest.name}.`);
 claudeMarketplaceEntry.version = packageVersion;
+claudeMarketplaceEntry.homepage = packageManifest.homepage.replace(/#.*$/, '');
+claudeMarketplace.owner.url = 'https://github.com/cognivex006';
 await writeFile(claudeMarketplacePath, `${JSON.stringify(claudeMarketplace, null, 2)}\n`, "utf8");
 
 const claudeManifestDirectory = path.join(pluginRoot, ".claude-plugin");

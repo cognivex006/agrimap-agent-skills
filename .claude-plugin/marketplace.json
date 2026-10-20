@@ -2,7 +2,7 @@
   "name": "agrimap-agent-skills",
   "owner": {
     "name": "Billy",
-    "url": "https://github.com/orchex006"
+    "url": "https://github.com/cognivex006"
   },
   "metadata": {
     "description": "Official AgriMap engineering skills for Codex, Claude Code, and Gemini CLI"
@@ -13,7 +13,7 @@
       "source": "./plugins/agrimap-agent-skills",
       "description": "Routing skill plus dedicated one-operation AgriMap workflows",
       "version": "5.0.2",
-      "homepage": "https://github.com/orchex006/agrimap-agent-skills"
+      "homepage": "https://github.com/cognivex006/agrimap-agent-skills"
     }
   ]
 }

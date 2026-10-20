@@ -2,13 +2,15 @@
 
 [เริ่มใช้งาน](GETTING-STARTED.md) · [ตรวจ installation](DOCTOR.md)
 
-เอกสารชุดนี้สำหรับ **5.0.2** — [Latest release](https://github.com/orchex006/agrimap-agent-skills/releases/latest) · [Tags ทั้งหมด](https://github.com/orchex006/agrimap-agent-skills/tags)
+เอกสารชุดนี้สำหรับ **5.0.2** — [Latest release](https://github.com/cognivex006/agrimap-agent-skills/releases/latest) · [Tags ทั้งหมด](https://github.com/cognivex006/agrimap-agent-skills/tags)
 
 ## Tags ของ source รุ่นเก่า
 
 ตารางนี้เป็น source tags ที่สร้างย้อนหลังจาก snapshot สุดท้ายของแต่ละรุ่นบนประวัติ main โดยตรวจ package.json และ manifest ของ Codex/Claude/Gemini ให้ตรงกัน ไม่ได้สร้าง runtime archive ใหม่หรือรับรอง compatibility ใหม่ของรุ่นเก่า ใช้ source และเอกสาร ณ tag นั้น การดาวน์โหลด source ไม่เท่ากับติดตั้งสำเร็จ
 
 ไม่มี tag 3.7.0 เพราะเป็นงานที่เตรียมไว้แล้วรวมใน 4.1.0 และไม่นับ 9.8.7-test.1 เป็น stable release
+
+หลังย้าย repository ไป `cognivex006/agrimap-agent-skills` ต้องตรวจ release และ assets ของรุ่นที่เลือก ณ ปลายทางจริงก่อนดาวน์โหลด ตารางประวัติด้านล่างยังอ้างอิง repository เดิมและไม่ได้ยืนยันว่ามีรุ่นเก่าบนบัญชีใหม่ หากปลายทางเข้าไม่ได้หรือไม่มี assets ให้รายงานว่า unavailable ไม่แทนด้วยรุ่นอื่น
 
 <!-- AGM-HISTORICAL-TAGS:START -->
 
@@ -41,7 +43,7 @@
 
 <!-- AGM-HISTORICAL-TAGS:END -->
 
-เลือกจาก [Releases](https://github.com/orchex006/agrimap-agent-skills/releases) ของแพ็กเกจ ไม่ถือว่าเลขใน working copy หรือ changelog แปลว่ารุ่นนั้นเผยแพร่แล้ว รุ่นเก่าที่ยังไม่มี tag/artifact ที่ตรวจสอบได้ต้องรายงานว่า unavailable ห้ามแทนด้วย latest โดยเงียบ ๆ
+เลือกจาก [Releases](https://github.com/cognivex006/agrimap-agent-skills/releases) ของแพ็กเกจ ไม่ถือว่าเลขใน working copy หรือ changelog แปลว่ารุ่นนั้นเผยแพร่แล้ว รุ่นเก่าที่ยังไม่มี tag/artifact ที่ตรวจสอบได้ต้องรายงานว่า unavailable ห้ามแทนด้วย latest โดยเงียบ ๆ
 
 | สิ่งที่ต้องการ | วิธีเลือก |
 | --- | --- |

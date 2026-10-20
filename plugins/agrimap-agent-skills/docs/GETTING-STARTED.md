@@ -19,6 +19,8 @@ node --version
 
 ## 2. ติดตั้งสำหรับ host ของคุณ
 
+Repository ย้ายไป `cognivex006/agrimap-agent-skills` แล้ว ก่อนติดตั้งให้ตรวจว่าปลายทางมี source หรือ release ของรุ่นที่ต้องการจริง การเปลี่ยน URL ไม่ได้ย้าย release/assets เดิมโดยอัตโนมัติ หากยังไม่มีให้รายงานว่า unavailable ตาม [คู่มือเวอร์ชัน](VERSIONS.md)
+
 ต้องการเลือกรุ่นเก่าหรือ pin รุ่นที่ระบุ ดู [เลือกเวอร์ชัน](VERSIONS.md) ใช้ runtime artifact ของ release นั้นเมื่อมี ไม่ใช้ branch HEAD แทนรุ่นที่ขอ
 
 เลือกเพียงหนึ่งหัวข้อ คำสั่งในขั้นนี้ติดตั้ง plugin จึงเปลี่ยน configuration ของ host ไม่ใช่คำสั่งถาม Agent และไม่แก้ source ของโครงการ
@@ -28,7 +30,7 @@ node --version
 **Terminal / PowerShell:**
 
 ```powershell
-codex plugin marketplace add orchex006/agrimap-agent-skills
+codex plugin marketplace add cognivex006/agrimap-agent-skills
 codex plugin add agrimap-agent-skills@agrimap-agent-skills
 ```
 
@@ -39,7 +41,7 @@ codex plugin add agrimap-agent-skills@agrimap-agent-skills
 **Terminal / PowerShell:**
 
 ```powershell
-claude plugin marketplace add orchex006/agrimap-agent-skills
+claude plugin marketplace add cognivex006/agrimap-agent-skills
 claude plugin install agrimap-agent-skills@agrimap-agent-skills
 ```
 
@@ -50,7 +52,7 @@ Claude ใช้ชื่อ plugin กำกับคำสั่ง เช่�
 **Terminal / PowerShell ไม่ใช่ใน Antigravity chat:**
 
 ```powershell
-agy plugin install https://github.com/orchex006/agrimap-agent-skills
+agy plugin install https://github.com/cognivex006/agrimap-agent-skills
 ```
 
 ตรวจคำขอความยินยอมของ host ตามปกติ ไม่ต้องเพิ่ม flag ข้าม consent ดู [Antigravity plugin reference](https://antigravity.google/docs/cli/plugins)
