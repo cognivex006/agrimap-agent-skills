@@ -20,6 +20,14 @@
 
 Golden patterns และ manifests เป็นหลักฐานอ้างอิง ไม่เปลี่ยน bytes หรือ rehash เพื่อให้ validator ผ่านโดยไม่ตรวจ provenance เอกสารเก่าใน CHANGELOG และ v2 fixtures เป็นประวัติ ไม่ใช่กฎ v3
 
+## ตรวจและเผยแพร่จากเครื่อง
+
+Repository ปัจจุบันคือ `cognivex006/agrimap-agent-skills` ใช้ `npm run package:verify` ตรวจและ build preview ในเครื่อง ส่วน `npm run package:publish -- --version <version> --latest false` สร้าง tag และ GitHub Release จริง จึงต้องได้รับอนุญาตเผยแพร่ก่อน ดู `DEVELOPMENT.md` ใน source repository (เอกสารผู้ดูแลไม่รวมใน runtime archive)
+
+ไม่มี GitHub Actions สำหรับ CI/release แล้ว การตรวจครอบคลุมเฉพาะ OS ที่รัน ไม่มี matrix Windows/Linux อัตโนมัติ และไม่มี approval จาก Actions environment เดิม ผู้ดูแลต้องนำ required checks ของ Package CI ออกจาก branch protection/rulesets เอง พร้อมรักษากฎ PR และการป้องกัน tag
+
+การย้าย remote ไม่ได้ย้าย release assets รุ่นเก่าโดยอัตโนมัติ ตรวจรุ่นและไฟล์ที่ปลายทางจริงก่อนแนะนำการติดตั้ง; local tags และ changelog ไม่ใช่หลักฐานว่า release บัญชีใหม่พร้อมใช้งาน
+
 ## แก้ไขและตรวจให้พอดี
 
 **Terminal จาก root ของ package:**

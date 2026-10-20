@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Package CI: every non-merge commit a PR adds uses the team header
+// Local package verification: every non-merge commit a PR adds uses the team header
 // "<feature|fix|comment|bump|audit|ci>: <plain description>" (DEVELOPMENT.md).
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';

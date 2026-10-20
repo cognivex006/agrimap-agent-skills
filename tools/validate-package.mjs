@@ -300,7 +300,7 @@ if (!rootIgnore.split(/\r?\n/).includes(".agrimap-agent/")) errors.push("Develop
 
 const goldenManifest = await parseJson("skills/agrimap-agent-skills/references/patterns/golden/manifest.json");
 if (goldenManifest?.annotation !== "../conflict-resolution.md") errors.push("Golden manifest does not point to the canonical conflict annotation.");
-if (packageManifest?.repository?.url !== "git+https://github.com/orchex006/agrimap-agent-skills.git") errors.push("Package repository URL is invalid.");
+if (packageManifest?.repository?.url !== "git+https://github.com/cognivex006/agrimap-agent-skills.git") errors.push("Package repository URL is invalid.");
 
 const referenceRoot = path.join(root, "skills", "agrimap-agent-skills", "references");
 for (const file of (await filesUnder(referenceRoot)).filter((candidate) => candidate.endsWith(".md") && !candidate.includes(`${path.sep}patterns${path.sep}golden${path.sep}`))) {
