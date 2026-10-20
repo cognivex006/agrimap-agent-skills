@@ -111,7 +111,7 @@ test("usage documentation separates routing from operation activation and help",
   assert.match(usage, /\$agrimap-agent-skills -h/);
   assert.match(usage, /\/agrimap-agent-skills:agrimap-agent-skills -h/);
   assert.doesNotMatch(usage, /agrimap-agent-skills operation=analyze/);
-  assert.match(usage, /Start-Process "https:\/\/github\.com\/orchex006\/agrimap-agent-skills\/blob\/main\/docs\/USAGE\.md"/);
+  assert.match(usage, /Start-Process "https:\/\/github\.com\/cognivex006\/agrimap-agent-skills\/blob\/main\/docs\/USAGE\.md"/);
   assert.match(usage, /code \.\\docs\\USAGE\.md/);
   assert.match(usage, /notepad \.\\docs\\USAGE\.md/);
   assert.ok(rootIgnore.split(/\r?\n/).includes(".agrimap-agent/"));

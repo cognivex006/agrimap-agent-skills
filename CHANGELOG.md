@@ -4,10 +4,12 @@ Release history, not current operating instructions. Start with [Getting Started
 
 ## 5.0.2 — 2026-10-20 (new-repository reissue)
 
+- Correct the author account and generated historical source links to `cognivex006`; preserve original migration provenance. The owner explicitly authorized deleting and recreating the new-account 5.0.2 tag/release after this correction.
+
 - Move the active repository, installation instructions and doctor source to `cognivex006/agrimap-agent-skills`; retain original historical release links and attribution. Historical assets are not assumed to exist on the new account.
 - Replace GitHub Actions CI/publication with local `package:verify` and explicit `package:publish` commands. Publication verifies the fresh remote SHA, clean versioned source, new tag/release and downloaded draft checksums before publishing; it never pushes source or replaces an existing release.
 - Limit local unit verification to two concurrent suites to reduce Git/Node subprocess exhaustion on Windows.
-- Document retired required checks and the loss of automatic Windows/Linux checks and Actions environment approvals. Owner explicitly approved reissuing the modified 5.0.2 on the new repository. The original local v5.0.2 tag remains at 2447be9bdbaf31d7c17b2e07c8718d5f8d4a42d7; the new repository tag points to the migrated source and release.json records this distinction. Existing remote tags/assets must never be overwritten.
+- Document retired required checks and the loss of automatic Windows/Linux checks and Actions environment approvals. Owner explicitly approved reissuing the modified 5.0.2 on the new repository. The original local v5.0.2 tag remains at 2447be9bdbaf31d7c17b2e07c8718d5f8d4a42d7; the new repository tag points to the migrated source and release.json records this distinction. The owner-authorized account-correction reissue is a one-time exception; other existing remote tags/assets must never be overwritten.
 
 ### Original 5.0.2 — 2026-10-16 (previous repository)
 
