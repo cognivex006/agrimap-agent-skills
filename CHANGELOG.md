@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased
+
+- Correct the author account and generated historical source links to `cognivex006`; preserve original migration provenance.
+
 ## 5.0.2 — 2026-10-20 (new-repository reissue)
 
 - Move the active repository, installation instructions and doctor source to `cognivex006/agrimap-agent-skills`; retain original historical release links and attribution. Historical assets are not assumed to exist on the new account.
