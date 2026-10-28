@@ -121,6 +121,7 @@ With a matching `*.Tests.csproj`/`*.Test.csproj`, the production `.csproj` needs
   `024-10-response-structure-reference.md`.
 - Comment style — `029-12-comment-reference.cs`.
 - Procedure debugging — `012`/`013-4-4-debugging-sql-stored-procedure.cs`.
+- Advisory smells (QUALITY-05): recommend; edit only on request.
 
 ## FREE
 
