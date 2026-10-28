@@ -36,4 +36,4 @@ Investigate before asking: search the repository, `policy show`, `recall --topic
 
 ## Report
 
-Start: a 1–3 line plan and assumptions. During: silent unless an R2+ decision or risk appears. End: the delivery summary, up to five "decided for you" items with how to change them, and the next-step card.
+Start: plan/assumptions (1–3 lines). Report R2+; [notify before SonarQube edits](sonarqube-remediation.md). End: summary, ≤5 "decided for you" items/how to change them, next-step card.

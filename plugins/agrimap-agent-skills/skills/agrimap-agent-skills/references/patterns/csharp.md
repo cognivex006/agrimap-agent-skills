@@ -410,7 +410,9 @@ public class UserSearchRequestDto : QueryPagedRequestDto
 
 **QUALITY-02 — At most seven parameters.** Methods/constructors allow seven parameters (S107). Group related inputs into typed request/options objects or split responsibilities. Report necessary public-contract changes; never silently break callers, hide unrelated arguments in dictionaries or suppress the rule.
 
-**QUALITY-03 — No nested ternaries (S3358).** Extract ternaries nested in either branch, including anonymous-object properties, into statements/helpers. Simple standalone ternaries are allowed. Preserve evaluation order, short-circuiting, strings and response shape; keep branch-only expressions lazy.
+**QUALITY-03 — No nested ternaries (S3358).** Extract nested ternaries, including anonymous-object properties, into statements/helpers. Standalone ternaries are allowed. Preserve lazy evaluation, ordering, exact strings and response shape.
+
+**QUALITY-04:** [SonarQube notices](../sonarqube-remediation.md).
 
 Noncompliant cases:
 
