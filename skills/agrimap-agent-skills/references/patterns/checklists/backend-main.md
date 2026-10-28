@@ -40,7 +40,7 @@ follow the root. **A subfolder never extends the namespace.**
 | `agmbo` | `Infrastructure.Jobs` |
 
 An allowlist is not permission to create every tier. `Application.Models` does not exist — do not
-invent it to hold a result. One public type per file, file-scoped namespace, no alias to bypass the rule.
+invent it to hold a result. One public type per file; apply NS-01 [file layout](../csharp-file-layout.md): optional required usings, blank line, file-scoped namespace, blank line, type; no imports after the namespace or alias bypass.
 
 ## MUST — layer flow and placement
 
@@ -105,6 +105,11 @@ models across layers during a feature or bug task unless architecture correction
 - Any cookie/header/query/form/body read applies
   [HTTP request-value normalization](../../backend-engineer.md#http-request-value-normalization) and
   opens `golden/backend-libraries/013-1-extensions-request-value-normalize.md`.
+
+With a matching `*.Tests.csproj`/`*.Test.csproj`, the production `.csproj` needs `InternalsVisibleTo` for the test assembly and `Compile Remove="Tests\**\*.cs"`, without duplicates. See `patterns/csharp.md` TEST-03.
+
+- Changes to `*.Tests.csproj`/`*.Test.csproj`: check affected Dockerfiles for an explicit production `.csproj` in `dotnet publish`, with the correct stage path and matching restore (TEST-04).
+- Per method: at most seven `if`/`else if` decisions; per method/constructor: at most seven parameters. No nested ternaries, including inside anonymous-object branches. Preserve behavior when extracting statements/helpers, and check the configured SonarQube gate separately (QUALITY-01..03).
 
 ## SHOULD
 

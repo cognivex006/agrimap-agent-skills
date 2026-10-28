@@ -31,7 +31,7 @@
 - When the task is FE, BE, or SQL: [patterns/pattern-status.md](../patterns/pattern-status.md) — select exactly the matching pattern and Detect gates
 - When target_kind is fe-main or fe-library: [frontend-engineer.md](../frontend-engineer.md) — frontend QA fundamentals
 - When target_kind is be-main or be-library: [backend-engineer.md](../backend-engineer.md) — backend QA fundamentals including request-value normalization
-- When the backend artifact contains C#: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# QA baseline
+- When C#, .csproj or .NET-publishing Dockerfiles are in scope: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# QA baseline
 - When BE work reads or refactors cookie, header, query, form, JSON body, or device-ID resolution: [patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md](../patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md) — request-value QA behavior matrix for main/library code
 - When verification touches a stored procedure, SQL, or persisted data: [db-schema-context.md](../db-schema-context.md) — schema facts required to verify data and error behavior
 - When FE/BE URL, domain, redirect, or callback logic is under verification: [application-url-matrix.md](../application-url-matrix.md) — authoritative expected URL values

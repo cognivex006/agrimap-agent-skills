@@ -154,7 +154,7 @@
           "why": "backend analysis fundamentals including request-value normalization"
         },
         {
-          "when": "the backend target contains C#",
+          "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
           "why": "project-wide C# shape, naming, boundary, and code examples"
         },
@@ -262,7 +262,7 @@
           "why": "backend diagnosis fundamentals including request-value normalization"
         },
         {
-          "when": "the backend target contains C#",
+          "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
           "why": "project-wide C# behavior and style baseline"
         },
@@ -365,7 +365,7 @@
           "why": "backend execution-plan fundamentals"
         },
         {
-          "when": "the backend plan contains C#",
+          "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
           "why": "project-wide C# implementation baseline"
         },
@@ -467,7 +467,7 @@
           "why": "backend architecture fundamentals"
         },
         {
-          "when": "the backend architecture contains C#",
+          "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
           "why": "project-wide C# structure baseline"
         },
@@ -818,7 +818,7 @@
           "why": "MUST-tier platform-reuse and published-surface checks"
         },
         {
-          "when": "the backend target contains C#",
+          "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
           "why": "project-wide C# baseline"
         },
@@ -1120,7 +1120,7 @@
           "why": "backend QA fundamentals including request-value normalization"
         },
         {
-          "when": "the backend artifact contains C#",
+          "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
           "why": "project-wide C# QA baseline"
         },
@@ -1224,7 +1224,7 @@
           "why": "backend fundamentals that every generated handoff must carry"
         },
         {
-          "when": "the backend handoff contains C#",
+          "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
           "why": "project-wide C# rules that every generated handoff must carry"
         },
@@ -1354,7 +1354,7 @@
           "why": "current backend contract carried into execution"
         },
         {
-          "when": "the authorized backend work contains C#",
+          "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
           "why": "project-wide C# execution baseline"
         },

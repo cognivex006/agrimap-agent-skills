@@ -10,6 +10,7 @@ Apply to every C# file in `be-main` and `be-library`. Curated golden and owner r
 - [Async, errors, data, and logs](#async-errors-data-and-logs)
 - [Comments and tests](#comments-and-tests)
 - [Owner-approved templates](#owner-approved-templates)
+- [Complexity and code smells](#complexity-and-code-smells)
 - [Target test and tooling baseline](#target-test-and-tooling-baseline)
 - [Decision order](#decision-order)
 
@@ -29,17 +30,9 @@ Apply to every C# file in `be-main` and `be-library`. Curated golden and owner r
 
 This table is a namespace allowlist, not permission to create every tier. `agmbo` keeps its scheduler entry and does not gain a Presentation tier unless the project already proves one is required.
 
-```csharp
-// Correct even when the file is under DTOs/Requests/OAuth/
-namespace AgriMap.Web.Service.Presentation.DTOs.Requests;
-
-// Forbidden: a subfolder must not extend a fixed namespace
-namespace AgriMap.Web.Service.Presentation.DTOs.Requests.OAuth;
-```
-
 - Use `Application` and `Infrastructure` root namespaces for their DI registration extensions.
 - Use `Presentation.Mockup` for JSON assets and `Presentation.Models` for models/model binders; do not invent deeper namespaces.
-- Use one public type per file and a file-scoped namespace. Reuse global usings; add only imports required to compile, before the namespace. Never use an alias to bypass the fixed namespace rule.
+- **NS-01 — File order:** required `using` directives → blank line → `namespace Name;` → blank line → type. Without imports, start at the namespace. No block namespace or imports after it. Reuse global usings; no unused imports or namespace-rule bypass aliases. For C# file/import/namespace edits, read [C# file layout](csharp-file-layout.md) examples and exceptions. One public type per file.
 - Use PascalCase for types/members, `I` for interfaces, `_camelCase` for private readonly dependencies, and `Async` for new async I/O methods. Preserve existing public names when renaming would break compatibility.
 - Name transport types `*RequestDto` / `*ResponseDto`, orchestration `*UseCase`, inward data ports `I*Repository`, and implementations `*Repository`.
 - Keep Presentation, Application, Domain, Port, and Infrastructure responsibilities separate as defined in [backend.md](backend.md).
@@ -411,6 +404,65 @@ public class UserSearchRequestDto : QueryPagedRequestDto
 }
 ```
 
+## Complexity and code smells
+
+**QUALITY-01 — Keep methods simple.** Team limit: seven `if`/`else if` decisions per method, including nested ones; `else` alone does not count. Use cohesive helpers and guard clauses, never nested ternaries to evade this limit. Also check the configured SonarQube Cognitive Complexity gate (S3776): its score differs from branch count. Seven is the team's branch limit, not a SonarQube default.
+
+**QUALITY-02 — At most seven parameters.** Methods/constructors allow seven parameters (S107). Group related inputs into typed request/options objects or split responsibilities. Report necessary public-contract changes; never silently break callers, hide unrelated arguments in dictionaries or suppress the rule.
+
+**QUALITY-03 — No nested ternaries (S3358).** Extract ternaries nested in either branch, including anonymous-object properties, into statements/helpers. Simple standalone ternaries are allowed. Preserve evaluation order, short-circuiting, strings and response shape; keep branch-only expressions lazy.
+
+Noncompliant cases:
+
+```csharp
+return j.IsRunning ? "Running" : j.HasErrors ? "Failed" : "Succeeded";
+
+RequireMessage(message, request.AuthorizeResult == "fail" ? "diable_success"
+    : status == "RESERVE" ? "reserve_success" : "reuse_right_code");
+
+return IsPlusRight(context)
+    ? new { status_code = statusCode, code = errorCode == "internal_server_error" ? "internal_error" : errorCode, message }
+    : (object)new { status_code = statusCode, error = errorCode, message };
+```
+
+Compliant replacements, respectively:
+
+```csharp
+if (j.IsRunning)
+{
+    return "Running";
+}
+return j.HasErrors ? "Failed" : "Succeeded";
+```
+
+```csharp
+string messageCode;
+if (request.AuthorizeResult == "fail")
+{
+    messageCode = "diable_success";
+}
+else if (status == "RESERVE")
+{
+    messageCode = "reserve_success";
+}
+else
+{
+    messageCode = "reuse_right_code";
+}
+RequireMessage(message, messageCode);
+```
+
+```csharp
+if (IsPlusRight(context))
+{
+    var code = errorCode == "internal_server_error" ? "internal_error" : errorCode;
+    return new { status_code = statusCode, code, message };
+}
+return (object)new { status_code = statusCode, error = errorCode, message };
+```
+
+Review touched code for duplicate branches, dead code, deep nesting and swallowed exceptions. Fix smells within scope, preserving behavior and existing constant/error rules. Examples retain legacy literals, including spelling; they do not authorize new hardcoding. Nested ternaries are a smell regardless of complexity score. These rules do not configure analyzers or establish a passing scan.
+
 ## Target test and tooling baseline
 
 These sections are owner-approved targets, not claims that current repositories already contain them.
@@ -430,6 +482,29 @@ public async Task UpdateUser_RouteAndBodyIdDiffer_RouteWins(
 ```
 
 **TOOL-01 — Shared services-root tooling target.** Add one `.editorconfig` for `is null`/naming/formatting, one `Directory.Build.props` for shared analyzers and banned symbols (`Console.WriteLine`, `DateTime.Now`, `DateTimeExtensions.GetNow`), and a Jenkins `dotnet format --verify-no-changes` gate. Do not claim this tooling exists until the target workspace proves it.
+
+**TEST-03 — Configure the main project when unit tests exist.** For unit tests with a matching `*.Tests.csproj`/`*.Test.csproj`, reconcile these entries in the production `.csproj`, never the `.sln` or test project. `InternalsVisibleTo Include` matches the effective test `AssemblyName`, defaulting to the filename without `.csproj`; signed assemblies need the test assembly's public key. Preserve configuration without duplicates. Exclude nested `Tests/` sources from production compilation. Apply to existing/new test projects; this rule alone does not require creating tests.
+
+Example: `AgriMap.Web.Service.csproj` with `Tests/AgriMap.Web.Service.Tests.csproj`:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Existing project configuration -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="AgriMap.Web.Service.Tests" />
+    <Compile Remove="Tests\**\*.cs" />
+  </ItemGroup>
+</Project>
+```
+
+**TEST-04 — Check Docker publishing when tests change.** On adding/editing `*.Tests.csproj` or `*.Test.csproj`, inspect affected Dockerfiles. Explicitly target the production `.csproj` in `dotnet publish`, relative to the stage's `WORKDIR` and copied files. Preserve flags/stages and ensure restore covers that project with `--no-restore`. Record absent Dockerfiles; do not invent one.
+
+```dockerfile
+# Before: implicit project selection
+RUN dotnet publish -c Release -o out --no-restore
+# After: explicit production project (example path)
+RUN dotnet publish "./AgriMap.Web.Service.csproj" -c Release -o out --no-restore
+```
 
 ## Decision order
 
