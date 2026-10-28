@@ -4,6 +4,8 @@ Release history, not current operating instructions. Start with [Getting Started
 
 ## Unreleased
 
+- Add QUALITY-05 for team-agreed advisory SonarQube/Roslyn code smells (ADV-01..07: S4136 overload adjacency, CA1822/S2325 static candidates, S1905 redundant casts, S3236 explicit caller-info arguments, S1481 unused locals, xUnit2032 and CA1816). They are reported as recommendations first and edited only when the requester asks and evidence proves no behavior or contract change, with per-rule fixes and pre-fix checks. Touched-code cleanup in the C# decision order no longer auto-fixes them.
+
 ## 5.0.4 — 2026-10-28
 
 - Require an explicit requester notice before SonarQube-driven edits, especially when revisiting work previously reported complete, accepted or delivered. Explain the finding, reason, proposed change and behavior/contract impact; summarize actual verification and scan status afterward. Notification does not add an approval gate or grant edit authority. Link the shared notice contract from autonomy and the C# quality baseline.
