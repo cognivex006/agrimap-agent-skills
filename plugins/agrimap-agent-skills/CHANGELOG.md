@@ -4,6 +4,8 @@ Release history, not current operating instructions. Start with [Getting Started
 
 ## Unreleased
 
+## 5.0.5 — 2026-10-28
+
 - Add QUALITY-05 for team-agreed advisory SonarQube/Roslyn code smells (ADV-01..07: S4136 overload adjacency, CA1822/S2325 static candidates, S1905 redundant casts, S3236 explicit caller-info arguments, S1481 unused locals, xUnit2032 and CA1816). They are reported as recommendations first and edited only when the requester asks and evidence proves no behavior or contract change, with per-rule fixes and pre-fix checks. Touched-code cleanup in the C# decision order no longer auto-fixes them.
 
 ## 5.0.4 — 2026-10-28
