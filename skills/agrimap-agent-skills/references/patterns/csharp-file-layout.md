@@ -1,0 +1,45 @@
+# C# file layout — NS-01
+
+Applies to hand-authored, namespace-bearing backend C# files in services, workers and libraries. Read this with the [C# baseline](csharp.md#namespaces-files-and-naming). This owner rule outranks formatting in raw legacy golden examples.
+
+Other baseline snippets may omit imports as fragments; assemble complete files using these layouts.
+
+## Case 1 — no file-local using directives
+
+Declare the file-scoped namespace, one blank line, then the type. Do not invent a `using` block when the file needs none or global/implicit usings already supply its imports.
+
+```csharp
+namespace AgriMap.Web.Service.Presentation.DTOs.Responses;
+
+public class UserResponseDto
+{
+    public string Name { get; set; } = string.Empty;
+}
+```
+
+## Case 2 — file-local using directives are needed
+
+Put every required `using` before the namespace. Separate the using block, namespace and type with one blank line. Example where this import is not already global:
+
+```csharp
+using System.Text.Json.Serialization;
+
+namespace AgriMap.Web.Service.Presentation.DTOs.Responses;
+
+public class UserResponseDto
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+}
+```
+
+## Review and preservation
+
+- Require `namespace Name;`, not `namespace Name { ... }`. No `using` after the namespace, including namespace-local using directives permitted by C# syntax.
+- Keep the actual namespace within the baseline allowlist. A file under `DTOs/Requests/OAuth/` still uses `AgriMap.Web.Service.Presentation.DTOs.Requests`, never a new `.OAuth` suffix. In libraries preserve the published namespace/API.
+- Keep existing required license/header comments and preprocessor directives; the order above describes code sections. Preserve directive scope and compilation behavior when moving imports.
+- `using` here means import directives, including static/alias imports, not `using` statements/declarations that manage resources inside a method.
+- Do not force a namespace into top-level `Program.cs` or a global-usings-only file. Leave generated code to its generator. Converting an existing block namespace must preserve type identity, scope and behavior; report a compatibility/language-version blocker rather than changing public namespaces or project language settings.
+- Check both cases during review: no unused/dummy imports; all required file-local imports before the namespace; semicolon form; one blank line between sections; one public type per file. Follow project import sorting separately.
+
+For an AgriMap backend request, enter through `agm-be`; its C# condition loads `patterns/csharp.md`, which points here when file layout is involved. Execution/review paths using the same baseline follow this rule too. State which files were opened; do not claim cross-model execution or a build merely from reading examples.

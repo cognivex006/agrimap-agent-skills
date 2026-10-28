@@ -53,7 +53,7 @@ When the library reads or resolves request values:
 - Preserve the published API. An intentional change is additive first, then deprecation, then
   removal in a later major — and it updates compatibility notes in the same task.
 - C# structure follows [patterns/csharp.md](../csharp.md): one public type per file, file-scoped
-  namespace, `I` interface prefix, `_camelCase` private readonly dependencies, `Async` suffix on new
+  namespace (NS-01 [file layout](../csharp-file-layout.md): required usings before namespace, blank lines between sections), `I` interface prefix, `_camelCase` private readonly dependencies, `Async` suffix on new
   async I/O, and no alias to bypass a fixed namespace.
 
 ## MUST — every library feature ships complete
