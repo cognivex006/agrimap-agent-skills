@@ -2,6 +2,14 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## 5.0.3 — 2026-10-28
+
+- Make backend C# file layout explicit as NS-01: optional required imports, blank line, file-scoped namespace, blank line, type. Add both with/without-using examples and links from service/library checklists; preserve global usings, top-level entrypoints, directive scope and published namespaces.
+- When adding or editing `*.Tests.csproj`/`*.Test.csproj`, inspect affected Dockerfiles and explicitly select the production `.csproj` in `dotnet publish`; preserve stage paths, restore compatibility and existing flags.
+- Add backend team limits of seven `if`/`else if` decisions per method and seven parameters per method/constructor, plus a separate check of the configured SonarQube Cognitive Complexity gate. Prohibit nested ternaries and include behavior-preserving replacements for job status, message-code selection and conditional anonymous response objects.
+- When a backend project has unit tests and a matching `*.Tests.csproj`/`*.Test.csproj`, configure the main production `.csproj` with `InternalsVisibleTo` for the test assembly and `Compile Remove="Tests\**\*.cs"` so nested test sources are compiled only by the test project. Resolve an explicit `AssemblyName` before falling back to the test project filename, handle signed assemblies and preserve existing configuration without duplicate entries.
+- Load the C# baseline for `.csproj` and .NET-publishing Dockerfile work as well as C# source across analysis, diagnosis, planning, architecture, backend, QA, handoff and execution skills.
+
 ## 5.0.2 — 2026-10-20 (new-repository reissue)
 
 - Correct the author account and generated historical source links to `cognivex006`; preserve original migration provenance. The owner explicitly authorized deleting and recreating the new-account 5.0.2 tag/release after this correction.

@@ -34,7 +34,7 @@
 - When the Prompt Result has two or more units or Subagent assignments: [subagents-and-branches.md](../subagents-and-branches.md) — Main/Subagent ownership, visibility, and integration boundaries
 - When target_kind is fe-main or fe-library: [frontend-engineer.md](../frontend-engineer.md) — frontend fundamentals that every generated handoff must carry
 - When target_kind is be-main or be-library: [backend-engineer.md](../backend-engineer.md) — backend fundamentals that every generated handoff must carry
-- When the backend handoff contains C#: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# rules that every generated handoff must carry
+- When C#, .csproj or .NET-publishing Dockerfiles are in scope: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# rules that every generated handoff must carry
 - When the backend handoff touches cookie, header, query, form, JSON body, or device-ID resolution: [patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md](../patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md) — request-value rules that every generated handoff must carry
 - When target_kind is sql-table, sql-procedure, or sql-table-and-procedure: [patterns/sql.md](../patterns/sql.md) — SQL fundamentals that every generated handoff must carry
 - When the handoff touches a stored procedure, table, or persisted data: [db-schema-context.md](../db-schema-context.md) — schema evidence the executor must carry

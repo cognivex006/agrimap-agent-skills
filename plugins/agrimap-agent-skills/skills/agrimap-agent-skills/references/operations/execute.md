@@ -35,7 +35,7 @@
 - When the authorized frontend work targets fe-library: [patterns/checklists/frontend-libraries.md](../patterns/checklists/frontend-libraries.md) — MUST-tier golden checks before a frontend library write
 - When the authorized work targets backend code: [backend-engineer.md](../backend-engineer.md) — backend profile detection and phase discipline carried into execution
 - When the authorized work targets backend code: [patterns/backend.md](../patterns/backend.md) — current backend contract carried into execution
-- When the authorized backend work contains C#: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# execution baseline
+- When C#, .csproj or .NET-publishing Dockerfiles are in scope: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# execution baseline
 - When the authorized backend work targets be-main: [patterns/checklists/backend-main.md](../patterns/checklists/backend-main.md) — MUST-tier golden checks before a backend service write
 - When the authorized backend work targets be-library: [patterns/checklists/backend-libraries.md](../patterns/checklists/backend-libraries.md) — MUST-tier golden checks before a backend library write
 - When the authorized backend work touches cookie, header, query, form, JSON body, or device-ID resolution: [patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md](../patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md) — request-value execution contract
