@@ -2,6 +2,12 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased
+
+## 5.0.4 — 2026-10-28
+
+- Require an explicit requester notice before SonarQube-driven edits, especially when revisiting work previously reported complete, accepted or delivered. Explain the finding, reason, proposed change and behavior/contract impact; summarize actual verification and scan status afterward. Notification does not add an approval gate or grant edit authority. Link the shared notice contract from autonomy and the C# quality baseline.
+
 ## 5.0.3 — 2026-10-28
 
 - Make backend C# file layout explicit as NS-01: optional required imports, blank line, file-scoped namespace, blank line, type. Add both with/without-using examples and links from service/library checklists; preserve global usings, top-level entrypoints, directive scope and published namespaces.
