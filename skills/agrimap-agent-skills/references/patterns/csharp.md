@@ -32,7 +32,7 @@ This table is a namespace allowlist, not permission to create every tier. `agmbo
 
 - Use `Application` and `Infrastructure` root namespaces for their DI registration extensions.
 - Use `Presentation.Mockup` for JSON assets and `Presentation.Models` for models/model binders; do not invent deeper namespaces.
-- **NS-01 — File order:** required `using` directives → blank line → `namespace Name;` → blank line → type. Without imports, start at the namespace. No block namespace or imports after it. Reuse global usings; no unused imports or namespace-rule bypass aliases. For C# file/import/namespace edits, read [C# file layout](csharp-file-layout.md) examples and exceptions. One public type per file.
+- **NS-01 — File order:** required `using` directives → blank line → `namespace Name;` → blank line → type. Without imports, start at the namespace. No block namespace or imports after it. Reuse global usings; no unused imports or namespace-rule bypass aliases. For C# file/import/namespace edits or reviews and ADV-01 overload order, read [C# file layout](csharp-file-layout.md). One public type per file.
 - Use PascalCase for types/members, `I` for interfaces, `_camelCase` for private readonly dependencies, and `Async` for new async I/O methods. Preserve existing public names when renaming would break compatibility.
 - Name transport types `*RequestDto` / `*ResponseDto`, orchestration `*UseCase`, inward data ports `I*Repository`, and implementations `*Repository`.
 - Keep Presentation, Application, Domain, Port, and Infrastructure responsibilities separate as defined in [backend.md](backend.md).

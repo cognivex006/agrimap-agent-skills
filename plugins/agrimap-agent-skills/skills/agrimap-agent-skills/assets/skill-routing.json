@@ -136,6 +136,10 @@
       "\\bquartz\\b",
       "\\bjob\\s*scheduler\\b",
       "\\bbackend\\b",
+      "\\bnamespaces?\\b",
+      "\\busing\\s+directives?\\b",
+      "\\boverloads?\\b",
+      "โอเวอร์โหลด",
       "หลังบ้าน"
     ],
     "feKeywords": [
@@ -164,6 +168,19 @@
       "สกิล",
       "\\bplugins?\\b",
       "ปลั๊กอิน"
+    ],
+    "packageInvocation": "(?<!ไม่\\s{0,2}|\\bnot\\s{1,2}|n't\\s{1,2})(?:ใช้|use|using|with|ด้วย|ผ่าน|via)\\s*(?:the\\s+)?(?:agm|agrimap)(?:[\\s-]*agent)?[\\s-]*(?:skills?|สกิล)",
+    "conformance": [
+      "\\bnamespaces?\\b",
+      "\\busing\\s*(?:directives?|/)",
+      "\\boverloads?\\b",
+      "โอเวอร์โหลด",
+      "\\bmember\\s+order\\b",
+      "\\bfile\\s+layout\\b",
+      "\\bnaming\\b",
+      "\\bconventions?\\b",
+      "มาตรฐาน(?:โค้ด|code)?",
+      "\\bgolden\\b"
     ],
     "repositoryMention": "\\b(?:agm(?:ws|bo|wa)-[a-z0-9-]+|agrimap\\.platform\\.[a-z0-9.]+)\\b",
     "codeWords": [
@@ -421,7 +438,6 @@
         "\\bfail(?:s|ed|ing|ure)?\\b",
         "พัง",
         "ไม่ทำงาน",
-        "ผิดปกติ",
         "ช้า",
         "\\bslow\\b",
         "\\btimeouts?\\b",
@@ -429,6 +445,9 @@
         "ค้าง",
         "สาเหตุ",
         "\\broot\\s*cause\\b"
+      ],
+      "softKeywords": [
+        "ผิดปกติ"
       ],
       "weakKeywords": [
         "ทำไม",

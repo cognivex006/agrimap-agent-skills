@@ -159,6 +159,11 @@
           "why": "project-wide C# shape, naming, boundary, and code examples"
         },
         {
+          "when": "C# using/namespace placement, member order or method overloads are reviewed, verified or edited",
+          "path": "patterns/csharp-file-layout.md",
+          "why": "NS-01 using/namespace order and ADV-01 overload adjacency review cases"
+        },
+        {
           "when": "the backend target reads cookie, header, query, form, JSON body, or device ID",
           "path": "patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md",
           "why": "exact normalize API and compatibility behavior"
@@ -820,7 +825,7 @@
         {
           "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
-          "why": "project-wide C# baseline"
+          "why": "project-wide C# baseline; NS-01/ADV-01 reviews open csharp-file-layout.md"
         },
         {
           "when": "the target reads cookie, header, query, form, JSON body, or device ID",
@@ -1125,6 +1130,11 @@
           "why": "project-wide C# QA baseline"
         },
         {
+          "when": "C# using/namespace placement, member order or method overloads are reviewed, verified or edited",
+          "path": "patterns/csharp-file-layout.md",
+          "why": "NS-01 and ADV-01 cases a C# QA pass must check"
+        },
+        {
           "when": "BE work reads or refactors cookie, header, query, form, JSON body, or device-ID resolution",
           "path": "patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md",
           "why": "request-value QA behavior matrix for main/library code"
@@ -1227,6 +1237,11 @@
           "when": "C#, .csproj or .NET-publishing Dockerfiles are in scope",
           "path": "patterns/csharp.md",
           "why": "project-wide C# rules that every generated handoff must carry"
+        },
+        {
+          "when": "C# using/namespace placement, member order or method overloads are reviewed, verified or edited",
+          "path": "patterns/csharp-file-layout.md",
+          "why": "NS-01 and ADV-01 cases every C# handoff must carry"
         },
         {
           "when": "the backend handoff touches cookie, header, query, form, JSON body, or device-ID resolution",

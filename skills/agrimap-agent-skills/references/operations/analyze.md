@@ -32,6 +32,7 @@
 - When target_kind is fe-main or fe-library: [frontend-engineer.md](../frontend-engineer.md) — frontend analysis fundamentals
 - When target_kind is be-main or be-library: [backend-engineer.md](../backend-engineer.md) — backend analysis fundamentals including request-value normalization
 - When C#, .csproj or .NET-publishing Dockerfiles are in scope: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# shape, naming, boundary, and code examples
+- When C# using/namespace placement, member order or method overloads are reviewed, verified or edited: [patterns/csharp-file-layout.md](../patterns/csharp-file-layout.md) — NS-01 using/namespace order and ADV-01 overload adjacency review cases
 - When the backend target reads cookie, header, query, form, JSON body, or device ID: [patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md](../patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md) — exact normalize API and compatibility behavior
 - When the target reads or writes data through a stored procedure, view, table, or inline SQL: [db-schema-context.md](../db-schema-context.md) — owner DDL evidence and SP → table tracing
 - When FE/BE URL, domain, redirect, or callback logic is in scope: [application-url-matrix.md](../application-url-matrix.md) — authoritative environment-specific URL selection

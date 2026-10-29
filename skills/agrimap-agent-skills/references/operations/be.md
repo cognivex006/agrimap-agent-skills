@@ -47,7 +47,7 @@ Resolve exactly one action before target inspection or product writes. Safe defa
 - When action=refactor: [refactor-modes.md](../refactor-modes.md) — exact refactor behavior and logic-change boundary
 - When target_kind=be-main: [patterns/checklists/backend-main.md](../patterns/checklists/backend-main.md) — MUST-tier namespace allowlist, layer placement, and preserved-contract checks
 - When target_kind=be-library: [patterns/checklists/backend-libraries.md](../patterns/checklists/backend-libraries.md) — MUST-tier platform-reuse and published-surface checks
-- When C#, .csproj or .NET-publishing Dockerfiles are in scope: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# baseline
+- When C#, .csproj or .NET-publishing Dockerfiles are in scope: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# baseline; NS-01/ADV-01 reviews open csharp-file-layout.md
 - When the target reads cookie, header, query, form, JSON body, or device ID: [patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md](../patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md) — request-value behavior and compatibility
 - When the target calls a stored procedure, executes SQL, or maps persisted data: [db-schema-context.md](../db-schema-context.md) — owner DDL evidence and SP → table tracing
 - When URL, domain, redirect, or callback logic is in scope: [application-url-matrix.md](../application-url-matrix.md) — authoritative environment-specific URL values
