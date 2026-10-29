@@ -32,6 +32,7 @@
 - When target_kind is fe-main or fe-library: [frontend-engineer.md](../frontend-engineer.md) — frontend QA fundamentals
 - When target_kind is be-main or be-library: [backend-engineer.md](../backend-engineer.md) — backend QA fundamentals including request-value normalization
 - When C#, .csproj or .NET-publishing Dockerfiles are in scope: [patterns/csharp.md](../patterns/csharp.md) — project-wide C# QA baseline
+- When C# using/namespace placement, member order or method overloads are reviewed, verified or edited: [patterns/csharp-file-layout.md](../patterns/csharp-file-layout.md) — NS-01 and ADV-01 cases a C# QA pass must check
 - When BE work reads or refactors cookie, header, query, form, JSON body, or device-ID resolution: [patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md](../patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md) — request-value QA behavior matrix for main/library code
 - When verification touches a stored procedure, SQL, or persisted data: [db-schema-context.md](../db-schema-context.md) — schema facts required to verify data and error behavior
 - When FE/BE URL, domain, redirect, or callback logic is under verification: [application-url-matrix.md](../application-url-matrix.md) — authoritative expected URL values

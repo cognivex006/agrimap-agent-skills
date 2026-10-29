@@ -51,6 +51,8 @@ function compile(raw) {
     beKeywords: any(signals.beKeywords),
     feKeywords: any(signals.feKeywords),
     meta: any(signals.meta),
+    packageInvocation: new RegExp(signals.packageInvocation, "giu"),
+    conformance: any(signals.conformance),
     codeWords: any(signals.codeWords),
     anchors: any(signals.anchors),
     identifier: new RegExp(signals.identifier, "u"),
@@ -59,6 +61,7 @@ function compile(raw) {
       ...intent,
       patterns: any(intent.keywords),
       weakPatterns: any(intent.weakKeywords),
+      softPatterns: any(intent.softKeywords),
       projectPatterns: any(intent.projectKeywords),
       createPatterns: any(intent.createKeywords),
       editPatterns: any(intent.editKeywords),
@@ -126,9 +129,13 @@ function sqlEvidence(routing, text, fePreferred) {
 }
 
 function resolveIntent(routing, text) {
-  const explain = routing.intents.find((intent) => intent.id === "read")?.explainPatterns || [];
+  const read = routing.intents.find((intent) => intent.id === "read");
+  const explain = read?.explainPatterns || [];
+  // "namespace ผิดปกติ" asked with a read verb is a convention review; real symptoms (error, สาเหตุ) stay strong keywords.
+  const review = Boolean(read) && hits(routing.conformance, text) && hits(read.patterns, text);
   for (const intent of routing.intents) {
     if (hits(intent.patterns, text)) return intent;
+    if (intent.softPatterns.length && hits(intent.softPatterns, text) && !review) return intent;
     if (intent.weakPatterns.length && hits(intent.weakPatterns, text) && !hits(explain, text)) return intent;
   }
   return null;
@@ -164,7 +171,8 @@ function supportingFor(routing, text) {
 // Resolve one request. prompt is raw requester text; quoted/fenced text is
 // ignored. repoLane is the lane of the session repository (or null outside one).
 export function routeRequest(routing, { prompt = "", repoLane = null, paths = [] } = {}) {
-  const text = unquotedIntent(prompt).trim();
+  // "use agm skills to check X" asks for the work itself; only the phrase names the package.
+  const text = unquotedIntent(prompt).replace(routing.packageInvocation, " ").trim();
   // Paths and object names inside backticks are lane evidence, not commands.
   const evidence = String(prompt).replace(/```[\s\S]*?```/g, "").replace(/^\s*>.*$/gm, "");
   const base = { lanes: [], intent: null, skill: null, action: null, crossLane: false, supporting: [], owner: null, codeEvidence: false, reason: "" };
@@ -213,7 +221,9 @@ export function routeRequest(routing, { prompt = "", repoLane = null, paths = []
   const anchored = fromPaths.size > 0 || (evidence.match(PATH_TOKEN) || []).length > 0
     || routing.sqlObjects.some((pattern) => pattern.test(evidence)) || routing.objectToken.test(evidence)
     || routing.identifier.test(evidence) || hits(routing.anchors, text)
-    || new RegExp(routing.repositoryMention.source, "iu").test(evidence);
+    || new RegExp(routing.repositoryMention.source, "iu").test(evidence)
+    // "ไฟล์ไหน namespace ผิด" names repository code by its conventions, not by a path.
+    || (hits(routing.conformance, evidence) && hits(routing.codeWords, evidence));
   const codeEvidence = intent.id === "read" ? anchored
     : intent.projectPatterns.length ? anchored || hits(intent.projectPatterns, text)
     : anchored || sqlFromRequest || ["refactor", "test"].includes(intent.id)
@@ -296,7 +306,7 @@ export function renderRoutingReference(routing) {
     "| --- | --- |",
     ...intentRows(raw).map((row) => `| ${row.labels.join(" / ")} | ${intentCell(row)} |`),
     "",
-    `Precedence when several intents match: ${raw.intents.map((intent) => intent.id).join(" > ")}. A fix request (แก้/fix) is a change even when it mentions an error; diagnose is for a cause without a fix request. Lane evidence without a verb takes the read-only \`${raw.defaultIntent}\` path; a request with neither is not code work. Outside any lane the lane-free intents still apply; otherwise use the router \`${raw.router}\`.`,
+    `Precedence when several intents match: ${raw.intents.map((intent) => intent.id).join(" > ")}. A fix request (แก้/fix) is a change even when it mentions an error; diagnose is for a cause without a fix request. A convention check (namespace/using order, overloads, naming, golden) with a read verb is a read even when it says ผิดปกติ, and "use agm skills to …" asks for the work, not about skills. Lane evidence without a verb takes the read-only \`${raw.defaultIntent}\` path; a request with neither is not code work. Outside any lane the lane-free intents still apply; otherwise use the router \`${raw.router}\`.`,
     "",
     "## 3. Combination",
     "",

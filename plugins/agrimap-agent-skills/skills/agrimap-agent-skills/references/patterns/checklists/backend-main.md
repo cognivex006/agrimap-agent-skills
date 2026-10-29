@@ -121,15 +121,15 @@ With a matching `*.Tests.csproj`/`*.Test.csproj`, the production `.csproj` needs
   `024-10-response-structure-reference.md`.
 - Comment style — `029-12-comment-reference.cs`.
 - Procedure debugging — `012`/`013-4-4-debugging-sql-stored-procedure.cs`.
-- Advisory smells (QUALITY-05): recommend; edit only on request.
+- Advisory smells (QUALITY-05): recommend; edit only on request. Review always reports ADV-01 split overloads with `file:line` ([overload order](../csharp-file-layout.md#overload-order--adv-01-s4136)).
 
 ## FREE
 
 Algorithm choice, validation body, local decomposition, and private member ordering inside a
-correctly placed layer. Do not demand a golden example or escalate for these.
+correctly placed layer, except that same-name overloads stay adjacent (ADV-01). Do not demand a golden example or escalate for these.
 
 ## Before the write
 
 1. Profile detection (`be-main` + `agmws`|`agmbo`) declared as `INFERENCE` with its evidence.
-2. Every `MUST` row verified; namespace checked against the allowlist.
+2. Every `MUST` row verified; namespace checked against the allowlist and NS-01 file order (no import after the namespace).
 3. `Patterns:` line lists `agm:golden/backend-main` + `agm:patterns/csharp` plus the exact entries opened.

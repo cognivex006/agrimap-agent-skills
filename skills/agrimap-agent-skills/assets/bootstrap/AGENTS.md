@@ -1,6 +1,6 @@
 # กติกากลาง: Skill routing, Workflow และ Release
 
-<!-- AGRIMAP BOOTSTRAP VERSION: 5.0.5 -->
+<!-- AGRIMAP BOOTSTRAP VERSION: 5.0.6 -->
 
 ไฟล์นี้เป็น canonical instruction ของ repository สำหรับ Codex, Claude Code, Gemini CLI, Cursor และผู้พัฒนา โดยไม่ต้องมี AgriMap skills หรือ local Git hook กติกา Markdown ช่วยกำกับพฤติกรรม; Agent ใช้ .NET Global Tool `agm-release` ตรวจ local gate และตรวจหลักฐาน Git ตามไฟล์นี้ ห้ามอนุมานว่า Jenkins บังคับ release gate อยู่ ส่วน GitLab Protected Branch/Tag ต้องตั้งค่าฝั่ง server แยกต่างหาก
 
