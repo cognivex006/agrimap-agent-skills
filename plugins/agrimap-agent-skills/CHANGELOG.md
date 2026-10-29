@@ -4,6 +4,10 @@ Release history, not current operating instructions. Start with [Getting Started
 
 ## Unreleased
 
+## 5.0.7 — 2026-10-29
+
+- Extend QUALITY-05 with ADV-08 (CA1861 constant array arguments, including test asserts) and ADV-09 (SYSLIB1045 `GeneratedRegex`, with a match timeout that also closes the non-advisory S6444 regex-timeout hotspot). ADV-02 now reminds to update instance call sites such as test fixtures. ADV-01..07 and their advisory handling are unchanged.
+
 ## 5.0.6 — 2026-10-29
 
 - Make NS-01 (using/namespace order) and ADV-01 (S4136 overload adjacency) reachable during reviews, not only edits. `agm-analyze`, `agm-qa` and `agm-prompt` load `patterns/csharp-file-layout.md` directly when using/namespace placement, member order or overloads are in scope. `agm-be` points to it from its C# baseline line, and `agm-exec` reaches it through the backend checklists; both stay within their entrypoint budgets. The file adds noncompliant NS-01 shapes that still compile and an ADV-01 section with before/after examples. A Golden Lint run without findings no longer counts as proof. NS-01 in `csharp.md` now covers reviews and names ADV-01, and the service/library checklists report split overloads with `file:line`. "Private member ordering" under FREE no longer exempts overloads.
