@@ -169,7 +169,7 @@
       "\\bplugins?\\b",
       "ปลั๊กอิน"
     ],
-    "packageInvocation": "(?:ใช้|use|using|with|ด้วย|ผ่าน|via)\\s*(?:the\\s+)?(?:agm|agrimap)(?:[\\s-]*agent)?[\\s-]*(?:skills?|สกิล)",
+    "packageInvocation": "(?<!ไม่\\s{0,2}|\\bnot\\s{1,2}|n't\\s{1,2})(?:ใช้|use|using|with|ด้วย|ผ่าน|via)\\s*(?:the\\s+)?(?:agm|agrimap)(?:[\\s-]*agent)?[\\s-]*(?:skills?|สกิล)",
     "conformance": [
       "\\bnamespaces?\\b",
       "\\busing\\s*(?:directives?|/)",
@@ -177,6 +177,7 @@
       "โอเวอร์โหลด",
       "\\bmember\\s+order\\b",
       "\\bfile\\s+layout\\b",
+      "\\bnaming\\b",
       "\\bconventions?\\b",
       "มาตรฐาน(?:โค้ด|code)?",
       "\\bgolden\\b"
@@ -437,7 +438,6 @@
         "\\bfail(?:s|ed|ing|ure)?\\b",
         "พัง",
         "ไม่ทำงาน",
-        "ผิดปกติ",
         "ช้า",
         "\\bslow\\b",
         "\\btimeouts?\\b",
@@ -445,6 +445,9 @@
         "ค้าง",
         "สาเหตุ",
         "\\broot\\s*cause\\b"
+      ],
+      "softKeywords": [
+        "ผิดปกติ"
       ],
       "weakKeywords": [
         "ทำไม",

@@ -61,6 +61,7 @@ function compile(raw) {
       ...intent,
       patterns: any(intent.keywords),
       weakPatterns: any(intent.weakKeywords),
+      softPatterns: any(intent.softKeywords),
       projectPatterns: any(intent.projectKeywords),
       createPatterns: any(intent.createKeywords),
       editPatterns: any(intent.editKeywords),
@@ -130,10 +131,11 @@ function sqlEvidence(routing, text, fePreferred) {
 function resolveIntent(routing, text) {
   const read = routing.intents.find((intent) => intent.id === "read");
   const explain = read?.explainPatterns || [];
+  // "namespace ผิดปกติ" asked with a read verb is a convention review; real symptoms (error, สาเหตุ) stay strong keywords.
+  const review = Boolean(read) && hits(routing.conformance, text) && hits(read.patterns, text);
   for (const intent of routing.intents) {
-    // A convention check ("namespace ผิดปกติ", "overload ผิด") asked with a read verb is a review, not a runtime symptom.
-    if (intent.id === "diagnose" && read && hits(routing.conformance, text) && hits(read.patterns, text)) return read;
     if (hits(intent.patterns, text)) return intent;
+    if (intent.softPatterns.length && hits(intent.softPatterns, text) && !review) return intent;
     if (intent.weakPatterns.length && hits(intent.weakPatterns, text) && !hits(explain, text)) return intent;
   }
   return null;

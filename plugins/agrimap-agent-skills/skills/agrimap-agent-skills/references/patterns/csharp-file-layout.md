@@ -76,7 +76,7 @@ public Task<UserDto> SearchAsync(string keyword, int page) { ... }
 public Task<UserDto> GetByIdAsync(int id) { ... }
 ```
 
-- Compare members of one type declaration; constructors, explicit interface implementations and partial parts in other files are reported separately only when evidence proves the order.
+- Compare the methods of one type declaration. Golden Lint does not compare constructors, explicit interface implementations or partial parts in other files; check those by reading the type.
 - ADV-01 is advisory ([QUALITY-05](../sonarqube-remediation.md#advisory-code-smells-quality-05)): always report it when asked or when reviewing, with `file:line` of each split overload. Reorder only when the requester asks for this rule or finding; reordering is behavior-preserving but keep `#region`, partial-file and diff-noise trade-offs visible.
 - New code keeps overloads adjacent.
 
