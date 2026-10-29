@@ -430,7 +430,7 @@
     },
     {
       "id": "refactor-be-request-normalize-light",
-      "description": "Backend refactor that consolidates scattered request-value extraction",
+      "description": "Backend refactor that consolidates scattered request-value extraction; 5.0.6 adds the NS-01/ADV-01 review pointer to the C# baseline and be entrypoint (+20 tokens)",
       "operation": "be",
       "depth": "light",
       "activate": [
@@ -444,7 +444,13 @@
         "patterns/backend.md",
         "patterns/csharp.md",
         "patterns/golden/backend-libraries/013-1-extensions-request-value-normalize.md"
-      ]
+      ],
+      "budgets": {
+        "scenario": {
+          "maxWords": 9200,
+          "maxEstimatedTokensHigh": 24700
+        }
+      }
     },
     {
       "id": "qa-be-request-normalize-regulated",
@@ -625,6 +631,36 @@
         "patterns/backend.md",
         "patterns/checklists/backend-main.md",
         "patterns/csharp.md"
+      ]
+    },
+    {
+      "id": "qa-csharp-layout-review-light",
+      "description": "5.0.6: a C# QA pass over using/namespace or overload placement loads NS-01/ADV-01 cases directly instead of two hops away",
+      "operation": "qa",
+      "depth": "light",
+      "activate": [
+        "patterns/csharp.md",
+        "patterns/csharp-file-layout.md"
+      ],
+      "mustLoad": [
+        "goal-rules.md",
+        "patterns/csharp.md",
+        "patterns/csharp-file-layout.md"
+      ]
+    },
+    {
+      "id": "analyze-csharp-layout-review-light",
+      "description": "5.0.6: cross-lane analysis of using/namespace or overload placement loads the same NS-01/ADV-01 cases",
+      "operation": "analyze",
+      "depth": "light",
+      "activate": [
+        "patterns/csharp.md",
+        "patterns/csharp-file-layout.md"
+      ],
+      "mustLoad": [
+        "goal-rules.md",
+        "patterns/csharp.md",
+        "patterns/csharp-file-layout.md"
       ]
     },
     {

@@ -32,7 +32,7 @@ Golden collection per lane: `sql` `golden/sql/`, `be-main` `golden/backend-main/
 | version / changelog / release / Jenkins | `agm-release` |
 | ติดตั้ง / อัปเดต skills | `agm-doctor` |
 
-Precedence when several intents match: doctor > release > prompt > plan > architect > qa > refactor > test > change > diagnose > read. A fix request (แก้/fix) is a change even when it mentions an error; diagnose is for a cause without a fix request. Lane evidence without a verb takes the read-only `read` path; a request with neither is not code work. Outside any lane the lane-free intents still apply; otherwise use the router `agrimap-agent-skills`.
+Precedence when several intents match: doctor > release > prompt > plan > architect > qa > refactor > test > change > diagnose > read. A fix request (แก้/fix) is a change even when it mentions an error; diagnose is for a cause without a fix request. A convention check (namespace/using order, overloads, naming, golden) with a read verb is a read even when it says ผิดปกติ, and "use agm skills to …" asks for the work, not about skills. Lane evidence without a verb takes the read-only `read` path; a request with neither is not code work. Outside any lane the lane-free intents still apply; otherwise use the router `agrimap-agent-skills`.
 
 ## 3. Combination
 

@@ -58,6 +58,13 @@ const EVALS=[
  [null,'สวัสดี วันนี้อากาศดี',null,{}],
  ['be-main','ตัวอย่าง: `$agm-sql action=edit`',null,{}],
  ['be-main','วิเคราะห์ว่าทำไมการสร้าง SQL ไม่ใช้ skill agm-sql',null,{}],
+ // 5.0.6: convention checks are reviews, and "use agm skills to ..." asks for the work.
+ [null,'วิเคราะห์หน่อย มีไฟล์ไหน ตำแหน่ง namespace ผิดปกติบ้าง','agm-be',{action:'analyze',lanes:['be-main']}],
+ ['be-library','วิเคราะห์หน่อย มีไฟล์ไหน ตำแหน่ง namespace ผิดปกติบ้าง','agm-be',{action:'analyze'}],
+ ['be-main','ให้ใช้ agm skills ตรวจสอบหน่อย ว่าไฟล์ไหน ตำแหน่ง using / namespace และ overload method ผิดไปบ้าง','agm-be',{action:'analyze'}],
+ ['be-main','ปรับแก้เฉพาะ overload method ที่แยกกันอยู่ และ namespace ที่ไปอยู่บนสุด','agm-be',{action:'edit'}],
+ ['be-main','ทำไม namespace นี้ทำให้ build error','agm-diagnose',{}],
+ ['be-main','agm skills มีกี่ตัว',null,{}],
 ];
 
 test('routing evals: Thai/English prompts pick one skill by intent x lane (4.9.5)',()=>{

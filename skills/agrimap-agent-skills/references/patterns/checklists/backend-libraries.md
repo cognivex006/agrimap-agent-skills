@@ -72,13 +72,16 @@ A library feature that skips the Playground or README is incomplete, not "done w
 Configuration shape, README section order, and logging field conventions as shown in the matching
 entry, where the active package does not already prove a different published surface.
 
+Advisory smells (QUALITY-05): recommend; edit only on request. Review always reports ADV-01 split
+overloads with `file:line` ([overload order](../csharp-file-layout.md#overload-order--adv-01-s4136)).
+
 ## FREE
 
 Internal implementation of a library behaviour behind a stable public surface: algorithm,
-validation body, private helpers, local decomposition.
+validation body, private helpers, local decomposition. Same-name overloads still stay adjacent (ADV-01).
 
 ## Before the write
 
 1. Platform reuse checked against the capability table above.
-2. Every `MUST` row verified against the opened entry, matched to the active package version.
+2. Every `MUST` row verified against the opened entry, matched to the active package version, including NS-01 file order.
 3. `Patterns:` line lists `agm:golden/backend-libraries` plus the exact entries opened.
