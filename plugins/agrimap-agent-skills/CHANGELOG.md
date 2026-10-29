@@ -4,6 +4,8 @@ Release history, not current operating instructions. Start with [Getting Started
 
 ## Unreleased
 
+## 5.0.7 — 2026-10-29
+
 - Extend QUALITY-05 with ADV-08 (CA1861 constant array arguments, including test asserts) and ADV-09 (SYSLIB1045 `GeneratedRegex`, with a match timeout that also closes the non-advisory S6444 regex-timeout hotspot). ADV-02 now reminds to update instance call sites such as test fixtures. ADV-01..07 and their advisory handling are unchanged.
 
 ## 5.0.6 — 2026-10-29
