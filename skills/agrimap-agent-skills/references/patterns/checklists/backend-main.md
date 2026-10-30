@@ -121,7 +121,7 @@ With a matching `*.Tests.csproj`/`*.Test.csproj`, the production `.csproj` needs
   `024-10-response-structure-reference.md`.
 - Comment style — `029-12-comment-reference.cs`.
 - Procedure debugging — `012`/`013-4-4-debugging-sql-stored-procedure.cs`.
-- Advisory smells (QUALITY-05): recommend; edit only on request, except the safe tier (ADV-05/10/11) in files you already edit; skip URI/type refactors (ADV-12/13) when unsure. Review always reports ADV-01 split overloads with `file:line` ([overload order](../csharp-file-layout.md#overload-order--adv-01-s4136)).
+- Advisory smells (QUALITY-05): recommend; edit on request, or safe tier ADV-05/10/11 in edited files. Review always reports ADV-01 split overloads with `file:line` ([overload order](../csharp-file-layout.md#overload-order--adv-01-s4136)).
 
 ## FREE
 

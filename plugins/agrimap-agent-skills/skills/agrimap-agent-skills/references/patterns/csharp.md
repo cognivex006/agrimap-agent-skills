@@ -511,5 +511,5 @@ RUN dotnet publish "./AgriMap.Web.Service.csproj" -c Release -o out --no-restore
 ## Decision order
 
 1. New code follows every owner-approved rule above, including `[TARGET]` rules when creating the relevant scaffold.
-2. Existing code must not gain a forbidden pattern. When a touched violation can be corrected without changing behavior or an external contract, fix it in scope, except QUALITY-05 (only its safe tier).
+2. Existing code must not gain a forbidden pattern. When a touched violation can be corrected without changing behavior or an external contract, fix it in scope, except QUALITY-05.
 3. When real files conflict with these rules, these maintained rules govern new structure and safe refactors; raw legacy files may be examples of defects. Preserve proven deployed behavior and stop for approval before a material contract or behavior change.

@@ -72,8 +72,7 @@ A library feature that skips the Playground or README is incomplete, not "done w
 Configuration shape, README section order, and logging field conventions as shown in the matching
 entry, where the active package does not already prove a different published surface.
 
-Advisory smells (QUALITY-05): recommend; edit only on request, except the safe tier (ADV-05/10/11) in
-files you already edit; skip URI/type refactors (ADV-12/13) when unsure. Review always reports ADV-01 split
+Advisory smells (QUALITY-05): recommend; edit on request, or safe tier ADV-05/10/11 in edited files. Review always reports ADV-01 split
 overloads with `file:line` ([overload order](../csharp-file-layout.md#overload-order--adv-01-s4136)).
 
 ## FREE
