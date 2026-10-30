@@ -2,8 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased
+## 5.0.8 — 2026-10-30
 
+- Extend QUALITY-05 with ADV-10 (ASP0015 typed header properties), ADV-11 (CA1866/CA1865 char overloads), ADV-12 (S1075 hardcoded URIs/path delimiters: configuration only when every environment value is proven, otherwise skip), ADV-13 (CA1859 private concrete types) and ADV-14 (S3267 `Where` filter loops). Add a safe tier: ADV-05 unused locals, ADV-10 and ADV-11 are fixed directly in files the authorized task already edits; URI/type refactors are skipped when unsure.
+- Add a context-first orientation order before code search: savepoint/`pending`, recent memory, `recall`, CHANGELOG, then `git status/diff/log` for the paths; older commits only by targeted `git log -S/--follow`. Savepoint status is a claim, not proof of remaining work.
 - Stop the `agm-sql context migrate` sync loop. Migrate now completes all requested file work (export, format, moving or deleting replaced SQL files) in the same turn and never holds it on the DB_METADATA_CONTEXT sync. It closes with one ready-to-send direct sql-context-pack request and never asks for sync inputs such as an actor ID or offers the sync as AgriMap work. The read-only boundary is unchanged.
 
 ## 5.0.7 — 2026-10-29
