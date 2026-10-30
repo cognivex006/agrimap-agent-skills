@@ -1,6 +1,6 @@
 {
   "name": "agrimap-agent-skills",
-  "version": "5.0.7",
+  "version": "5.0.8",
   "description": "Routing skill plus dedicated one-operation AgriMap engineering skills",
   "mcpServers": {
     "agrimap": {

@@ -4,6 +4,8 @@ Release history, not current operating instructions. Start with [Getting Started
 
 ## Unreleased
 
+## 5.0.8 — 2026-10-30
+
 - Stop the `agm-sql context migrate` sync loop. Migrate now completes all requested file work (export, format, moving or deleting replaced SQL files) in the same turn and never holds it on the DB_METADATA_CONTEXT sync. It closes with one ready-to-send direct sql-context-pack request and never asks for sync inputs such as an actor ID or offers the sync as AgriMap work. The read-only boundary is unchanged.
 
 ## 5.0.7 — 2026-10-29
