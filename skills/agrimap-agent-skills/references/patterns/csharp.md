@@ -134,6 +134,7 @@ Do not hardcode request keys, duplicate trim/blank logic, eagerly read a body, o
 - Throw the established `AppException`/procedure exception with the exact contract code; keep internal detail out of user-facing messages.
 - Build stored-procedure parameters in Infrastructure, log the procedure call structurally, check `result.Success`, then map data explicitly.
 - Never log secrets, tokens, cookies, authorization values, or personal data merely because they appear in a parameter dictionary.
+- New and rewritten code follows the [security baseline](security-baseline.md) SEC-01..20.
 
 ```csharp
 var result = await _dataAccessConfiguration.CallProcedureAsync(

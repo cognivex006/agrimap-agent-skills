@@ -161,6 +161,8 @@ export async function scanRepository(root, { schema = "agrimap_app" } = {}) {
     objects: list,
     missing: missing.map((entry) => entry.name),
     includePatterns: missing.map((entry) => `${schema}.${entry.name}`),
+    // sql-context-pack 3.5.0+ filtered catalog object_types; an unknown kind may be any exportable type.
+    objectTypes: ["table", "procedure", "function"].filter((type) => missing.some((entry) => entry.type === type || entry.type === "unknown")),
     note: missing.some((entry) => entry.type === "procedure")
       ? "Tables behind a procedure without local DDL are found after it is exported; run check again and export those once."
       : null,

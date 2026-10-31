@@ -58,6 +58,8 @@ question — never an inferred table, column, type, key, constraint, or message 
 
 ## SHOULD
 
+No dynamic SQL assembled from parameters (SEC-01, [security-baseline.md](../security-baseline.md)): use `sp_executesql` parameters and `QUOTENAME` or an allow-list for identifiers.
+
 Procedure section comments, actor/target user parameter conventions, and splitter or cursor choice
 follow [patterns/sql.md](../sql.md#stored-procedure-work); the mixed techniques across the legacy
 entries are not a standard to reproduce.

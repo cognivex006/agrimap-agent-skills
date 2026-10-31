@@ -66,6 +66,7 @@ library tests/build and the Playground verification path (`011-10-playground-dem
 
 ## SHOULD
 
+- Security baseline SEC-15/16/21/22 ([security-baseline.md](../security-baseline.md)): new and rewritten code never introduces them; existing matches are reported and fixed on request.
 - UI-kit form controls: `ControlContainer` + `controlName` — `009-9-ui-kit-form-control-pattern.ts`.
 - Config-driven forms (CVA + Validator) — `010-9-form-ctrl-config-driven.ts`.
 - Test shape: TestBed + `whenStable()` — `012-11-testing-conventions.ts`.
