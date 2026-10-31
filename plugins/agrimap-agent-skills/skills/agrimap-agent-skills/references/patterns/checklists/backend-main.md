@@ -113,6 +113,7 @@ With a matching `*.Tests.csproj`/`*.Test.csproj`, the production `.csproj` needs
 
 ## SHOULD
 
+- Security baseline SEC-01..20 ([security-baseline.md](../security-baseline.md)): new and rewritten code never introduces them; existing matches are reported with the response contract and fixed on request.
 - Controller shape and route/verb conventions — `001..003-1-presentation-controller-examples.cs`,
   `020-7-http-verb-and-route-reference.cs`, `021-8-rest-operation-mapping.txt`.
 - Binding reference — `006-2-3-binding-reference.cs`.

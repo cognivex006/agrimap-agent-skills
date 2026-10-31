@@ -68,6 +68,7 @@ test('repository: used objects, local DDL from repo SQL and db-schema references
   assert.match(byName.UM_ROLE_I.usedBy[0],/^Src\/Repositories\/RoleRepository\.cs:\d+$/);
   assert.deepEqual(result.missing,['LUT_TITLE_Q','UM_ROLE','UM_ROLE_I','UM_USER_ROLE']);
   assert.deepEqual(result.includePatterns,['agrimap_app.LUT_TITLE_Q','agrimap_app.UM_ROLE','agrimap_app.UM_ROLE_I','agrimap_app.UM_USER_ROLE']);
+  assert.deepEqual(result.objectTypes,["table","procedure","function"]);
   assert.match(result.note,/run check again/);
   assert.ok(result.scanned.ms<5000);
 });
