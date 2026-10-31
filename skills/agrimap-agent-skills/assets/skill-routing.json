@@ -548,6 +548,10 @@
           "steps": "`sqlctx_get_capabilities`, then `sqlctx_get_active_profile`; no profile means a named gap (never connect, change or inherit a profile to answer)"
         },
         {
+          "need": "service, version or metadata-schema failure",
+          "steps": "relay the finding code, `diagnosis` and `proposed_fix.command` for the owner (`sqlctx doctor fix` / `doctor update --version 3.5.1`); `METADATA_CONTEXT_SCHEMA_DRIFT` on 3.5.0 or `DATABASE_OPERATION_FAILED` (`decimal.ConversionSyntax`) before 3.5.0 is a version gap, never a reason to re-apply or alter `DB_METADATA_CONTEXT`; never run doctor fix/update from an agm-* operation"
+        },
+        {
           "need": "which objects exist for a domain, context or tag",
           "steps": "`sqlctx_list_context_index` with type/context/tag filters; read every page until `next_cursor` is null"
         },
@@ -599,9 +603,9 @@
         "จัดหมวด",
         "ติดตั้ง"
       ],
-      "supportingRule": "Inside any agm-* operation sql-context-pack (3.3.1 or later) is supporting evidence only: its read-only tools and recipes (metadata and protected SELECT). No DDL/DML, EXEC/CALL, metadata sync, classification, routine deployment or reveal of protected values; export only through agm-sql context migrate.",
+      "supportingRule": "Inside any agm-* operation sql-context-pack (3.3.1 or later; 3.5.1 recommended, required for SQL Server context-index reads and migrate) is supporting evidence only: its read-only tools and recipes (metadata and protected SELECT). No DDL/DML, EXEC/CALL, metadata sync, classification, routine deployment or reveal of protected values; export only through agm-sql context migrate.",
       "ownerRule": "A direct owner request to sql-context-pack (its invocation, or naming it with an owner operation) is that package's turn: follow its own SKILL and approval gates. AgriMap adds no authority, lifecycle or prohibition to that turn and never runs those operations inside an agm-* operation.",
-      "migrateRule": "agm-sql context migrate (owner decision 2026-10-14; the requester asks for it explicitly) may run the catalog/export tools to write the DDL of the objects this repository uses, and the tables one hop behind them, into the registered db-schema managed folder, then formats each exported `table_metadata` YAML into the AgriMap golden layout with `scripts/sql-golden-format.mjs` (needs sql-context-pack 3.3.1+; database truth kept, `golden_deviation`/`metadata_gap` reported). It never syncs DB_METADATA_CONTEXT, classifies, deploys, connects or changes a profile, or reveals values; it reports the owner's inventory-sync command instead. Finish all requested file work in the same turn (export, format, moving or deleting replaced SQL files) and never hold it pending on the sync. Close with one ready-to-send direct sql-context-pack request (object count, actor from the conversation when known, else marked for the owner); never ask for a sync input such as an actor ID, and never promise or retry the sync as AgriMap work.",
+      "migrateRule": "agm-sql context migrate (owner decision 2026-10-14; the requester asks for it explicitly) may run the catalog/export tools to write the DDL of the objects this repository uses, and the tables one hop behind them, into the registered db-schema managed folder, then formats each exported `table_metadata` YAML into the AgriMap golden layout with `scripts/sql-golden-format.mjs` (needs sql-context-pack 3.5.1+: one `filtered` catalog of exact names, never `all` or `selected`; database truth kept, `golden_deviation`/`metadata_gap` reported). It never syncs DB_METADATA_CONTEXT, classifies, deploys, connects or changes a profile, or reveals values; it reports the owner's inventory-sync command instead. Finish all requested file work in the same turn (export, format, moving or deleting replaced SQL files) and never hold it pending on the sync. Close with one ready-to-send direct sql-context-pack request (object count, actor from the conversation when known, else marked for the owner); never ask for a sync input such as an actor ID, and never promise or retry the sync as AgriMap work.",
       "migrateTools": [
         "sqlctx_get_capabilities",
         "sqlctx_get_active_profile",

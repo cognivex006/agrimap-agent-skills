@@ -254,6 +254,8 @@ surrogate key `[ID]` ใช้ได้ **2 ชนิดเท่านั้น
 
 ## Stored procedure work
 
+Dynamic SQL inside a procedure binds values through `sp_executesql` parameters and quotes identifiers with `QUOTENAME` or an allow-list ([SEC-01](security-baseline.md)).
+
 Every stored procedure created or edited by the Agent must use this idempotent declaration form:
 
 ```sql

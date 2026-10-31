@@ -54,6 +54,7 @@ is never edited by hand. `018-11-generated-api-contract.md` is a pointer to that
 
 ## SHOULD
 
+- Security baseline SEC-15/16/21/22 ([security-baseline.md](../security-baseline.md)): new and rewritten code never introduces them; existing matches are reported and fixed on request.
 - Component layout and section order — `010-5-component-layout.md`.
 - Template control flow (`@if`/`@for` syntax and `track`) — `012-7-view-control-flow-syntax.md`.
 - Async flow split between store and facade — `015-9-async-data-flow-store.ts`, `016-9-async-data-flow-facade.ts`.

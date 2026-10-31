@@ -2,6 +2,11 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased
+
+- Align `agm-sql context migrate` with sql-context-pack 3.5.1. Migrate now creates one `filtered` catalog of the exact missing names with the scan's new `objectTypes` (never `all` or `selected`, which waited for an owner selection), drops exact names the database does not have (`CATALOG_INCLUDE_PATTERNS_UNMATCHED`) and reports them as `missing_in_database`, runs fetch/assemble/validate itself into the registered folder and removes replaced SQL files only after validation passes. It needs 3.5.0+; 3.5.1 is recommended and required for SQL Server context-index reads. A new recipe relays service, version and metadata-schema failures (`SERVICE_*`, `METADATA_CONTEXT_SCHEMA_DRIFT` on 3.5.0, `decimal.ConversionSyntax` before 3.5.0) as owner commands and never re-applies `DB_METADATA_CONTEXT`. The read-only boundary is unchanged.
+- Add the application security baseline SEC-01..22 (`patterns/security-baseline.md`), the authoring side of the OWASP classes AgriMap Golden Lint 0.1.15 reports: SQL/command/LDAP injection, path traversal, missing authorization, error detail, sensitive logging, weak crypto, token validation/issuance, TLS bypass, unsafe deserialization, CORS, method override, open redirect, sensitive query/response fields, unbounded paging, security headers, cookies, DOM XSS and tokens in Web Storage. New and rewritten code never introduces them; existing matches are reported and fixed on request without changing what legitimate callers receive. `csharp.md`, `frontend.md`, `sql.md` and every lane checklist link to it.
+
 ## 5.0.8 — 2026-10-30
 
 - Extend QUALITY-05 with ADV-10 (ASP0015 typed header properties), ADV-11 (CA1866/CA1865 char overloads), ADV-12 (S1075 hardcoded URIs/path delimiters: configuration only when every environment value is proven, otherwise skip), ADV-13 (CA1859 private concrete types) and ADV-14 (S3267 `Where` filter loops). Add a safe tier: ADV-05 unused locals, ADV-10 and ADV-11 are fixed directly in files the authorized task already edits; URI/type refactors are skipped when unsure.
