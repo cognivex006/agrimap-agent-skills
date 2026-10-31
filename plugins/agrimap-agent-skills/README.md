@@ -1,4 +1,4 @@
-# AgriMap Agent Skills 5.0.8
+# AgriMap Agent Skills 5.0.9
 
 [รุ่นล่าสุด](https://github.com/cognivex006/agrimap-agent-skills/releases/latest) · [Tags รุ่นก่อน](https://github.com/cognivex006/agrimap-agent-skills/tags) · [เลือกเวอร์ชันและ source ย้อนหลัง](docs/VERSIONS.md)
 
