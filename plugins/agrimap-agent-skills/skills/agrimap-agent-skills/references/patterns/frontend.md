@@ -62,6 +62,10 @@ Before using an entry, read [conflict-resolution.md](conflict-resolution.md). De
 
 Current golden references are maintained guidance, not permission to bypass the active contract. Match the Angular version, target kind, public API, value kinds, generated-code boundary, and local project pattern before applying them.
 
+## Security
+
+New and rewritten code follows [security baseline](security-baseline.md) SEC-15/16/21/22.
+
 ## FE verification
 
 Check generated-code boundaries, type checking, lint/build, component tests where present, loading/error/empty states, input/output contracts, subscription lifecycle, affected consumers, reuse-search evidence, and the updated frontend reuse index.
