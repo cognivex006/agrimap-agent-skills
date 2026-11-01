@@ -18,6 +18,7 @@ Status gives a short local overview; check inspects applicable workflows. Use a 
 | Installation management | Selected host plugin help, registry/path and source; Git for Git-based updates | Use that host's supported manager; fix PATH only when proven |
 | SQL formatting | `sqlfluff --version` versus exact `assets/tool-versions.json` pin; Python/pip availability when repair is needed | Run bundled install-sqlfluff.mjs only in separately authorized SQL formatting/tool repair |
 | Managed SQL context | Availability of sql-context-pack and its connected read-only profile | Connect the missing service/profile; never expose credentials or probe database writes |
+| Companion packages | Installed `agrimap-golden-lint-skills` and `sql-context-pack` for the selected host: installed version, latest stable release, `sqlctx doctor check` versions | `agm-doctor update` upgrades each installed companion (below); absent companions are `not-installed`, never a failure |
 | Product release | Git, .NET SDK/runtime, exact global package AgriMap.ProjectDevKit.NetCore.Release and its executable | Follow release-tools.md during an authorized product release; not required for doctor/package updates |
 | Stray state roots | `strayStateRoots` from `agm-workspace.mjs context --cwd <session cwd>`: `.agrimap-agent/` outside any Git root; status recommended | Move wanted files into the target repository yourself; doctor never deletes or moves them |
 | Workflow policy | `policy show` in the target repository: exists, valid, confirmed | Answer the first-run policy card; fix listed validation details |
@@ -40,5 +41,16 @@ The update request authorizes installing AGM for the selected host, not upgradin
    - Antigravity: inspect `agy plugin --help` and `agy plugin install --help`; use `agy plugin install <verified package source or local directory>` and verify with `agy plugin list`. Do not invent `agy plugin update` or a version flag. Use its supported replacement flow; when uninstall/reinstall is required, prepare the staged package and backup before removing only the selected AGM plugin. Leave legacy Gemini installations untouched.
    For a pin unsupported by the manager, prepare a validated checkout at the proven ref and use a supported local installation source, preserving the prior registration for recovery. If a manager cannot select that source without changing unrelated registrations, stop only that installation with evidence and a concrete alternative. Do not silently change a shared marketplace's source.
 4. Check every command result before continuing. On failure, preserve diagnostics and perform the prepared scoped recovery when safe; report recovery success/failure honestly. Avoid automatic retry loops. Read the installed manifest and selected host listing again; require the requested/resolved version and correct path/source before reporting success. Recheck affected readiness only. Tell the user to open a new session; the running session can still hold old instructions. Report before/after version, selected host, source/ref, modified installation and remaining limitations.
+
+## Companion packages (5.0.10)
+
+`agm-doctor update` also upgrades the companion packages that are already installed for the selected host, after AGM itself. It never installs a missing companion; report it `not-installed` with its install link. `--to` pins AGM only; companions move to their latest stable release unless the requester names a companion version.
+
+| Companion | Source | Update through |
+| --- | --- | --- |
+| agrimap-golden-lint-skills | https://github.com/cognivex006/agrimap-golden-lint-skills releases | The same host manager and steps as AGM above: Claude `agrimap-golden-lint-skills@agrimap-golden-lint-skills`, Codex marketplace refresh + reinstall, Antigravity `agy plugin install <verified source>` |
+| sql-context-pack | https://github.com/cognivex006/sql-context-pack releases | Its own updater: `sqlctx doctor update --host <host> [--version <v>]`, then `sqlctx doctor check --host <host>` must report package, plugin and service at the same version. When `sqlctx` is not on PATH, update the plugin with the host manager and report the service as unverified |
+
+Each companion is a separate step with its own before/after version and result; one failing companion does not undo AGM or the other companion. The update touches only installation: it never connects or changes a sql-context-pack profile, writes `DB_METADATA_CONTEXT`, runs `sqlctx doctor fix` or changes a lint report. Report every companion row in the final table and tell the user to open a new session.
 
 Official Antigravity format/commands: [Plugins & Skills](https://antigravity.google/docs/cli/plugins), checked 2026-09-10. [Migration](https://antigravity.google/docs/cli/gcli-migration) retains GEMINI.md and AGENTS.md; do not rename those files. Host CLI availability and actual registration must be verified per installation.

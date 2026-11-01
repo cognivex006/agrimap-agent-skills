@@ -10,20 +10,21 @@ import { defaultRun, trimStderr } from "./run-command.mjs";
 import { detectSensitive } from "./sensitive-recording.mjs";
 import { branchTypeOf, isProtected, workTypeOf } from "./workflow-policy.mjs";
 
-const AUDIT_DIRECTORIES = new Set(["decisions", "instructions", "knowledge", "logs", "memory", "reports", "policy"]);
+const AUDIT_DIRECTORIES = new Set(["decisions", "instructions", "knowledge", "memory", "reports", "policy"]);
 const SECRET_KINDS = new Set(["CREDENTIAL", "TOKEN", "AUTH", "PRIVATE_KEY"]);
 // Team commit style (bootstrap AGENTS.md §10.6): "<type>: <plain description>" that an
 // App Leader, BA or customer can read. Work: feature|fix|comment; agm-release: bump|audit|ci.
-const TYPE_BY_WORK = { feature: "feature", feat: "feature", fix: "fix", bugfix: "fix", hotfix: "fix", refactor: "comment", docs: "comment", chore: "ci", ci: "ci" };
-export const TEAM_HEADER = /^(feature|fix|comment|ci|bump|audit): \S.*$/u;
+const TYPE_BY_WORK = { feature: "feature", feat: "feature", fix: "fix", bugfix: "fix", hotfix: "fix", refactor: "comment", docs: "comment", chore: "chore", ci: "ci" };
+export const TEAM_HEADER = /^(feature|fix|comment|chore|ci|bump|audit): \S.*$/u;
 const TEAM_HEADER_MAX = 100;
-// Conventional or habitual types map onto the team type and lose their scope (4.9.6).
+// Conventional or habitual types map onto the team type; the scope becomes the first word of
+// the description, so "feat(auth): x" is "feature: auth x". chore stays chore (5.0.10).
 const TEAM_TYPE_OF = {
   feat: "feature", feature: "feature", fix: "fix", bugfix: "fix", hotfix: "fix",
   comment: "comment", refactor: "comment", docs: "comment", doc: "comment", style: "comment", perf: "comment", test: "comment", tests: "comment",
-  chore: "ci", build: "ci", ci: "ci", bump: "bump", release: "bump", version: "bump", audit: "audit",
+  chore: "chore", build: "ci", ci: "ci", bump: "bump", release: "bump", version: "bump", audit: "audit",
 };
-const PREFIXED = /^([A-Za-z]+)(?:\([^)]*\))?!?:\s*(.*)$/u;
+const PREFIXED = /^([A-Za-z]+)(?:\(([^)]*)\))?!?:\s*(.*)$/u;
 // Headers Git writes itself keep Git's wording.
 const GIT_GENERATED = /^(?:Merge (?:branch|remote-tracking branch|pull request|tag|commit) |Revert "|(?:fixup|squash|amend)! )/;
 // English Conventional Commits pass only when the policy selects commitConvention "conventional".
@@ -32,7 +33,12 @@ const HEADER =/^(feat|fix|refactor|docs|chore|test|perf|build|ci)(\([a-z0-9._/-]
 export function teamHeader(header) {
   const match = String(header || "").trim().match(PREFIXED);
   const type = match && TEAM_TYPE_OF[match[1].toLowerCase()];
-  return type && match[2].trim() ? `${type}: ${match[2].trim()}` : null;
+  return type && match[3].trim() ? `${type}: ${withScope(match[2], match[3])}` : null;
+}
+
+function withScope(scope, description) {
+  const prefix = String(scope || "").trim();
+  return prefix ? `${prefix} ${description.trim()}` : description.trim();
 }
 
 // With policy delivery.commitLanguage "th" (the default) the description is Thai so a BA
@@ -59,7 +65,7 @@ const SLUG = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
 const toSlash = value => String(value || "").replaceAll("\\", "/");
 // Append-only audit written after a delivery (delivered/completed/integrated,
 // recent memory) rides with the next delivery instead of becoming preexisting.
-const CARRIED_AUDIT = /^\.agrimap-agent\/(?:logs|memory\/recent|reports|decisions)\//;
+const CARRIED_AUDIT = /^\.agrimap-agent\/(?:memory\/recent|reports|decisions)\//;
 export const isCarriedAudit = relative => CARRIED_AUDIT.test(toSlash(relative));
 const exists = file => stat(file).then(() => true, () => false);
 
@@ -389,11 +395,13 @@ function commitMessage({ input, workType, objective, own, executionId, verificat
   let type = input?.type ? String(input.type).trim() : null;
   // A subject that already carries a prefix ("feat(x): ...") supplies the type once.
   const embedded = subject.match(PREFIXED);
-  if (embedded && TEAM_TYPE_OF[embedded[1].toLowerCase()] && embedded[2].trim()) { type ||= embedded[1]; subject = embedded[2].trim(); }
+  let embeddedScope = null;
+  if (embedded && TEAM_TYPE_OF[embedded[1].toLowerCase()] && embedded[3].trim()) { type ||= embedded[1]; subject = embedded[3].trim(); embeddedScope = embedded[2] || null; }
   type ||= TYPE_BY_WORK[workType] || "ci";
   let scope = input?.scope;
-  // The team style carries no scope; only a "conventional" policy derives one.
-  if (convention !== "conventional") { type = TEAM_TYPE_OF[type.toLowerCase()] || type; scope = null; }
+  // The team style has no "(scope)"; a given scope leads the description instead (5.0.10).
+  if (convention !== "conventional") { type = TEAM_TYPE_OF[type.toLowerCase()] || type; subject = withScope(scope ?? embeddedScope, subject); scope = null; }
+  else if (scope === undefined && embeddedScope) scope = embeddedScope;
   else if (scope === undefined && !TEAM_HEADER.test(`${type}: x`)) {
     const counts = {};
     for (const entry of own) {
@@ -518,7 +526,7 @@ export async function planDelivery({
   const headerCheck = checkCommitHeader(message.header, convention, language);
   if (!pushOnly && groups.own.length && !headerCheck.ok) {
     const thai = headerCheck.reason !== "type" ? " with a Thai description (English only for technical names)" : "";
-    return stop("MESSAGE_INVALID", `Header must be "<feature|fix|comment|ci|bump|audit>: <plain description>"${thai}, at most ${TEAM_HEADER_MAX} characters: ${message.header}`, { next: { action: "run", command: "deliver plan --input message.json with {\"subject\":\"<คำอธิบายภาษาไทย>\"}" } });
+    return stop("MESSAGE_INVALID", `Header must be "<feature|fix|comment|chore|ci|bump|audit>: <plain description>"${thai}, at most ${TEAM_HEADER_MAX} characters: ${message.header}`, { next: { action: "run", command: "deliver plan --input message.json with {\"subject\":\"<คำอธิบายภาษาไทย>\"}" } });
   }
   const head = facts.head;
   const headMessage = head ? out(git(run, root, ["log", "-1", "--format=%B", head])) : "";

@@ -97,6 +97,26 @@ export function sqlctxRevealInvocation(segment) {
   return rest.includes("query") && rest.some(item => item === "--reveal" || item.startsWith("--reveal="));
 }
 
+// G7 (5.0.10): a PR/MR title follows the same team header as a commit:
+// `gh pr create|edit --title/-t` and `glab mr create|update --title/-t`.
+export function reviewTitleOf(segment) {
+  const tokens = tokenize(segment);
+  let index = 0;
+  while (index < tokens.length && (/^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[index]) || /^(?:sudo|command|exec|env)$/.test(tokens[index]))) index += 1;
+  const program = String(tokens[index] || "").replaceAll("\\", "/").split("/").pop().toLowerCase().replace(/\.exe$/, "");
+  const [noun, verb] = tokens.slice(index + 1, index + 3);
+  const review = (program === "gh" && noun === "pr" && ["create", "edit"].includes(verb))
+    || (program === "glab" && noun === "mr" && ["create", "update"].includes(verb));
+  if (!review) return null;
+  const args = tokens.slice(index + 3);
+  for (let at = 0; at < args.length; at += 1) {
+    const inline = args[at].match(/^--title=(.*)$/s);
+    if (inline) return inline[1];
+    if (args[at] === "--title" || args[at] === "-t") return args[at + 1] ?? null;
+  }
+  return null;
+}
+
 // Heredoc ($(cat <<'EOF' ... EOF)) and PowerShell here-string (@'...'@) bodies.
 function unwrapMessage(value) {
   const text = String(value);
@@ -236,7 +256,7 @@ export function evaluate(invocation, context) {
     const check = checkCommitHeader(header, context.commitConvention, context.commitLanguage || "th");
     if (check.ok) return null;
     const thai = check.reason === "type" ? "" : " with a Thai description (English only for technical names)";
-    return { decision: DENY, rule: "G7", reason: `commit header "${header.slice(0, 80)}" is not the team style "<feature|fix|comment|bump|audit|ci>: <plain description>"${thai} of AGENTS.md §10.6${check.suggestion ? `; use "${check.suggestion}"` : ""}` };
+    return { decision: DENY, rule: "G7", reason: `commit header "${header.slice(0, 80)}" is not the team style "<feature|fix|comment|chore|bump|audit|ci>: <plain description>"${thai} of AGENTS.md §10.6${check.suggestion ? `; use "${check.suggestion}"` : ""}` };
   }
   return null;
 }
@@ -280,6 +300,11 @@ export async function guardCommand(command, { cwd, session = null } = {}) {
   let result = null;
   for (const segment of splitCommands(command)) {
     if (sqlctxRevealInvocation(segment)) return { decision: DENY, rule: "G8", reason: "sqlctx query --reveal shows real sensitive values; give the user reveal_handoff to run it themselves" };
+    const title = context.commitConvention ? reviewTitleOf(segment) : null;
+    if (title && !title.includes("$")) {
+      const check = checkCommitHeader(title.trim(), context.commitConvention, context.commitLanguage || "th");
+      if (!check.ok) return { decision: DENY, rule: "G7", reason: `PR/MR title "${title.trim().slice(0, 80)}" is not the team style "<feature|fix|comment|chore|bump|audit|ci>: <plain description>" of AGENTS.md §10.6${check.suggestion ? `; use "${check.suggestion}"` : ""}` };
+    }
     const invocation = gitInvocation(segment);
     if (!invocation) continue;
     const verdict = evaluate(invocation, context);

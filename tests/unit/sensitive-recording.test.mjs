@@ -76,7 +76,8 @@ test('hook and workspace never persist synthetic credentials, including before s
   const checked = h.run(h.scripts.workspace, ['checkpoint', '--session', 'safe', '--execution', started.activeTask.executionId, '--event', 'changed', '--files', 'example.txt', '--summary', 'x'.repeat(220) + ' token=' + secret, '--reason', 'password="' + password + '"', '--verification', 'Authorization: Bearer ' + secret]);
   assert.equal(checked.ok, true);
   const files = await recordedFiles(path.join(h.temp, '.agrimap-agent'));
-  assert.ok(files.some(file => file.endsWith('history.md')));
+  // 5.0.10: raw prompt history is no longer recorded.
+  assert.ok(!files.some(file => file.endsWith('history.md')));
   for (const file of files) {
     const text = await readFile(file, 'utf8');
     assert.ok(!text.includes(password) && !text.includes(secret) && !text.includes('ghp_AAAAA'), 'private content leaked in ' + path.relative(h.temp, file));

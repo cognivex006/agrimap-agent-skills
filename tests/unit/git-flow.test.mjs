@@ -86,7 +86,8 @@ test('dirty base carries files, pre-existing dirt is never delivered, mixed asks
   assert.ok(committed.includes('export.js'));
   assert.ok(!committed.includes('notes.md')&&!committed.includes('shared.md'));
   assert.ok(!committed.some(f=>f.startsWith('.agrimap-agent/runtime/')||f.startsWith('.agrimap-agent/memory/current/')));
-  assert.ok(committed.some(f=>/^\.agrimap-agent\/logs\/\d{4}-\d{2}\/\d{4}-\d{2}-\d{2}\/\d+\.jsonl$/.test(f)));
+  // 5.0.10: run logs are local only (Git-ignored), never delivered.
+  assert.ok(!committed.some(f=>f.startsWith('.agrimap-agent/logs/')));
   assert.ok(dplan.paths.foreign.includes('notes.md'));
 });
 
@@ -215,7 +216,9 @@ test('audit written after delivery rides with the next delivery instead of becom
   const first=await deliveredBranch(p,{session:'s1',slug:'residue',file:'one.js'});
   const plan=p.cli(['integrate','plan','--session','s1','--intent','integrate']);
   assert.equal(p.cli(['integrate','apply','--session','s1','--intent','integrate','--plan-hash',plan.planHash]).ok,true);
-  const residue=p.git(['status','--porcelain','--untracked-files=all']).match(/\.agrimap-agent\/logs\/\S+/g)||[];
+  const status=p.git(['status','--porcelain','--untracked-files=all']);
+  assert.doesNotMatch(status,/\.agrimap-agent\/logs\//,'5.0.10: run logs are Git-ignored');
+  const residue=status.match(/\.agrimap-agent\/(?:memory\/recent|reports|decisions)\/\S+/g)||[];
   assert.ok(residue.length,'integrate/complete leave audit dirty');
   p.ack('s2');
   const started=p.cli(['start','--operation','execute','--session','s2','--requested-by','Tester','--title','งานรอบที่สอง']);
@@ -361,7 +364,7 @@ test('spec-first delivery self-fixes SPEC_NOT_SYNCED, then commits code and spec
   assert.equal(delivered.specLine,'- Spec: FE-002 → delivered · evidence 1 · manifest updated');
   const committed=p.git(['show','--name-only','--format=','HEAD']).split('\n');
   for(const file of ['src/summary.js','specs/pack/06-agent/TASKS.yaml','specs/pack/00-source-of-truth/TRACEABILITY.md','specs/pack/CHANGELOG.md','specs/pack/manifest.sha256'])assert.ok(committed.includes(file),file);
-  assert.match(p.git(['show','HEAD','--','.agrimap-agent/logs']),/"milestone":"spec-sync"/);
+  assert.ok(!committed.some(f=>f.startsWith('.agrimap-agent/logs/')));
 });
 
 test('spec-na passes, enforcement block stops, code-first is not checked (19.19 #7)',async t=>{
@@ -556,20 +559,20 @@ test('a generated execution ID that collides within the same second moves to the
   assert.ok(!taken.includes(started.activeTask.executionId),started.activeTask.executionId);
 });
 
-test('team commit style is enforced: Conventional types map to feature|fix|comment|ci and lose their scope (4.9.6)',async t=>{
+test('team commit style is enforced: Conventional types map to feature|fix|comment|chore|ci; the scope leads the description (5.0.10)',async t=>{
   const {checkCommitHeader,teamHeader}=await import('../../skills/agrimap-agent-skills/scripts/git-flow.mjs');
-  assert.deepEqual(checkCommitHeader('feat(orders): เพิ่มการส่งออก'),{ok:false,reason:'type',suggestion:'feature: เพิ่มการส่งออก'});
+  assert.deepEqual(checkCommitHeader('feat(orders): เพิ่มการส่งออก'),{ok:false,reason:'type',suggestion:'feature: orders เพิ่มการส่งออก'});
   assert.equal(checkCommitHeader('feat(orders): add export','conventional').ok,true,'opt-out policy');
-  for(const [from,to] of [['docs: x','comment: x'],['refactor(api): x','comment: x'],['chore: x','ci: x'],['fix(ui)!: x','fix: x']])assert.equal(teamHeader(from),to,from);
+  for(const [from,to] of [['docs: x','comment: x'],['refactor(api): x','comment: api x'],['chore: x','chore: x'],['chore(deps): x','chore: deps x'],['fix(ui)!: x','fix: ui x']])assert.equal(teamHeader(from),to,from);
   for(const header of ["Merge branch 'feature/x' into develop",'Revert "feature: x"','fixup! feature: x'])assert.equal(checkCommitHeader(header).ok,true,header);
   assert.deepEqual(checkCommitHeader('wip'),{ok:false,reason:'type',suggestion:null});
   const h=await fixture(t);const p=await project(h,{method:'local-merge'});
   const {executionId}=await startWork(p,{slug:'legacy-input'});
   await writeFile(path.join(p.repo,'e.js'),'x\n');verify(p,'s1',executionId);
   const plan=p.cli(['deliver','plan','--session','s1','--input',await messageFile(h)]);
-  assert.equal(plan.message.header,'feature: งานต่อเนื่อง');
+  assert.equal(plan.message.header,'feature: orders งานต่อเนื่อง');
   await writeFile(path.join(h.temp,'embedded.json'),JSON.stringify({subject:'docs(readme): อธิบายการติดตั้ง'}));
-  assert.equal(p.cli(['deliver','plan','--session','s1','--input',path.join(h.temp,'embedded.json')]).message.header,'comment: อธิบายการติดตั้ง');
+  assert.equal(p.cli(['deliver','plan','--session','s1','--input',path.join(h.temp,'embedded.json')]).message.header,'comment: readme อธิบายการติดตั้ง');
 });
 
 // Post-delivery logs/recent memory stay modified on the work branch; release commits them as audit (AGENTS.release.md §6.4).

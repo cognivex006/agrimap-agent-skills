@@ -16,9 +16,9 @@ Maintainer-only source documentation. Apply only to an explicitly assigned task 
 
 Use this same working directory. Inspect status, branch/upstream and fetch when synchronization is in scope; safely fast-forward the relevant branch before new work. Preserve all existing edits. Creating a development branch can carry same-scope uncommitted work without copying files. Do not stash/reset, auto-clone, create worktrees or commit unrelated changes to bypass a conflict. Diagnose concrete blockers in place.
 
-An implementation request authorizes scoped local changes, not commits or external writes. A commit/push request covers its named development branch, not main, PR merge or publication. Explicit release approval can cover the complete named version/source/publication sequence without repeated questions. Never infer publication from a bump, successful tests or the word finish.
+Delivery autonomy (owner decision 2026-11-01, 5.0.10; record: [specs/decisions/0002-package-delivery-autonomy.md](specs/decisions/0002-package-delivery-autonomy.md)). Once the owner assigns development of this repository, the agent may commit, push development branches, open and merge PRs/MRs into develop and main, bump the version, create the v<version> tag and publish the GitHub Release without asking first. Announce each step plainly before it runs (branch, PR target, version, source SHA, tag, `--latest`) and report the actual result with URLs after it. This covers only this source repository: never product projects that install the skills, their bootstrap templates or other repositories (agrimap-golden-lint-skills, sql-context-pack). Still ask first for anything destructive or irreversible: deleting or recreating a published tag/release, replacing assets, force-push or history rewrite, deleting remote branches others may use, and server protection or repository settings. Stay within the GitHub Terms of Service and Acceptable Use Policies and the terms of any other service or tool used: the owner's own authenticated account only, no bypassing rate limits, branch rules or required checks, no automated bulk or spam activity, no secrets in commits, logs or release notes, and third-party content shipped only under a license that permits it. Stop and report when a step would conflict with them.
 
-Integration needs no human review (owner decision 2026-09-25, 4.9.3): the gate is passing local verification (below). Integration, commits and pushes still need authorization for the named scope. Use PRs where server rules require them; do not wait for retired Actions checks or bypass a server rule. Only the owner changes server protection. The new repository settings are unknown until read back successfully.
+Integration needs no human review (owner decision 2026-09-25, 4.9.3): the gate is passing local verification (below). Integration, commits and pushes follow the delivery autonomy above. Use PRs where server rules require them; do not wait for retired Actions checks or bypass a server rule. Only the owner changes server protection. The new repository settings are unknown until read back successfully.
 
 PR into main accepts develop, release/* or hotfix/* in this repository; PR into develop accepts feature/*, fix/* and release/hotfix synchronization. Direct develop-to-main integration still requires local verification and applicable server PR rules and does not publish a release automatically. Review scope and verification; no blind conflict resolutions or history rewrites. Main/develop protection and required checks must also be configured on the server: Markdown alone cannot enforce them.
 
@@ -31,6 +31,7 @@ This repository uses the same team header as the product projects it governs (bo
 | `feature:` | New skill, command, script capability or contract rule |
 | `fix:` | Behavior that was wrong in a skill, script, hook or contract |
 | `comment:` | Review follow-up, wording, docs, refactor or tests without new behavior |
+| `chore:` | Dependency, tooling or config maintenance without behavior change (5.0.10) |
 | `bump:` | Version bump with its changelog finalization and generated sync output, for example `bump: ขึ้นเวอร์ชัน 4.9.8` |
 | `audit:` | Release history or `.agrimap-agent` records only |
 | `ci:` | `.github/workflows`, `tools/`, hooks wiring or repository governance |
@@ -73,12 +74,12 @@ npm run package:build
 
 Run sync first and review its output. Verification reruns sync and rejects newly generated drift; existing development edits are allowed. It runs package tests (at most two test-suite processes to limit Windows subprocess pressure), release tests, strict token budgets and preview construction. Route/commit checks require both --base and --head and an up-to-date origin/<base>. A successful run covers only its reported OS. There is no automatic Windows/Linux matrix; run the same checks on each OS when cross-platform evidence is required, and report the missing OS honestly.
 
-After explicit publication authorization, integrate the exact verified source through the approved branch/PR flow. Stable source must be a clean main commit already on the new origin; rc.N must be on release/<base-version>. Authenticate gh with an account allowed to publish to the new repository. Never expose a token in chat or logs.
+Integrate the exact verified source through the branch/PR flow (delivery autonomy above). Stable source must be a clean main commit already on the new origin; rc.N must be on release/<base-version>. Authenticate gh with an account allowed to publish to the new repository. Never expose a token in chat or logs.
 
 ```powershell
 # Publication preparation only; no tag/release is created:
 node tools/package-release.mjs --release <version> main
-# This command writes a NEW tag and GitHub Release; explicit authorization required:
+# This command writes a NEW tag and GitHub Release; announce it first (delivery autonomy):
 npm run package:publish -- --version <version> --latest false
 # Owner-approved new-account 5.0.2 reissue only:
 npm run package:publish -- --version 5.0.2 --latest true --migrate-5.0.2
@@ -92,6 +93,10 @@ npm run package:build alone produces local-preview, not a releasable publication
 Owner exception (2026-10-31): v5.0.8 was published from PR #20 before PR #22 (QUALITY-05 ADV-10..14, context-first orientation) merged, so the release omitted part of the 5.0.8 changelog. The owner confirmed nobody had installed 5.0.8 (everyone on 5.0.7) and authorized deleting the v5.0.8 tag/release and republishing 5.0.8 from the merged main commit. This is not general overwrite authority.
 
 Server setup is separate authorized administration. On main/develop remove retired required status contexts verify (ubuntu-latest) and verify (windows-latest), or their actual names shown in protection/rulesets, including any required-workflow rule for the removed Package CI. Retain PR rules, force-push/deletion restrictions, v* tag protection and immutable releases where supported. Do not assume the new repository copied any old settings. The former package-release Actions environment no longer gates local gh publication; authorization is enforced by the approved release instruction and GitHub account/repository permissions. Report this loss of environment approval explicitly; there is no replacement server approval configured by these scripts.
+
+## Golden Lint coupling (owner decision 2026-11-01, 5.0.10)
+
+agrimap-agent-skills owns every Golden rule so agents write correct code from the start; agrimap-golden-lint-skills only audits existing projects. Lint must accept a compatible agent-skills version range, not one pinned version, and must report reference-digest drift as a review warning rather than a block. This repository keeps rule IDs and the section names lint binds to stable, never reuses a retired ID, records renames in CHANGELOG and adds an authoring rule for every lint-detectable rule. A lint release never gates an agent-skills release. Rationale and the full contract: [specs/decisions/0001-golden-lint-coupling.md](specs/decisions/0001-golden-lint-coupling.md).
 
 ## Previous versions and adoption
 

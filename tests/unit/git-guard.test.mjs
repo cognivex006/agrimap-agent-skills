@@ -72,7 +72,7 @@ test('hook: deny output for Claude, empty output on allow, fail-open on parse er
 test('G7 denies commit headers outside the team style in AgriMap repositories (4.9.6)',async t=>{
   const g7={...ctx,commitConvention:'agrimap'};
   for(const command of ['git commit -m "feat(x): add y"','git commit -am "docs: z"',"git commit -m \"$(cat <<'EOF'\nchore: bump\n\nbody\nEOF\n)\"","git commit -m @'\nrefactor: tidy\n'@",'git commit -m "wip"']) assert.deepEqual([rule(command,g7),verdict(command,g7).decision],['G7','deny'],command);
-  assert.match(verdict('git commit -m "feat(x): เพิ่มปุ่มส่งออก"',g7).reason,/use "feature: เพิ่มปุ่มส่งออก"/);
+  assert.match(verdict('git commit -m "feat(x): เพิ่มปุ่มส่งออก"',g7).reason,/use "feature: x เพิ่มปุ่มส่งออก"/);
   for(const command of ['git commit -m "feature: เพิ่มรับ User หลายช่องทาง"','git commit -m "bump: ขึ้นเวอร์ชัน Production 1.4.2" -m "body"',"git commit -m \"$(cat <<'EOF'\nfix: แก้\nEOF\n)\"",'git commit --amend --no-edit','git commit','git commit -m "$MSG"','git commit -F -',"git commit -m \"Merge branch 'feature/x' into develop\""]) assert.equal(verdict(command,g7),null,command);
   assert.equal(verdict('git commit -m "feat(x): y"',{...g7,commitConvention:'conventional'}),null,'policy opt-out');
   assert.equal(verdict('git commit -m "wip"'),null,'not an AgriMap repository');
@@ -86,6 +86,12 @@ test('G7 denies commit headers outside the team style in AgriMap repositories (4
   assert.equal((await guardCommand('git commit -F msg.txt',{cwd:repo}))?.rule,'G7');
   await writeFile(path.join(repo,'msg.txt'),'comment: ปรับข้อความ\n');
   assert.equal(await guardCommand('git commit -F msg.txt',{cwd:repo}),null);
+  // 5.0.10: PR/MR titles use the same header; chore is a team type.
+  for(const command of ['gh pr create --base develop --title "feat(orders): เพิ่มการส่งออก" --body x','glab mr create -t "chore(deps): อัปเดต package"','gh pr edit 3 --title=wip'])
+    assert.equal((await guardCommand(command,{cwd:repo}))?.rule,'G7',command);
+  assert.match((await guardCommand('gh pr create --title "feat(orders): เพิ่มการส่งออก"',{cwd:repo})).reason,/use "feature: orders เพิ่มการส่งออก"/);
+  for(const command of ['gh pr create --title "feature: orders เพิ่มการส่งออก" --body x','glab mr create -t "chore: deps อัปเดต package"','gh pr create --fill','gh pr view 3'])
+    assert.equal(await guardCommand(command,{cwd:repo}),null,command);
 });
 
 test('G8 the agent never runs sqlctx query --reveal (4.11.0)',async()=>{
