@@ -2,7 +2,7 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased
+## 5.0.10 — 2026-11-01
 
 - Record the owner decision on Golden Lint coupling (maintainer record `specs/decisions/0001-golden-lint-coupling.md`). agrimap-agent-skills owns the Golden rules so agents write correctly from the start; agrimap-golden-lint-skills only audits existing projects, so it must accept a compatible agent-skills version range instead of one pinned version and report reference-digest drift as a warning. This package keeps rule IDs and lint-bound section names stable, never reuses a retired ID, records renames in CHANGELOG and adds an authoring rule for every lint-detectable rule. No runtime behavior changes.
 - Record the owner decision on delivery autonomy for this source repository only (maintainer record `specs/decisions/0002-package-delivery-autonomy.md`). During assigned package development, commit/push, PR/MR, merge, tag and release no longer need prior permission; each step is announced with branch, target, version, SHA and tag, and its result is reported. Deleting or recreating published tags or releases, force-push, history rewrite and server settings still need the owner, and every step respects GitHub and other service terms of use. Product projects that install the skills keep their own commit, merge and release boundaries; runtime skills and bootstrap templates are unchanged.
