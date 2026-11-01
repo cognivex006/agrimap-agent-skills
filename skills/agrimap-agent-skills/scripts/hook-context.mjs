@@ -3,7 +3,7 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, stat } from "node:fs/promises";
-import { appendRecord as appendFile, writeRecord as writeFile, redactText } from './sensitive-recording.mjs';
+import { writeRecord as writeFile } from './sensitive-recording.mjs';
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseCliArgs } from "./cli-args.mjs";
@@ -126,56 +126,7 @@ function safeSessionId(value) {
     .slice(0, 120);
 }
 
-function zonedParts(timestamp = new Date().toISOString(), timeZone = "Asia/Bangkok") {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hourCycle: "h23",
-  }).formatToParts(new Date(timestamp));
-  const value = Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
-  return {
-    period: `${value.year}-${value.month}`,
-    date: `${value.year}-${value.month}-${value.day}`,
-    time: `${value.hour}:${value.minute}:${value.second}`,
-    runId: `${value.day}${value.hour}${value.minute}${value.second}`,
-  };
-}
-
-// Background-task completions reach UserPromptSubmit as <task-notification>
-// blocks. They carry the agent's own commands, not requester text, so they never
-// enter raw history (memory-and-logs.md); a prompt left empty is not archived.
-const HARNESS_BLOCK = /<task-notification>[\s\S]*?<\/task-notification>/g;
-
-function requesterText(prompt) {
-  return prompt.includes("<task-notification>") ? prompt.replace(HARNESS_BLOCK, "").trim() : prompt;
-}
-
-async function archiveRawPrompt(stateRoot, config, input) {
-  const prompt = typeof input.prompt === "string" ? redactText(requesterText(input.prompt)) : "";
-  const eventName = input.hook_event_name || input.hookEventName || "";
-  if (!['UserPromptSubmit', 'BeforeAgent'].includes(eventName) || !prompt) return null;
-  // A host submission ID deduplicates retries, not repeated human submissions.
-  const submitId = input.prompt_id || input.event_id || input.message_id;
-  if (submitId) {
-    const marker = path.join(stateRoot, 'runtime', 'submits', fingerprint(String(input.session_id || input.sessionId) + ':' + submitId));
-    await mkdir(path.dirname(marker), { recursive: true });
-    try { await writeFile(marker, '', { flag: 'wx' }); } catch (error) { if (error.code === 'EEXIST') return null; throw error; }
-  }
-  const timestamp = new Date().toISOString();
-  const local = zonedParts(timestamp, config?.timeZone || "Asia/Bangkok");
-  const conversationId = safeSessionId(
-    input.session_id || input.sessionId || input.conversation_id || input.conversationId || input.context_id || input.contextId || input.room_id || input.roomId,
-  ) || "unscoped";
-  const promptPath = path.join(stateRoot, "prompts", local.period, conversationId, "history.md");
-  await mkdir(path.dirname(promptPath), { recursive: true });
-  await appendFile(promptPath, `### [${local.date} ${local.time}]\n${prompt}\n\n`, "utf8");
-  return path.relative(stateRoot, promptPath).replace(/\\/g, "/");
-}
+// Raw prompt history is no longer recorded (5.0.10); decisions, memory and reports still are.
 
 async function readJson(filePath) {
   try {
@@ -397,7 +348,6 @@ async function sessionDigest(active) {
 // SessionStart is intentionally silent. Current-turn intent precedes identity,
 // old execution state and all persistence. Names/cwd alone are insufficient.
 if (selection.active || shortReply || workContext) {
-  if (isRepo && selection.active) await archiveRawPrompt(stateRoot, config, input);
   const active = sessionId ? await readJson(path.join(stateRoot, 'runtime', 'active', sessionId + '.json')) : null;
   const identity = await readConfirmedIdentity(stateRoot, sessionId, {defaultProvider: provider});
   const ownerTurn = Boolean(turn?.decision.owner);

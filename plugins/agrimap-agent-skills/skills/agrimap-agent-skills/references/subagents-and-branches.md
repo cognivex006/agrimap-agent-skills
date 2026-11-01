@@ -18,12 +18,12 @@ The Leader dispatches, integrates and verifies evidence; subagents write. Keep a
 
 ## Worktree lifecycle: ephemeral worktree, durable job context
 
-- Two or more parallel writers: each gets a job. `branch plan|apply --worktree --slug <s> [--type hotfix] [--into <leader-branch>]` creates `<repo>.worktrees/<job-id>` on `feature/<slug>-<id>` from the Leader's integrated tip. One writer keeps the normal work branch without a worktree.
+- Two or more parallel writers: each gets a job. `branch plan|apply --worktree --slug <s> [--type hotfix] [--into <leader-branch>]` creates `<system temp>/agm-worktrees/<repo>-<hash>/<job-id>` (5.0.10: never inside or beside the project folder) on `feature/<slug>-<id>` from the Leader's integrated tip. One writer keeps the normal work branch without a worktree.
 - The subagent commits everything in its worktree; it never pushes, merges or removes the worktree.
 - The Leader verifies, then `integrate apply --job <id> --verification passed --evidence "<checks>"`: merge into the Leader branch, audit record, then removal of the worktree and the temporary branch. Merge, rebase and squash are each proven before deletion (`-d` only for proven ancestry).
 - A failed gate, a dirty or locked worktree, or a conflict blocks cleanup and keeps everything. Only the owning Leader session removes a job; an interrupted cleanup finishes on the next `integrate` call.
 - Rework is a new job: `--parent-job <id>` with a fresh worktree from the latest integrated tip. A worktree is never reused.
-- Host-created worktrees (Claude `isolation: worktree`, Codex managed worktrees) follow the same rule: the Leader integrates them and then removes them; never leave integrated worktrees behind.
+- Host-created worktrees (Claude `isolation: worktree`, Codex managed worktrees) follow the same rule: the Leader integrates them back into the main project branch and then removes them and their temp folder; never leave integrated worktrees behind.
 
 ## Packet additions for a job
 
@@ -50,7 +50,7 @@ Every packet defines `workspace_need`: isolation, requested mode, `base_ref`, ex
 - Claude custom agents may use `isolation: worktree` when the installed version supports it.
 - A normal subagent starts in the current working directory unless the provider proves isolation.
 - Codex managed worktrees are surface-dependent; never infer them from agent creation alone.
-- Worktree location (5.0.2): Claude keeps `isolation: worktree`; other hosts put their worktrees under `%TEMP%`/`$TMPDIR`, never in the checkout, else use `branch apply --worktree`.
+- Worktree location (5.0.10, owner decision 2026-11-01): every worktree lives under `%TEMP%`/`$TMPDIR`, never in the project folder or next to it. A host worktree that would be created inside the checkout (for example Claude `isolation: worktree` under `.claude/worktrees`) is not used; use `branch apply --worktree` instead.
 - If required uncommitted parent state is absent from the base commit, use shared/sequential work or obtain an authorized commit boundary.
 - A host-created worktree branch follows the policy's `hostWorktreeBranch` (default: keep the local name, push under the team name).
 - Subagents never deliver or integrate; the Leader does.

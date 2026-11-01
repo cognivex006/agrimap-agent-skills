@@ -5,7 +5,7 @@
 - Operation: `doctor`
 - Workflow depth: default `light`; allowed `light`, `standard`, `regulated`
 - Mode: `action-routed`
-- Purpose: Check AGM installation versions, host compatibility and workflow dependencies, or update the selected host's AGM package.
+- Purpose: Check AGM installation versions, host compatibility and workflow dependencies, or update the selected host's AGM package and its installed companions (golden-lint, sql-context-pack).
 - Deliverable: evidence-backed readiness report or verified package update; never a product release or host upgrade
 
 No arguments means read-only status. version and check are read-only too: no identity question, lifecycle, installation, cache refresh or project bootstrap. Only an explicit update authorizes changing the selected host's AGM installation. Resolve host from runtime evidence, never from the model name. --host gemini identifies legacy Gemini only, not Antigravity; explain migration without changing either installation. Use doctor-workflow.md; do not load product release prerequisites.

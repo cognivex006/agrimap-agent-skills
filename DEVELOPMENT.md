@@ -31,6 +31,7 @@ This repository uses the same team header as the product projects it governs (bo
 | `feature:` | New skill, command, script capability or contract rule |
 | `fix:` | Behavior that was wrong in a skill, script, hook or contract |
 | `comment:` | Review follow-up, wording, docs, refactor or tests without new behavior |
+| `chore:` | Dependency, tooling or config maintenance without behavior change (5.0.10) |
 | `bump:` | Version bump with its changelog finalization and generated sync output, for example `bump: ขึ้นเวอร์ชัน 4.9.8` |
 | `audit:` | Release history or `.agrimap-agent` records only |
 | `ci:` | `.github/workflows`, `tools/`, hooks wiring or repository governance |

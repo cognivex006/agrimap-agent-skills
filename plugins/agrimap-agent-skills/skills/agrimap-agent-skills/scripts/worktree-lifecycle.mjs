@@ -5,9 +5,10 @@
 // stays in the audit log and the Leader's savepoint. Rework is a new job linked
 // to the original one; a worktree is never reused. Nothing here forces, resets or
 // deletes uncommitted work: Git's own non-forced commands refuse those cases.
-import { mkdir, open, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
-import { randomBytes } from "node:crypto";
+import { mkdir, open, readFile, readdir, rename, rm, rmdir, stat, writeFile } from "node:fs/promises";
+import { createHash, randomBytes } from "node:crypto";
 import { realpathSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { defaultRun } from "./run-command.mjs";
 
@@ -64,10 +65,21 @@ export async function listJobs(state, { session = null } = {}) {
   return jobs.sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
 }
 
-// Worktrees live beside the repository, never inside it, so they are not
-// untracked files of the main checkout: <parent>/<repo>.worktrees/<job-id>.
-export function worktreeDirectory(root, jobId) {
-  return path.join(path.dirname(root), `${path.basename(root)}.worktrees`, jobId);
+// Worktrees live in the system temp directory (owner decision 2026-11-01, 5.0.10),
+// never inside or beside the project folder: <tmp>/agm-worktrees/<repo>-<hash>/<job-id>.
+// The hash of the repository path keeps two checkouts with one name apart.
+export const WORKTREE_ROOT = "agm-worktrees";
+export function worktreeDirectory(root, jobId, tmp = os.tmpdir()) {
+  const tag = createHash("sha256").update(path.resolve(root).toLowerCase()).digest("hex").slice(0, 8);
+  return path.join(tmp, WORKTREE_ROOT, `${path.basename(root)}-${tag}`, jobId);
+}
+
+// After removal, drop the now-empty <repo>-<hash> and agm-worktrees folders; never a non-empty one.
+async function removeEmptyParents(directory) {
+  for (const folder of [path.dirname(directory), path.dirname(path.dirname(directory))]) {
+    if (path.basename(folder) !== WORKTREE_ROOT && path.basename(path.dirname(folder)) !== WORKTREE_ROOT) break;
+    try { await rmdir(folder); } catch { break; }
+  }
 }
 
 export function worktreeEntries(run, root) {
@@ -180,6 +192,7 @@ export async function cleanupJob({ root, state, jobId, session, target = null, g
       if (dirty) return blocked("JOB_WORKTREE_DIRTY", "The job worktree has uncommitted or untracked files; nothing is removed.", { paths: dirty.split(/\r?\n/).slice(0, 10) });
       const removed = git(run, root, ["worktree", "remove", job.directory]);
       if (!removed.ok) return blocked("JOB_WORKTREE_REMOVE_FAILED", "git worktree remove refused.", { stderr: String(removed.stderr || "").trim().slice(0, 400) });
+      await removeEmptyParents(job.directory);
       steps.push({ step: "worktree-removed", at: now() });
     } else if (await stat(job.directory).then(() => true, () => false)) {
       return blocked("JOB_DIRECTORY_NOT_A_WORKTREE", `${job.directory} exists but is not this job's worktree; it is left alone.`);
