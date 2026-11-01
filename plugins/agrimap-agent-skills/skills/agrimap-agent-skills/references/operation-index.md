@@ -6,7 +6,7 @@ Use this file only to select one dedicated `agm-*` skill; pick by intent x lane 
 
 | Dedicated skill | Operation | Purpose | Mode | Workflow depth |
 | --- | --- | --- | --- | --- |
-| `agm-doctor` | `doctor` | Check AGM installation versions, host compatibility and workflow dependencies, or update the selected host's AGM package | `action-routed` | default `light`; allowed `light`, `standard`, `regulated` |
+| `agm-doctor` | `doctor` | Check AGM installation versions, host compatibility and workflow dependencies, or update the selected host's AGM package and its installed companions (golden-lint, sql-context-pack) | `action-routed` | default `light`; allowed `light`, `standard`, `regulated` |
 | `agm-analyze` | `analyze` | Analyze scope, hidden problems, impacts, and trade-offs | `product-read-only` | default `light`; allowed `light`, `standard`, `regulated` |
 | `agm-diagnose` | `diagnose` | Diagnose a problem to a proven root cause | `product-read-only` | default `light`; allowed `light`, `standard`, `regulated` |
 | `agm-plan` | `plan` | Create a reverse-engineered execution plan | `product-read-only` | default `light`; allowed `light`, `standard`, `regulated` |

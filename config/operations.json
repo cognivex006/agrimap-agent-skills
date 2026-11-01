@@ -12,7 +12,7 @@
           "regulated"
         ]
       },
-      "description": "Check AGM installation versions, host compatibility and workflow dependencies, or update the selected host's AGM package",
+      "description": "Check AGM installation versions, host compatibility and workflow dependencies, or update the selected host's AGM package and its installed companions (golden-lint, sql-context-pack)",
       "triggers": "ติดตั้ง/อัปเดต/ตรวจรุ่น AgriMap skills, agm version, host compatibility",
       "mode": "action-routed",
       "deliverable": "evidence-backed readiness report or verified package update; never a product release or host upgrade",

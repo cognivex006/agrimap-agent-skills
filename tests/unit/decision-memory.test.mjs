@@ -76,7 +76,8 @@ test('an approved precedent suppresses the card and is counted as a question avo
   cli(['checkpoint','--session','s2','--execution',executionId,'--event','verified','--summary','ok','--status','passed']);
   const done=cli(['complete','--session','s2','--execution',executionId]);
   assert.equal(done.ok,true,JSON.stringify(done));
-  const log=gitIn(root,['ls-files','--others','--exclude-standard','.agrimap-agent/logs']).split('\n').find(f=>f.includes(executionId));
+  // 5.0.10: run logs are Git-ignored, so list them as ignored files.
+  const log=gitIn(root,['ls-files','--others','--ignored','--exclude-standard','.agrimap-agent/logs']).split('\n').find(f=>f.includes(executionId));
   const events=(await readFile(path.join(root,log),'utf8')).trim().split('\n').map(line=>JSON.parse(line));
   const completed=events.find(e=>e.event==='completed');
   assert.deepEqual(completed.precedents,[stored.suppressed.precedent]);assert.equal(completed.questions_avoided,1);

@@ -29,11 +29,15 @@ test('successful integration removes the worktree and branch; history and job co
   assert.equal(started.ok,true,JSON.stringify(started));
   const job=started.job;
   assert.match(job.branch,/^feature\/export-api-/);assert.equal(job.into,'feature/leader');
-  assert.equal(path.basename(path.dirname(job.directory)),'svc.worktrees');
+  // 5.0.10: worktrees live under the system temp directory, never beside or inside the project.
+  assert.match(path.basename(path.dirname(job.directory)),/^svc-[0-9a-f]{8}$/);
+  assert.equal(path.basename(path.dirname(path.dirname(job.directory))),'agm-worktrees');
+  assert.ok(!path.resolve(job.directory).startsWith(path.dirname(path.resolve(repo))+path.sep+'svc'),job.directory);
   await commitIn(job.directory,'api.js','x\n','feature: เพิ่ม export API');
   const result=await integrateJob({root:repo,state,jobId:job.jobId,session:'lead',verification:'passed',evidence:'node --test api',persist});
   assert.equal(result.ok,true,JSON.stringify(result));assert.equal(result.cleanup.ok,true,JSON.stringify(result.cleanup));
   assert.equal(await present(job.directory),false);
+  assert.equal(await present(path.dirname(job.directory)),false,'empty temp parent is removed');
   assert.ok(!worktreeEntries(defaultRun,repo).some(entry=>entry.path.includes(job.jobId)));
   assert.equal(branchExists(repo,job.branch),false);
   assert.match(gitIn(repo,['log','--format=%s','feature/leader']),/feature: เพิ่ม export API/);

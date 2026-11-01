@@ -1,6 +1,6 @@
 # กติกากลาง: Skill routing, Workflow และ Release
 
-<!-- AGRIMAP BOOTSTRAP VERSION: 5.0.9 -->
+<!-- AGRIMAP BOOTSTRAP VERSION: 5.0.10 -->
 
 ไฟล์นี้เป็น canonical instruction ของ repository สำหรับ Codex, Claude Code, Gemini CLI, Cursor และผู้พัฒนา โดยไม่ต้องมี AgriMap skills หรือ local Git hook กติกา Markdown ช่วยกำกับพฤติกรรม; Agent ใช้ .NET Global Tool `agm-release` ตรวจ local gate และตรวจหลักฐาน Git ตามไฟล์นี้ ห้ามอนุมานว่า Jenkins บังคับ release gate อยู่ ส่วน GitLab Protected Branch/Tag ต้องตั้งค่าฝั่ง server แยกต่างหาก
 
@@ -101,12 +101,11 @@
   - `.agrimap-agent/decisions/**`
   - `.agrimap-agent/instructions/**`
   - `.agrimap-agent/knowledge/**`
-  - `.agrimap-agent/logs/**`
   - `.agrimap-agent/memory/**`
   - `.agrimap-agent/policy/**`
   - `.agrimap-agent/reports/**`
 - คำว่า `decision` ในคำสั่งหมายถึง canonical directory `decisions/` ซึ่งเป็นพหูพจน์ ห้ามสร้าง `.agrimap-agent/decision/` ซ้ำ
-- `.agrimap-agent/prompts/**` (prompt history) อยู่ในเครื่องเท่านั้น ห้าม stage/commit ทุก mode; ถ้ายังถูก track ให้ `git rm --cached -r -- .agrimap-agent/prompts` ครั้งเดียวใน `audit:` commit งานใหม่ไม่สร้าง `tasks/**`; tasks เดิมกลุ่ม B commit ได้หลังตรวจข้อมูลลับ; `runtime/**` และ path นอก allowlist ไม่ publish อัตโนมัติ หากอยู่ใน inventory ให้รายงาน blocked ตาม §6.3
+- `.agrimap-agent/logs/**` และ `prompts/**` อยู่ในเครื่องเท่านั้น ห้าม stage/commit ทุก mode; ถ้ายังถูก track ให้ `git rm --cached -r -- .agrimap-agent/logs .agrimap-agent/prompts` ครั้งเดียวใน `audit:` commit ไม่บันทึก prompt history แล้ว (5.0.10) งานใหม่ไม่สร้าง `tasks/**`; tasks เดิมกลุ่ม B commit ได้หลังตรวจข้อมูลลับ; `runtime/**` และ path นอก allowlist ไม่ publish อัตโนมัติ หากอยู่ใน inventory ให้รายงาน blocked ตาม §6.3
 - ไฟล์เดิมที่อยู่นอก allowlist ไม่ใช่สิทธิ์ให้ Agent แตะหรือลบ และห้ามล้าง artifact ของ Agent/ผู้พัฒนาคนอื่น
 - `.agrimap-agent/local/**` เป็นความจำเฉพาะเครื่อง (เช่น path ของ spec นอก repo) ถูก ignore และห้าม stage/commit ทุก mode; ไฟล์ที่ commit อ้าง spec นอก repo ด้วย id ใน `policy/project.json` เท่านั้น ห้ามใส่ absolute path ของเครื่อง
 
@@ -208,8 +207,8 @@
 
 ### 10.6 รูปแบบ commit ของทีม (บังคับ)
 
-- ทุก commit ที่ Agent สร้าง (deliver/release/commit เอง): `<type>: <คำอธิบายภาษาไทย>` ≤ 100 ตัวอักษร ไม่มี scope ให้ BA/ทีมอ่านรู้เรื่อง ศัพท์เทคนิคที่ทีมใช้เขียนทับศัพท์ตรงตัว ไม่แปลเป็นคำไทยกว้าง ๆ เช่น `feature: ปรับเพิ่มการส่งรหัส x-correlation-id ใน header เพื่อให้ทีมตรวจสอบปัญหาได้ตรงจุด` รายละเอียดใส่ body; ห้าม `feat(x):`/`docs:`/`chore:` (guard G7) ยกเว้น merge ของ Git
-- งาน: `feature:` ใหม่, `fix:` แก้ที่ผิด, `comment:` ปรับตาม comment/หน้าตา/ข้อความ/โครงสร้าง/เอกสาร; agm-release: `bump:` version, `audit:` บันทึก `.agrimap-agent`, `ci:` pipeline/governance/bootstrap; ต่างชนิดแยก commit
+- ทุก commit และชื่อ PR/MR ที่ Agent สร้าง: `<type>: <คำอธิบายภาษาไทย>` ≤ 100 ตัวอักษร scope เป็นคำแรกของคำอธิบาย ไม่ใส่วงเล็บ (`chore: deps อัปเดต package`) ศัพท์เทคนิคเขียนทับศัพท์ตรงตัว เช่น `feature: ปรับเพิ่มการส่งรหัส x-correlation-id ใน header เพื่อให้ทีมตรวจสอบปัญหาได้ตรงจุด` รายละเอียดใส่ body; ห้าม `feat(x):`/`docs:` (guard G7) ยกเว้น merge ของ Git
+- งาน: `feature:` ใหม่, `fix:` แก้ที่ผิด, `comment:` ปรับตาม comment/หน้าตา/ข้อความ/โครงสร้าง/เอกสาร, `chore:` dependency/config ไม่เปลี่ยน behavior; agm-release: `bump:` version, `audit:` บันทึก `.agrimap-agent`, `ci:` pipeline/governance/bootstrap; ต่างชนิดแยก commit
 
 ## Bootstrap contract freshness
 

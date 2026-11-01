@@ -8,7 +8,7 @@
 
 | ลักษณะงาน | การบันทึกที่เหมาะสม |
 | --- | --- |
-| อธิบาย เปรียบเทียบ ขอ help หรือ review ที่ไม่ขอรายงานถาวร | ไม่มี execution/task; raw submit ที่เกี่ยวข้องอาจอยู่ใน prompt history |
+| อธิบาย เปรียบเทียบ ขอ help หรือ review ที่ไม่ขอรายงานถาวร | ไม่มี execution/task และไม่บันทึก prompt history (5.0.10) |
 | แก้งานขนาดจำกัดที่อนุมัติแล้ว | light: memory ปัจจุบัน/ล่าสุดและ milestone audit แบบสั้น ไม่มี tasks |
 | ต้อง resume, handoff หรือผู้ใช้ขอติดตาม | standard: savepoint ใน memory/current |
 | มี boundary ข้อมูล/ความปลอดภัย/public contract, external publication หรือ independent assurance จริง | regulated: savepoint เดียวพร้อมหลักฐานที่ความเสี่ยงนั้นต้องใช้ |
@@ -19,7 +19,8 @@
 
 | ที่เก็บใต้ .agrimap-agent | ใช้เมื่อ |
 | --- | --- |
-| prompts/YYYY-MM/conversation/history.md | เก็บ raw user submissions ที่เกี่ยวข้อง ไม่ปนคำตอบ AI; อยู่ในเครื่องเท่านั้น ไม่ขึ้น Git (5.0.1) |
+| prompts/YYYY-MM/conversation/history.md | ไฟล์เดิมก่อน 5.0.10 เท่านั้น ไม่บันทึกเพิ่มแล้ว; อยู่ในเครื่อง ไม่ขึ้น Git |
+| logs/ | run log สำหรับ resume และการแจ้งเตือน อยู่ในเครื่องเท่านั้น ไม่ขึ้น Git (5.0.10) |
 | prompts/YYYY-MM/conversation/context-vNNN.md | มี Prompt Result ที่พร้อมใช้; immutable |
 | memory/current | savepoint: เป้าหมาย, ทำแล้ว, ที่เหลือ, ขั้นถัดไป, การตัดสินใจ และ branch ของงานที่ยังไม่จบ |
 | memory/recent | ผลและหลักฐานเมื่อจบ/เปลี่ยน milestone |
