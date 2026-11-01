@@ -2,6 +2,11 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased
+
+- Record the owner decision on Golden Lint coupling (maintainer record `specs/decisions/0001-golden-lint-coupling.md`). agrimap-agent-skills owns the Golden rules so agents write correctly from the start; agrimap-golden-lint-skills only audits existing projects, so it must accept a compatible agent-skills version range instead of one pinned version and report reference-digest drift as a warning. This package keeps rule IDs and lint-bound section names stable, never reuses a retired ID, records renames in CHANGELOG and adds an authoring rule for every lint-detectable rule. No runtime behavior changes.
+- Record the owner decision on delivery autonomy for this source repository only (maintainer record `specs/decisions/0002-package-delivery-autonomy.md`). During assigned package development, commit/push, PR/MR, merge, tag and release no longer need prior permission; each step is announced with branch, target, version, SHA and tag, and its result is reported. Deleting or recreating published tags or releases, force-push, history rewrite and server settings still need the owner, and every step respects GitHub and other service terms of use. Product projects that install the skills keep their own commit, merge and release boundaries; runtime skills and bootstrap templates are unchanged.
+
 ## 5.0.9 — 2026-10-31
 
 - Align `agm-sql context migrate` with sql-context-pack 3.5.1. Migrate now creates one `filtered` catalog of the exact missing names with the scan's new `objectTypes` (never `all` or `selected`, which waited for an owner selection), drops exact names the database does not have (`CATALOG_INCLUDE_PATTERNS_UNMATCHED`) and reports them as `missing_in_database`, runs fetch/assemble/validate itself into the registered folder and removes replaced SQL files only after validation passes. It needs 3.5.0+; 3.5.1 is recommended and required for SQL Server context-index reads. A new recipe relays service, version and metadata-schema failures (`SERVICE_*`, `METADATA_CONTEXT_SCHEMA_DRIFT` on 3.5.0, `decimal.ConversionSyntax` before 3.5.0) as owner commands and never re-applies `DB_METADATA_CONTEXT`. The read-only boundary is unchanged.
