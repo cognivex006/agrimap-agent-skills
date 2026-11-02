@@ -5,6 +5,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { isTemplateContentLine, templateLineKey } from "../skills/agrimap-agent-skills/scripts/project-bootstrap.mjs";
+import { publishedHashes, recordPreviousHashes } from "./bootstrap-hashes.mjs";
 import {
   loadTaskArtifactSchema,
   renderTaskArtifactSchemaDocs,
@@ -65,13 +66,11 @@ for (const name of ['AGENTS.md', 'AGENTS.release.md']) {
 await writeFile(path.join(canonicalSkill, 'references', 'skill-routing.md'), renderRoutingReference(routing), 'utf8');
 const sqlContextPath = path.join(canonicalSkill, 'references', 'sql-context-readonly.md');
 await writeFile(sqlContextPath, applyMarkedBlock((await readFile(sqlContextPath, 'utf8')).replaceAll('\r\n', '\n'), SQL_CONTEXT_START, SQL_CONTEXT_END, renderSqlContextBlock(routing)), 'utf8');
+const bootstrapRepoPath = item => path.relative(root, path.join(bootstrapRoot, item.source)).replaceAll('\\', '/');
+const published = publishedHashes(root, bootstrapManifest.files.map(bootstrapRepoPath));
 for (const item of bootstrapManifest.files) {
   const nextHash = createHash('sha256').update(await readFile(path.join(bootstrapRoot, item.source))).digest('hex');
-  if (bootstrapManifest.version !== packageVersion && item.sha256 !== nextHash) {
-    item.previous ??= [];
-    if (!item.previous.some(old => old.sha256 === item.sha256)) item.previous.push({version: bootstrapManifest.version, sha256: item.sha256});
-  }
-  item.sha256 = nextHash;
+  recordPreviousHashes(item, {manifestVersion: bootstrapManifest.version, packageVersion, nextHash, published: published.get(bootstrapRepoPath(item))});
 }
 bootstrapManifest.version = packageVersion;
 await writeFile(bootstrapManifestPath, JSON.stringify(bootstrapManifest, null, 2) + '\n', 'utf8');

@@ -60,6 +60,39 @@ test('release stages synchronize stale local branches and re-evaluate in one inv
 });
 
 
+test('sync records the hash a version shipped (its tag), not the development hash written between releases',async()=>{
+  const {recordPreviousHashes,compareVersions}=await import('../../tools/bootstrap-hashes.mjs');
+  // 5.0.10 shipped "pub"; development overwrote item.sha256 with "dev"; the bump to 5.0.11 writes "next".
+  const item={sha256:'dev',previous:[{version:'5.0.9',sha256:'old'}]};
+  recordPreviousHashes(item,{manifestVersion:'5.0.10',packageVersion:'5.0.11',nextHash:'next',published:[{version:'5.0.9',sha256:'old'},{version:'5.0.10',sha256:'pub'}]});
+  assert.deepEqual(item,{sha256:'next',previous:[{version:'5.0.9',sha256:'old'},{version:'5.0.10',sha256:'pub'}]});
+  // During development the shipped hash is kept as soon as the file changes, before any bump.
+  const dev={sha256:'pub'};
+  recordPreviousHashes(dev,{manifestVersion:'5.0.10',packageVersion:'5.0.10',nextHash:'dev',published:[{version:'5.0.10',sha256:'pub'}]});
+  assert.deepEqual(dev,{sha256:'dev',previous:[{version:'5.0.10',sha256:'pub'}]});
+  // Unchanged content equal to a tag is current, not previous; without tags the old fallback remains.
+  const same={sha256:'pub'};
+  recordPreviousHashes(same,{manifestVersion:'5.0.10',packageVersion:'5.0.10',nextHash:'pub',published:[{version:'5.0.10',sha256:'pub'}]});
+  assert.deepEqual(same,{sha256:'pub'});
+  const shallow={sha256:'shipped'};
+  recordPreviousHashes(shallow,{manifestVersion:'5.0.10',packageVersion:'5.0.11',nextHash:'next'});
+  assert.deepEqual(shallow,{sha256:'next',previous:[{version:'5.0.10',sha256:'shipped'}]});
+  assert.deepEqual(['5.0.10','4.2.0','4.2.0-rc.1','5.0.9','4.10.0'].sort(compareVersions),['4.2.0-rc.1','4.2.0','4.10.0','5.0.9','5.0.10']);
+});
+
+test('every tagged release of a bootstrap template stays recognisable to project-bootstrap',async t=>{
+  const {publishedHashes}=await import('../../tools/bootstrap-hashes.mjs');
+  const bundle='skills/agrimap-agent-skills/assets/bootstrap';
+  const manifest=JSON.parse(await readFile(path.join(projectRoot,bundle,'manifest.json'),'utf8'));
+  const published=publishedHashes(projectRoot,manifest.files.map(item=>`${bundle}/${item.source}`));
+  if(![...published.values()].some(list=>list.length))return t.skip('no local v* tags (shallow clone)');
+  for(const item of manifest.files){
+    const known=new Set([item.sha256,...(item.previous||[]).map(old=>old.sha256)]);
+    const missing=published.get(`${bundle}/${item.source}`).filter(entry=>!known.has(entry.sha256)).map(entry=>entry.version);
+    assert.deepEqual(missing,[],`${item.source}: published hash missing for ${missing.join(', ')}`);
+  }
+});
+
 test('a blocked verification proves its cause and restates the full handoff on retry',async()=>{
   // Owner request 2026-11-02: a retry answered only "waiting on the options sent earlier".
   const steps=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/references/release-steps.md'),'utf8');

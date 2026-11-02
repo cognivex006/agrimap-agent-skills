@@ -152,6 +152,7 @@ for (const required of [
   "tests/integration/workspace/cases/history.mjs",
   "tests/integration/workspace/cases/frontend-reuse.mjs",
   "tools/operation-entrypoints.mjs",
+  "tools/bootstrap-hashes.mjs",
   "docs/USAGE.md",
   "plugins/agrimap-agent-skills/docs/USAGE.md",
   "examples/inputs/LONG-REQUEST.md",
