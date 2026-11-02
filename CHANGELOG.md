@@ -9,7 +9,7 @@ Release history, not current operating instructions. Start with [Getting Started
 ## 5.0.12 — 2026-11-02
 
 - Add authoring rules for SonarQube findings seen in agmws-license-management, so new and rewritten code does not raise them. `csharp.md` adds ERR-06 (no reserved exceptions such as `NullReferenceException`, including `?? throw`; S112), ERR-07 (`Argument*Exception` `paramName` is `nameof` of a real parameter, otherwise `InvalidOperationException`; S3928, CA2208) and QUALITY-06 (no redundant trailing `return;`/`continue;`; S3626).
-- Extend the security baseline to SEC-01..24. SEC-20 now requires literal `Secure = true` and `HttpOnly = true` on every `CookieOptions`, append and delete, instead of a configuration toggle (S2092, S3330). New SEC-23 bounds regex whitespace to one line and forbids overlapping or nested quantifiers in scripts and C# (S5852). New SEC-24 requires a `.dockerignore` with a minimum entry set for every Dockerfile that copies the build context (S6470); `COPY . .` stays a Sonar hotspot that the `.dockerignore` lets reviewers mark safe.
+- Extend the security baseline to SEC-01..24. SEC-20 now requires literal `Secure = true` and `HttpOnly = true` on every `CookieOptions`, append and delete, instead of a configuration toggle (S2092, S3330). New SEC-23 bounds regex whitespace to one line and forbids overlapping or nested quantifiers in scripts and C# (S5852). New SEC-24 requires a `.dockerignore` with a minimum entry set for every Dockerfile that copies the build context (S6470); `COPY . .` stays a Sonar hotspot that the `.dockerignore` lets reviewers mark safe. The backend light token budget rises from 24600 to 25000 (refactor scenario 24700 to 25100) for these csharp.md rules.
 
 ## 5.0.11 — 2026-11-02
 
