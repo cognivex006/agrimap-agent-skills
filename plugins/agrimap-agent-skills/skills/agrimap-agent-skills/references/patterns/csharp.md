@@ -339,6 +339,16 @@ Resolve the message from `lut_app_message:{error_code}` first and fall back to t
 
 **ERR-05 — Do not fork `GlobalExceptionMiddleware` per service.** Change the shared owner only under explicit cross-service scope.
 
+**ERR-06 — Never throw reserved exceptions (S112).** Do not write `throw new NullReferenceException()`, `IndexOutOfRangeException`, `Exception`, `SystemException` or `ApplicationException`, including `?? throw`. A missing argument is `ArgumentNullException`; missing state such as `HttpContext` is `InvalidOperationException` with a message; a client error is `AppException` (ERR-01).
+
+**ERR-07 — `paramName` names a real parameter (S3928, CA2208).** `Argument*Exception` takes `nameof(<parameter of the enclosing method>)`, never a string literal or another name. When the null value is not a parameter (for example `param.Name` inside a loop), throw `InvalidOperationException` or skip it instead.
+
+```csharp
+var httpContext = context.HttpContext
+    ?? throw new InvalidOperationException("HttpContext is not available for the current request.");
+var name = param.Name ?? throw new InvalidOperationException("Constructor parameter has no name.");
+```
+
 ### Structured logging
 
 **LOG-01 — Use structured message templates and pass exceptions first.**
@@ -412,6 +422,8 @@ public class UserSearchRequestDto : QueryPagedRequestDto
 **QUALITY-02 — At most seven parameters.** Methods/constructors allow seven parameters (S107). Group related inputs into typed request/options objects or split responsibilities. Report necessary public-contract changes; never silently break callers, hide unrelated arguments in dictionaries or suppress the rule.
 
 **QUALITY-03 — No nested ternaries (S3358).** Extract nested ternaries, including anonymous-object properties, into statements/helpers. Standalone ternaries are allowed. Preserve lazy evaluation, ordering, exact strings and response shape.
+
+**QUALITY-06 — No redundant jumps (S3626).** Do not end a `void` method, a final `catch`/`finally` block or a loop body with a bare `return;` or `continue;` that changes nothing; keep the intent as a comment.
 
 **QUALITY-04/05:** [SonarQube notices; advisory smells](../sonarqube-remediation.md).
 

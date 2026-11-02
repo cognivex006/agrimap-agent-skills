@@ -1,4 +1,4 @@
-# Application security baseline (SEC-01..22)
+# Application security baseline (SEC-01..24)
 
 Applies to `be-main`, `be-library`, `fe-main`, `fe-library` and `sql-procedure` code you write or edit. The same 22 classes are what AgriMap Golden Lint (0.1.15+) reports on existing projects; this file is the authoring side, so new code never introduces them. Class IDs, OWASP 2021 categories and CWE numbers match the lint catalog.
 
@@ -32,7 +32,7 @@ Applies to `be-main`, `be-library`, `fe-main`, `fe-library` and `sql-procedure` 
 | SEC-17 sensitive response field (A01, CWE-200/359) | Password, hash, salt or secret fields in a response DTO; personal fields in list projections that do not need them | Response DTOs without secrets; personal fields only for callers authorized for that record, only in projections that need them; never mask them for every caller |
 | SEC-18 unbounded input (A04, CWE-770/1284) | `page_size`, `limit`, `take`, `offset` without bounds, or row counts as `string`/`double` | Integer types with `[Range]` (or the project's validation), upper bound from the largest legitimate use; out-of-range returns the existing validation error, never silent clamping |
 | SEC-19 security headers (A05, CWE-319/693/525) | A host pipeline that assumes nobody sets HSTS, `nosniff` and `Cache-Control` | Confirm one owner (application, shared middleware or gateway) and set them there; `no-store` only for authenticated or personal responses |
-| SEC-20 insecure cookie (A05, CWE-614/1004/1275) | Session or auth cookies without `Secure`, `HttpOnly` or with `SameSite=None` and no reason | `Secure`, `HttpOnly`, `SameSite=Lax` or `Strict`; `None` only with `Secure` for a named cross-site flow; keep names, paths and lifetimes |
+| SEC-20 insecure cookie (A05, CWE-614/1004/1275) | Session or auth cookies without `Secure`, `HttpOnly` or with `SameSite=None` and no reason | `Secure = true` and `HttpOnly = true` as literals on every `CookieOptions` (append and delete; S2092/S3330), never a configuration toggle; local HTTP uses dev certificates or app-level `CookieSecurePolicy.Always`; `SameSite=Lax` or `Strict`; `None` only with `Secure` for a named cross-site flow; keep names, paths and lifetimes |
 
 ## Frontend (Angular)
 
@@ -43,6 +43,13 @@ Applies to `be-main`, `be-library`, `fe-main`, `fe-library` and `sql-procedure` 
 | SEC-21 DOM XSS (A03, CWE-79/95) | `bypassSecurityTrust*` on variable content, `nativeElement.innerHTML`, `document.write`, `eval`/`new Function` | Interpolation for text; `[innerHTML]` with Angular sanitization; `bypassSecurityTrust*` only for constant or server-sanitized content |
 | SEC-22 token in Web Storage (A07, CWE-922) | Access/refresh tokens or credentials in `localStorage`/`sessionStorage` in new code; passwords anywhere | Follow the project's established auth flow (HttpOnly Secure cookie or in-memory token with short-lived refresh); changing an existing flow is a cross-lane staged migration, never a local edit |
 
+## Scripts and container builds
+
+| Class | Do not write | Write it this way |
+| --- | --- | --- |
+| SEC-23 regex backtracking (A04, CWE-1333, S5852) | `^s*` with the multiline flag, adjacent overlapping quantifiers (`s*s+`, `s*;` across lines), nested quantifiers (`(w+)+`, `(.*)*`) in JS/TS/Node scripts or C# | Bound whitespace to one line with `[ 	]` (`/^[ 	]*SET[ 	]+NOCOUNT[ 	]+ON[ 	]*;/im`); one quantifier per span; C# regexes also take a match timeout (ADV-09) |
+| SEC-24 Docker build context (A05, CWE-538, S6470) | `COPY . .` in a Dockerfile without a `.dockerignore` that excludes secrets and local state | Every service with a Dockerfile has a `.dockerignore` with at least `**/.env`, `**/.git`, `**/.vs`, `**/.vscode`, `**/bin`, `**/obj`, `**/*.*proj.user`, `**/secrets*.yaml`, `**/values.dev.yaml`, `**/Scripts/*.ps1`, `**/node_modules`; prefer copying named paths. Sonar still lists `COPY . .` as a hotspot: the `.dockerignore` is the evidence to mark it Reviewed/Safe |
+
 ## Out of scope here
 
-Dependency vulnerabilities (A06), deployment/infrastructure configuration and data-flow proofs are not covered by these classes; do not claim them from this checklist. Secrets and service URLs in code follow [service-url-matrix.md](../service-url-matrix.md).
+Dependency vulnerabilities (A06), deployment/infrastructure configuration beyond SEC-24 and data-flow proofs are not covered by these classes; do not claim them from this checklist. Secrets and service URLs in code follow [service-url-matrix.md](../service-url-matrix.md).
