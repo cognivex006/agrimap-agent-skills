@@ -44,7 +44,7 @@ For `agm-release bootstrap upgrade` (preserve custom rules) or legacy `agm-relea
 | indexing | Project Backfill: reconcile full reachable history, project catalog, historical changelog and README capability/API inventory | Local artifacts only; no version, push or tag |
 | prepare inhouse | Prepare and verify the requested Inhouse version, default PATCH+1 | Local candidate only; no push/tag |
 | prepare production | Prepare and verify the requested Production version, default PATCH+1 | Local candidate only; no push/tag |
-| pipeline inhouse | Verify existing candidate; commit reviewed candidate, push/verify develop, fast-forward push/verify jenkins | Inhouse branch checkpoint; no version bump or Production/tag |
+| pipeline inhouse | Gather pending work onto develop at the current Inhouse version, even if already on jenkins; commit, push/verify develop, fast-forward push/verify jenkins | Inhouse branch checkpoint; never bumps; no Production/tag |
 | pipeline production | Verify existing Production candidate; commit reviewed candidate, push/verify develop and jenkins; prepare Production fast-forward plan | Production-ready candidate; do not push jenkins-release or create/push tag |
 | promote | Verify existing Production-ready candidate; show the publication plan; publish/verify jenkins-release then annotated Production tag | Production, tag and notify checkpoints |
 | release full | indexing → prepare both owners independently → pipeline inhouse → pipeline production → promote | develop + Inhouse + Production + Production tag + notify |

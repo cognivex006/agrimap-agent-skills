@@ -1,6 +1,6 @@
 # กติกา Release, Version, Changelog และ Deployment
 
-<!-- AGRIMAP BOOTSTRAP VERSION: 5.0.10 -->
+<!-- AGRIMAP BOOTSTRAP VERSION: 5.0.11 -->
 
 ไฟล์นี้ใช้ร่วมกับ `AGENTS.md` (core) ของ repository เดียวกัน: เก็บ §2 Intent routing ฉบับเต็มและ §4–§8 โดยคงเลข § เดิม เพื่อให้การอ้างอิงข้ามไฟล์ไม่เปลี่ยน §1, §3, §9 และ §10 อยู่ใน `AGENTS.md` และยังบังคับใช้กับงาน release ทุกงาน
 
@@ -77,6 +77,7 @@ Normalize ได้เฉพาะ case/whitespace และ semantic phrase bou
 - Exact intent กลุ่ม B ที่ owner สั่งเองเป็นการยืนยัน branch push ตลอด flow รวม final audit commit; tag push อนุญาตเฉพาะ `Version + Tags` ไม่ถามย้ำในแต่ละ checkpoint
 - การอ้าง keyword ในคำขอแก้เอกสารไม่ใช่คำสั่ง release; กลุ่ม A และ deploy aliases อื่นคงขอบเขตเดิม
 - คำสั่ง publish อื่นที่ไม่ใช่กลุ่ม B (เช่น `release inhouse|production|full`, `pipeline inhouse|production`) รวมงานค้างทั้งหมดโดยอัตโนมัติเหมือนกลุ่ม B: dirty path และ local `develop` commit ที่ยังไม่ขึ้น remote นอก candidate ถูกรวมเป็น content commit ตาม §6.3 ก่อน version commit โดยไม่ถาม เก็บไว้ local เฉพาะเมื่อ owner สั่งยกเว้นชัดเจน ข้อมูลลับ ignored/runtime state และ nested repository ถูกตัดออกอัตโนมัติพร้อมรายงาน
+- `pipeline inhouse` ไม่ขึ้นเวอร์ชันทุกกรณี (owner decision 2026-11-02): รวมงานที่เสร็จและงานค้างเข้า `develop` แล้วส่ง `develop -> jenkins` ด้วยเลขใน `Jenkinsfile` ตอนนั้น ถ้าเลขนั้นอยู่บน `jenkins` แล้วก็ส่งซ้ำด้วยเลขเดิมได้ ไม่ถือว่า prerequisite ขาดและไม่ต้องถาม ถ้าต้องการเลข Inhouse ใหม่ให้ใช้ `release inhouse`; ส่วน `pipeline production` และ `promote` ยังต้องมี candidate Production ที่เตรียมไว้แล้ว
 - ทุกคำสั่ง prepare/pipeline/release เริ่มด้วย `release preflight` ตาม §6.5; sync `origin/develop`, back-merge `jenkins`/`jenkins-release` และแก้ conflict ทำเองโดยไม่ถาม branch ของคนอื่นไม่เกี่ยว
 - ทุกคำสั่ง prepare/pipeline/release และกลุ่ม B รวม work branch ที่ทำเสร็จแต่ยังไม่อยู่ใน `develop` เข้า local `develop` ก่อนเตรียม version ตาม §6.4 (M) ส่วน promote รวมเข้า `develop` ตอนจบโดยไม่แตะ candidate Production ที่ freeze แล้ว
 - เมื่อจบ release ให้ commit audit ที่เหลือและ push `develop` หนึ่งครั้ง แล้วตรวจ remote SHA ให้ `develop` สะอาดและเท่ากับ origin (ไม่ promote audit commit ไป `jenkins`/`jenkins-release` และไม่ย้าย tag)
@@ -348,6 +349,8 @@ Owner decision 2026-09-29 (4.9.8): release ต้องจบในการส�
 - Deduplicate ด้วย mode+environment+version/no-version+SHA+checkpoint+status เพื่อไม่ให้ branch checkpoint กลบ tag checkpoint หรือ doc audit รอบใหม่; partial ใช้ `blocked|prepared` พร้อม next action; resume ต้องอ่าน index+Git remote ก่อนทำ checkpoint ถัดไป
 - Final report ต้องมี selected mode/trigger, baseline/candidate SHA, diff/changelog coverage, environment versions/owner files, release notes, verification, commit/push/merge, annotated tag, project index, omitted actions และ next decision
 - เมื่อจำเป็นต้องขอ owner decision ให้ระบุสาเหตุที่พิสูจน์แล้วและสิ่งที่ยังไม่ทราบ, checkpoint ที่ผ่าน/ค้าง, ทางเลือกที่ทำได้พร้อมผลกระทบ, วิธีที่แนะนำพร้อมเหตุผล และขั้นตอนที่จะทำต่อหลังได้รับคำตอบ แล้วถามให้ owner เลือกวิธีอย่างชัดเจน ห้ามจบเพียง “branch diverged” หรือ “ต้องตัดสินใจก่อน”; ถ้ามีวิธีปลอดภัยที่อยู่ใน authorization เดิมให้ดำเนินการก่อน ไม่สร้าง approval gate เพิ่ม
+- Verification (test/build/verify) ไม่ผ่าน: ก่อนขอ decision ให้พิสูจน์สาเหตุแบบอ่านอย่างเดียวให้สุด คือชื่อ test/check ที่ fail, path ที่หายหรือเปลี่ยน, commit ที่ทำให้เปลี่ยน และ Git history ว่าฝั่งไหนใหม่กว่า (`git log --follow -- <path>`, `git diff <base> -- <path>`) แล้วแนะนำวิธีที่หลักฐานรองรับ ไม่ส่งให้ owner ไปพิสูจน์ provenance เอง วิธีที่แนะนำต้องมีคำสั่งหรือขั้นตอนที่รันต่อได้ทันที และคำสั่ง resume
+- คำตอบและ report ของ run ที่ `blocked` ต้องอ่านจบในตัว: มีสาเหตุ หลักฐาน ทางเลือก วิธีที่แนะนำ และคำสั่งถัดไปครบทุกรอบ รวมรอบ retry/resume ที่ blocker เดิม ห้ามอ้างเพียง “ตัวเลือกที่ส่งไว้ก่อนหน้า” หรือให้ไปเปิด report เก่า; ถ้า blocker ไม่เปลี่ยนให้บอกว่ารอบนี้ไม่มีอะไรเปลี่ยนจากรอบก่อนและยังต้องทำข้อไหน
 - ใช้สถานะ `completed`, `blocked`, `pending`, `not requested`, `not applicable` ตามจริง ไม่มี conditional pass และระบุคำสั่ง/ผลที่รันจริงโดยไม่เผย secret
 - การเพิ่ม deployment mode ต้องแก้ routing, owner files, ordered gates, CLI/tests และ project-memory checkpoint event ในจุดส่วนกลางเดียวกัน
 
