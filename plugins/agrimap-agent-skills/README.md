@@ -66,7 +66,7 @@ Design ทำงานแบบ passive ในคำสั่งที่เห�
 | `$agm-release indexing` | Project Backfill: ตรวจ full reachable history/source/diff → เติม project catalog, historical changelog และ README capability/API tables | ไม่เพิ่ม | ไม่มี; แก้ไฟล์ในเครื่อง | ไม่เกี่ยวข้อง |
 | `$agm-release prepare inhouse` | เตรียม Inhouse version → อัปเดต index/changelog → ตรวจความถูกต้อง; ไม่สร้าง release notes | Inhouse +0.0.1 | ไม่มี; เตรียมในเครื่อง | ไม่เกี่ยวข้อง |
 | `$agm-release prepare production` | เตรียม version และ notes → ตรวจความถูกต้อง | Production +0.0.1 | ไม่มี; เตรียมในเครื่อง | ยังไม่ถึงขั้น promote |
-| `$agm-release pipeline inhouse` | ตรวจ candidate ที่เตรียมแล้ว → commit → push/ตรวจ SHA | ไม่เพิ่มซ้ำ | `develop → jenkins` | ไม่ถาม |
+| `$agm-release pipeline inhouse` | รวมงานค้างเข้า develop → commit → push/ตรวจ SHA ด้วยเลข Inhouse ปัจจุบัน | ไม่ขึ้นเลข (ส่งซ้ำเลขเดิมได้) | `develop → jenkins` | ไม่ถาม |
 | `$agm-release pipeline production` | ตรวจ Production candidate → commit → push/ตรวจ SHA → เตรียมแผนส่ง Production | ไม่เพิ่มซ้ำ | `develop → jenkins`; ยังไม่ push Production | ไม่ถาม; รอคำสั่ง promote |
 | `$agm-release promote` | แสดง SHA/version/notes/tag → push Production → สร้างและ push annotated tag | ไม่เพิ่ม | `jenkins-release` และ tag ของ Production เท่านั้น | ไม่ถาม เว้นแต่ผิดปกติ |
 | `$agm-release release full` | indexing → prepare ทั้งสองฝั่ง → notes เฉพาะ Production → pipeline Inhouse/Production ใช้ candidate เดียว → promote → Release Description/แจ้งเตือน Teams | Inhouse และ Production +0.0.1 แยกกัน | `develop → jenkins → jenkins-release` + Production tag | ไม่ถาม เว้นแต่ผิดปกติ |
@@ -81,7 +81,7 @@ Design ทำงานแบบ passive ในคำสั่งที่เห�
 
 **Release notes และ tag เป็นของ Production เท่านั้น:** ถ้า candidate Inhouse เป็น `1.0.6` และ Production เป็น `1.0.3` ให้สร้าง `release-notes/1.0.3.md` และใช้ tag `v1.0.3` ห้ามนำเลข Inhouse ไปสร้าง `release-notes/1.0.6.md` งาน Inhouse-only ไม่แก้ `release.md` หรือ versioned notes ประวัติเดิมต้องคงอยู่
 
-คำสั่ง `pipeline` และ `promote` แบบแยกขั้นต้องมี candidate ที่เตรียมแล้ว หากยังไม่มี Agent จะแจ้ง prerequisite ไม่เลือก `prepare both` หรือเพิ่มเลขเอง ส่วน `release full/production/inhouse` ทำทุกขั้นที่อนุญาตต่อเนื่อง AI หา SHA ตรวจเครื่องมือ และแก้ปัญหาตามหลักฐานเอง มนุษย์ไม่ต้องสร้าง SHA หรือรัน Git
+คำสั่ง `pipeline inhouse` ไม่ขึ้นเลข: ส่ง code ปัจจุบันขึ้น `jenkins` ด้วยเลข Inhouse เดิม แม้เลขนั้นเคยส่งไปแล้ว (owner decision 2026-11-02) ถ้าต้องการเลขใหม่ให้ใช้ `release inhouse` ส่วน `pipeline production` และ `promote` แบบแยกขั้นต้องมี candidate ที่เตรียมแล้ว หากยังไม่มี Agent จะแจ้ง prerequisite ไม่เลือก `prepare both` หรือเพิ่มเลขเอง ส่วน `release full/production/inhouse` ทำทุกขั้นที่อนุญาตต่อเนื่อง AI หา SHA ตรวจเครื่องมือ และแก้ปัญหาตามหลักฐานเอง มนุษย์ไม่ต้องสร้าง SHA หรือรัน Git
 
 สกิลตรวจความเข้ากันได้ของ CLI ก่อน prepare ด้วย: source CLI ที่ตรวจพบยังสร้าง notes ตาม environment ในบาง mode และตรวจ Tag metadata ใน notes จึงไม่ถือว่า CLI ที่ติดตั้งได้จะรองรับ Flow ใหม่ครบโดยอัตโนมัติ หากเป็นข้อขัดแย้งกับ gate ที่ target บังคับ จะเก็บหลักฐานและหยุดขั้นที่เกี่ยวข้อง ไม่สร้าง notes ผิดฝั่งหรืออ้างว่าตรวจผ่าน
 

@@ -178,7 +178,7 @@
       "source": "AGENTS.release.md",
       "target": "AGENTS.release.md",
       "mode": "copy",
-      "sha256": "22c1a27cf041a7330f99ec7b0b43a012a85f26b8ad13933abd60227b93a2ef41",
+      "sha256": "f35f0ea945756af75148d643d7beb301379fb0ba3b833e6d0913054afa358c5e",
       "previous": [
         {
           "version": "4.8.0",

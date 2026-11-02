@@ -72,6 +72,25 @@ test('a blocked verification proves its cause and restates the full handoff on r
 });
 
 
+test('pipeline inhouse never bumps and republishes the current Inhouse version; Production still needs a candidate (5.0.11)',async()=>{
+  // Owner decision 2026-11-02 (specs/decisions/0003): "no version bump, just take the code develop -> jenkins".
+  const references=path.join(projectRoot,'skills/agrimap-agent-skills/references');
+  const steps=await readFile(path.join(references,'release-steps.md'),'utf8');
+  const workflow=await readFile(path.join(references,'release-workflow.md'),'utf8');
+  const flash=await readFile(path.join(references,'release-flash.md'),'utf8');
+  const template=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/assets/bootstrap/AGENTS.release.md'),'utf8');
+  const release=JSON.parse(await readFile(path.join(projectRoot,'config/operations.json'),'utf8')).operations.find(item=>item.operation==='release');
+  assert.match(steps,/\| pipeline inhouse \| R → M → V → D → J → F \| Develop plus pending work at the current Inhouse version, never bumped, even when already on jenkins;/);
+  assert.match(steps,/Standalone pipeline production\/promote never performs missing P implicitly/);
+  assert.match(steps,/No pipeline bumps; missing Production prepare is a prerequisite failure/);
+  assert.match(workflow,/\| pipeline inhouse \| Gather pending work onto develop at the current Inhouse version, even if already on jenkins;/);
+  assert.match(flash,/and pipeline never bumps\./);
+  assert.match(JSON.stringify(release),/Pipeline never bumps; pipeline production\/promote never invent missing preparation/);
+  assert.match(template,/`pipeline inhouse` ไม่ขึ้นเวอร์ชันทุกกรณี/);
+  for(const text of [steps,workflow,flash])assert.doesNotMatch(text,/Existing prepared Inhouse candidate|pipeline still never creates a missing candidate/);
+});
+
+
 test('owner release command is the confirmation; only a version or candidate anomaly asks (5.0.1)',async()=>{
   const references=path.join(projectRoot,'skills/agrimap-agent-skills/references');
   const workflow=await readFile(path.join(references,'release-workflow.md'),'utf8');
@@ -143,8 +162,9 @@ test('instruction diet: core AGENTS.md at most 24,000 chars; core + release keep
   assert.equal(entry.target,'AGENTS.release.md');assert.equal(entry.sha256,createHash('sha256').update(release).digest('hex'));
   const frozen=release.replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->');
   // 5.0.1: owner decision 2026-10-14 — §2.1/§6.5 the owner command is the confirmation; only anomalies ask.
-  // Unreleased: owner request 2026-11-02 — §8 a blocked verification proves its cause and restates the full handoff on retry.
-  assert.equal(createHash('sha256').update(frozen).digest('hex'),'69c62c4e13e37f50db3e2a4a41f8e7600a433e36ffbb04c1998f891ecc646f1a');
+  // 5.0.11: owner requests 2026-11-02 — §8 a blocked verification proves its cause and restates the full handoff on retry;
+  // §2.3 pipeline inhouse never bumps and may republish the current Inhouse version (specs/decisions/0003).
+  assert.equal(createHash('sha256').update(frozen).digest('hex'),'c433dcca53ce002a1bd466b5581b7ab00e3e4ba3f73fc0e4cdaf748066c63662');
   const headings=['## 0.','## 1.','## 2.','### 2.1','### 2.2','### 2.3','## 3.','## 4.','## 5.','### 5.1','### 5.2','## 6.','### 6.1','### 6.2','### 6.3','## 7.','## 8.','### 8.1','## 9.','### 9.1','### 9.5','## 10.','### 10.5','## Bootstrap contract freshness'];
   const all=(core+'\n'+release).split('\n');
   for(const h of headings)assert.ok(all.some(line=>line.startsWith(h)),h);
