@@ -4,7 +4,7 @@ Agent-chat modifier, not an executable or .NET CLI option. Accept it on `release
 
 ## Scope override
 
-Flash is for a routine release that finishes in about five active minutes when nothing needs a decision. It keeps the command expansion and owner/publication boundaries of release-steps.md but replaces I with the delta review below; with prepare/pipeline it narrows the stale-index prerequisite and V/D review to that delta, and pipeline still never creates a missing candidate. H/P reconcile only delta changelog/notes. This explicit mode replaces this package's full Backfill, historical catalog and README capability inventory for this invocation; it does not mark project-wide indexing complete, rewrite target instructions or override higher-priority restrictions.
+Flash is for a routine release that finishes in about five active minutes when nothing needs a decision. It keeps the command expansion and owner/publication boundaries of release-steps.md but replaces I with the delta review below; with prepare/pipeline it narrows the stale-index prerequisite and V/D review to that delta, and pipeline never bumps. H/P reconcile only delta changelog/notes. This explicit mode replaces this package's full Backfill, historical catalog and README capability inventory for this invocation; it does not mark project-wide indexing complete, rewrite target instructions or override higher-priority restrictions.
 
 Read this file, release-timing.md, release-notify.md for Production, the target AGENTS.md and only §2.3, §5.2, §6, §7 and §8.2 of the target AGENTS.release.md. Open release-steps.md, release-tools.md or other sections only for a recovery, a real conflict, a missing or incompatible tool, or a bootstrap install.
 

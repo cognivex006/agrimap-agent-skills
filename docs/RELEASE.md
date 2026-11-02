@@ -15,7 +15,7 @@
 | `indexing` | Project Backfill: full reachable history, project catalog, historical changelog และ README capability/API inventory | แก้หลักฐานใน target; ไม่ bump/push/tag |
 | `prepare inhouse` | เตรียมและ verify candidate Inhouse พร้อม scoped index/changelog | เลขที่ระบุ หรือ PATCH+1; ไม่สร้าง versioned notes/push/tag |
 | `prepare production` | เตรียมและ verify candidate Production, release.md และ versioned notes | เลขที่ระบุ หรือ PATCH+1; ยังไม่ push/tag |
-| `pipeline inhouse` | ตรวจ candidate ที่เตรียมแล้ว → commit paths ที่ตรวจ → push/verify develop และ jenkins | ไม่ bump ซ้ำ; ไม่มี Production/tag |
+| `pipeline inhouse` | รวมงานค้างเข้า develop → commit paths ที่ตรวจ → push/verify develop และ jenkins ด้วยเลข Inhouse ปัจจุบัน | ไม่ bump เลย แม้เลขนั้นอยู่บน jenkins แล้วก็ส่งซ้ำได้ (owner decision 2026-11-02); ไม่มี Production/tag |
 | `pipeline production` | ตรวจ Production candidate → commit → push/verify develop และ jenkins → เตรียมแผน Production | หยุดก่อน jenkins-release และ tag |
 | `promote` | ตรวจ candidate → แสดง SHA/version/branch/tag → publish/verify Production และ annotated tag → Release Description/แจ้งเตือน | ต้องมี candidate ที่เตรียมแล้ว; ไม่ถาม เว้นแต่ผิดปกติ |
 | `release full` | indexing → prepare owners แยกกัน → pipeline inhouse/production → promote → Release Description/แจ้งเตือน | เลขตามคำขอ หรือ PATCH+1 แยก owner; notes/tag เฉพาะ Production |

@@ -32,7 +32,7 @@ The installer refuses the entire plan when any entry conflicts. Do not loop appl
 
 Missing Jenkinsfiles are outside this bundle: inspect tracked history and remote state for a proven recovery within scope; do not invent pipeline configuration. Tool repair follows release-tools.md. Bootstrap cannot resolve an incompatible mandatory CLI gate by itself.
 
-For indexing/prepare, bootstrap changes remain local. Composite release commands include reviewed prerequisite paths in their normal content publication before the version metadata commit. Standalone pipeline/promote still require a prepared candidate: do not alter a frozen candidate or bump versions to add bootstrap files; repair in a separate preparation workspace and report the required candidate refresh when needed. Any refreshed candidate must pass the usual checks and the anomaly check of release-workflow.md. Bootstrap itself never commits, pushes or tags.
+For indexing/prepare, bootstrap changes remain local. Composite release commands and pipeline inhouse include reviewed prerequisite paths in their normal content publication before any version metadata commit. Standalone pipeline production/promote still require a prepared candidate: do not alter a frozen candidate or bump versions to add bootstrap files; repair in a separate preparation workspace and report the required candidate refresh when needed. Any refreshed candidate must pass the usual checks and the anomaly check of release-workflow.md. Bootstrap itself never commits, pushes or tags.
 
 ## Release distinctions
 
