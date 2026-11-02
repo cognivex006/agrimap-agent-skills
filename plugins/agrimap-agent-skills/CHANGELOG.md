@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased
+
+- Bootstrap upgrades recognise every published template again. Between releases `npm run sync` overwrote the manifest hash with development content, so the version bump recorded that development hash as `previous` instead of the hash the version actually shipped. Projects still holding an unmodified `AGENTS.md` from 4.9.0, 4.9.7, 4.11.0 or 5.0.9, or `AGENTS.release.md` from 4.9.0, 4.9.4, 4.9.7 or 4.11.0, were treated as customized and auto-merged instead of updated. Sync now reads each file's published hash from its local `v<version>` tag (one `git cat-file --batch` call, `tools/bootstrap-hashes.mjs`) and keeps it as soon as the file changes. It falls back to the old behavior only for a version without a local tag. The manifest is backfilled with the eight missing hashes, and a test fails whenever a tagged release's template is not recognised.
+
 ## 5.0.11 — 2026-11-02
 
 - Blocked release runs now hand off in full. When a test/build gate fails, agm-release first proves the cause read-only (failing test names, changed paths, the responsible commit and which side Git history shows newer) and recommends the option that evidence supports, with commands to run now and how to resume. The reply and the run report both carry cause, evidence, options, recommendation and next commands, and a retry with the same blocker restates them instead of pointing at "options sent earlier" (product `AGENTS.release.md` §8, `release-steps.md` Recovery). `release-steps.md` P reuses H's develop-synchronization wording so the release token budget stays unchanged.
