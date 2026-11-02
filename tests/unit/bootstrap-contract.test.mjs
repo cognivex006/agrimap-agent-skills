@@ -60,6 +60,18 @@ test('release stages synchronize stale local branches and re-evaluate in one inv
 });
 
 
+test('a blocked verification proves its cause and restates the full handoff on retry',async()=>{
+  // Owner request 2026-11-02: a retry answered only "waiting on the options sent earlier".
+  const steps=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/references/release-steps.md'),'utf8');
+  const template=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/assets/bootstrap/AGENTS.release.md'),'utf8');
+  assert.match(steps,/A failed test\/build gate: prove cause read-only/);
+  assert.match(steps,/Blocked replies and reports restate the full AGENTS\.release\.md §8 handoff, retries included/);
+  assert.match(steps,/- P — Synchronize develop and resume as in H/);
+  assert.match(template,/Git history ว่าฝั่งไหนใหม่กว่า/);
+  assert.match(template,/ห้ามอ้างเพียง “ตัวเลือกที่ส่งไว้ก่อนหน้า”/);
+});
+
+
 test('owner release command is the confirmation; only a version or candidate anomaly asks (5.0.1)',async()=>{
   const references=path.join(projectRoot,'skills/agrimap-agent-skills/references');
   const workflow=await readFile(path.join(references,'release-workflow.md'),'utf8');
@@ -131,7 +143,8 @@ test('instruction diet: core AGENTS.md at most 24,000 chars; core + release keep
   assert.equal(entry.target,'AGENTS.release.md');assert.equal(entry.sha256,createHash('sha256').update(release).digest('hex'));
   const frozen=release.replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->');
   // 5.0.1: owner decision 2026-10-14 — §2.1/§6.5 the owner command is the confirmation; only anomalies ask.
-  assert.equal(createHash('sha256').update(frozen).digest('hex'),'5f69c517a55b0a9713973f31f8e68a28f95919b20c2c44e6e06df821e05477c5');
+  // Unreleased: owner request 2026-11-02 — §8 a blocked verification proves its cause and restates the full handoff on retry.
+  assert.equal(createHash('sha256').update(frozen).digest('hex'),'69c62c4e13e37f50db3e2a4a41f8e7600a433e36ffbb04c1998f891ecc646f1a');
   const headings=['## 0.','## 1.','## 2.','### 2.1','### 2.2','### 2.3','## 3.','## 4.','## 5.','### 5.1','### 5.2','## 6.','### 6.1','### 6.2','### 6.3','## 7.','## 8.','### 8.1','## 9.','### 9.1','### 9.5','## 10.','### 10.5','## Bootstrap contract freshness'];
   const all=(core+'\n'+release).split('\n');
   for(const h of headings)assert.ok(all.some(line=>line.startsWith(h)),h);

@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased
+
+- Blocked release runs now hand off in full. When a test/build gate fails, agm-release first proves the cause read-only (failing test names, changed paths, the responsible commit and which side Git history shows newer) and recommends the option that evidence supports, with commands to run now and how to resume. The reply and the run report both carry cause, evidence, options, recommendation and next commands, and a retry with the same blocker restates them instead of pointing at "options sent earlier" (product `AGENTS.release.md` §8, `release-steps.md` Recovery). `release-steps.md` P reuses H's develop-synchronization wording so the release token budget stays unchanged.
+
 ## 5.0.10 — 2026-11-01
 
 - Record the owner decision on Golden Lint coupling (maintainer record `specs/decisions/0001-golden-lint-coupling.md`). agrimap-agent-skills owns the Golden rules so agents write correctly from the start; agrimap-golden-lint-skills only audits existing projects, so it must accept a compatible agent-skills version range instead of one pinned version and report reference-digest drift as a warning. This package keeps rule IDs and lint-bound section names stable, never reuses a retired ID, records renames in CHANGELOG and adds an authoring rule for every lint-detectable rule. No runtime behavior changes.
