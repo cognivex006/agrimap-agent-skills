@@ -360,6 +360,8 @@ _logger.LogError(ex, "Error occurred while executing {Action}", actionName);
 
 **LOG-02 — Do not concatenate or interpolate log messages.** Replace `_logger.LogError("Unhandled Exception: " + ex)` with `_logger.LogError(ex, "Unhandled exception");`.
 
+**OBS-01..03 — Observability (SHOULD).** OBS-01: write through the injected `ILogger`, never `Console.Write*`/`Console.Error`, so lines keep the JSON layout, level, app and request_id. OBS-02: register NLog once (`AddNLogWeb` or `UseNLog`, not both); keep the call that selects `nlog.{environment}.config`. OBS-03: an `AppException` whose code names caller input, lookup or state (`*_required`, `invalid_*`, `*_not_found`, `*_already_exists`) uses the matching 4xx, not 500; keep 500 only for internal failures and confirm what the front end does with the status first.
+
 ### DI lifetime and options
 
 **DI-01 — Register use cases and repositories as scoped.** Do not introduce transient lifetimes for them.

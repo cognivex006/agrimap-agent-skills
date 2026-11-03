@@ -9,7 +9,7 @@ Release history, not current operating instructions. Start with [Getting Started
 ## 5.0.15 — 2026-11-03
 
 - Extend QUALITY-07 in `csharp.md`: new C# code also hoists constant array arguments to `static readonly` fields, tests included (ADV-08, CA1861), reads dictionaries and request headers with one `TryGetValue` instead of `ContainsKey` plus indexer (new ADV-17, CA1854) and hashes with static `SHA256.HashData` instead of `Create().ComputeHash` (new ADV-18, CA1850). `sonarqube-remediation.md` adds ADV-17/18 with their checks; both join the safe tier for touched files.
-- QUALITY-07 also covers ADV-14 (S3267: filter with `Where` instead of a loop body that is only an `if`). `sonarqube-remediation.md` adds a C# fix-examples section for ADV-14, ADV-17, ADV-18, ADV-08 and the SEC-20 cookie hotspot (S2092: literal `Secure = true` on append and delete, dev certificate or `CookieSecurePolicy.Always` for local HTTP).
+- QUALITY-07 also covers ADV-14 (S3267: filter with `Where` instead of a loop body that is only an `if`). `sonarqube-remediation.md` adds a C# fix-examples section for ADV-14, ADV-17, ADV-18, ADV-08 and the SEC-20 cookie hotspot (S2092: literal `Secure = true` on append and delete, dev certificate or `CookieSecurePolicy.Always` for local HTTP). `csharp.md` adds OBS-01..03 (SHOULD), the observability rules Golden Lint already checked without a Golden source: log through `ILogger` instead of `Console`, register NLog once, and use 4xx for caller-input `AppException` codes. The default scenario budget rises from 9400 words / 25700 tokens to 9500 / 26000, and the backend refactor light scenario from 9200 / 25700 to 9500 / 26000, for this guidance.
 
 ## 5.0.14 — 2026-11-03
 
