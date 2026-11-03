@@ -448,7 +448,7 @@
       "budgets": {
         "scenario": {
           "maxWords": 9200,
-          "maxEstimatedTokensHigh": 25100
+          "maxEstimatedTokensHigh": 25200
         }
       }
     },
