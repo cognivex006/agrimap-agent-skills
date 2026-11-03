@@ -26,9 +26,9 @@ The team and company agreed that the smells below are advisory: fixing them is o
 
 - **Recommend first.** Report each one as a recommendation (review comment, QA/lint report item or summary line) with rule ID, `file:line`, evidence, proposed fix and risk. Do not edit for them during unrelated work, and do not add TODO or source comments unless asked.
 - **Edit only on request with enough evidence.** Fix when the requester explicitly asks for that finding or rule and the evidence proves the fix preserves behavior and contracts (scan result or verified code reading, plus the caveats below). Notify before and after editing as above. If evidence is missing, keep the recommendation and name what is missing.
-- **Safe tier in touched files (5.0.8).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17 and ADV-18 directly when the check column holds; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
+- **Safe tier in touched files (5.0.8).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17, ADV-18 and ADV-19 directly when the check column holds; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
 - **Skip when unsure.** ADV-12 (URIs) and ADV-13 (concrete types) only when the check column is fully proven; otherwise report and skip. A skipped smell is never a delivery blocker.
-- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18 are mandatory for new C# code (csharp.md QUALITY-07), ADV-15/16 for new JS/TS.
+- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18 are mandatory for new C# code (csharp.md QUALITY-07), ADV-15/16/19 for new JS/TS.
 - Rules not listed here follow their scan severity and the normal decision boundary.
 
 | ID | Rule | Smell | Recommended fix | Check before fixing |
@@ -51,6 +51,7 @@ The team and company agreed that the smells below are advisory: fixing them is o
 | ADV-16 | S6353 (JS/TS, C#) | Verbose character class `[A-Za-z0-9_]`, `[0-9]` | `\w`, `\d` | Only exact equivalents: in JS without `u`/`v` and in C# with `RegexOptions.ECMAScript`; .NET `\w`/`\d` also match Unicode letters/digits, so keep the class in C# unless Unicode input is acceptable |
 | ADV-17 | CA1854 | `ContainsKey(k)` guarding `dict[k]` (also `Request.Headers`) | `dict.TryGetValue(k, out var v) ? v.ToString()... : null` | One lookup with the same result; `IHeaderDictionary` returns `StringValues`, so keep `.ToString()`; skip when the indexer write path differs (for example `dict[k] = ...`) |
 | ADV-18 | CA1850 | `using var sha = SHA256.Create(); sha.ComputeHash(bytes)` | `SHA256.HashData(bytes)` (also `SHA1`/`SHA384`/`SHA512`/`MD5`); hex via `Convert.ToHexStringLower(hash)` (.NET 9) or `Convert.ToHexString(hash).ToLowerInvariant()` | Needs .NET 5+; same bytes; keep lowercase hex if callers compare strings; streams and incremental hashing keep the instance API |
+| ADV-19 | S3735 (JS/TS) | `void promise`, `void this.facade.load(...)` | Call it as a statement, or `await`/`.catch()` a promise and `subscribe` an observable as the facade pattern does | Check what the call returns: a floating promise needs explicit error handling, so do not just delete `void` from an un-awaited async call |
 
 ## Fix examples (C#)
 
