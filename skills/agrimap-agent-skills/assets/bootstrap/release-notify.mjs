@@ -27,13 +27,14 @@ import { pathToFileURL } from 'node:url';
 
 const ENV = 'NOTIFY_WEBHOOK_URL';
 const PROFILE_FILES = ['.profile', '.bashrc', '.zshrc'];
-const ENVIRONMENTS = ['Inhouse', 'Production'];
+const ENVIRONMENTS = new Set(['Inhouse', 'Production']);
+const COMMANDS = new Set(['git', 'reg', 'setx']);
 const LIMITS = { name: 200, text: 500, items: 50, related: 20 };
 const RELATED_LABELS = ['เกี่ยวข้อง', 'ส่วนนี้มาจาก', 'related'];
 
 // Only explicit installation locations are eligible; never search inherited PATH or cwd.
 export function commandPath(command) {
-  if (!['git', 'reg', 'setx'].includes(command)) throw new Error('Unsupported command');
+  if (!COMMANDS.has(command)) throw new Error('Unsupported command');
   let candidates = [];
   if (process.platform === 'win32') {
     candidates = command === 'git'
@@ -147,7 +148,7 @@ function persistedUrl() {
   if (process.platform === 'win32') {
     try {
       const text = execFileSync(commandPath('reg'), ['query', 'HKCU\\Environment', '/v', ENV], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-      const match = text.match(new RegExp(`${ENV}\\s+REG_\\w+\\s+(\\S.*)`));
+      const match = new RegExp(`${ENV}[ \\t]+REG_\\w+[ \\t]+(\\S.*)`).exec(text);
       if (match) return { url: match[1].trim(), source: 'windows-user-env' };
     } catch { /* not set */ }
     return null;
@@ -155,7 +156,8 @@ function persistedUrl() {
   for (const name of PROFILE_FILES) {
     const file = path.join(os.homedir(), name);
     if (!existsSync(file)) continue;
-    const match = readFileSync(file, 'utf8').match(new RegExp(`^\\s*export\\s+${ENV}=["']?([^"'\\s]+)`, 'm'));
+    // [ \t] instead of \s keeps the multiline anchor from spanning lines (S5852).
+    const match = new RegExp(`^[ \\t]*export[ \\t]+${ENV}=["']?([^"'\\s]+)`, 'm').exec(readFileSync(file, 'utf8'));
     if (match) return { url: match[1], source: `~/${name}` };
   }
   return null;
@@ -216,7 +218,7 @@ function setUrl(value) {
   const file = path.join(os.homedir(), '.profile');
   const line = `export ${ENV}="${url.toString()}"`;
   const text = existsSync(file) ? readFileSync(file, 'utf8') : '';
-  const pattern = new RegExp(`^\\s*export\\s+${ENV}=.*$`, 'm');
+  const pattern = new RegExp(`^[ \\t]*export[ \\t]+${ENV}=.*$`, 'm');
   writeFileSync(file, pattern.test(text) ? text.replace(pattern, line) : text.replace(/\n?$/, '\n') + line + '\n');
   print({ ok: true, saved: '~/.profile', url: url.toString() });
 }
@@ -232,9 +234,9 @@ function dependencyProjects(sha) {
   const names = new Set();
   for (const line of diff.split(/\r?\n/)) {
     if (!line.startsWith('+') || line.startsWith('+++')) continue;
-    const nuget = line.match(/Include="(AgriMap\.[A-Za-z0-9_]+)(?:\.[A-Za-z0-9_.]+)?"/);
+    const nuget = /Include="(AgriMap\.\w+)(?:\.[\w.]+)?"/.exec(line);
     if (nuget) names.add(nuget[1]);
-    const npm = line.match(/"(@agrimap\/[a-z0-9._-]+)"\s*:/i);
+    const npm = /"(@agrimap\/[\w.-]+)"\s*:/i.exec(line);
     if (npm) names.add(npm[1]);
   }
   return [...names];
@@ -315,7 +317,7 @@ function generate(options) {
 function parseDescription(file) {
   const lines = readFileSync(file, 'utf8').replace(/^﻿/, '').split(/\r?\n/);
   const heading = lines.find(line => line.trim());
-  const title = String(heading || '').replace(/^#+\s*/, '').replace(/\*\*/g, '').trim();
+  const title = String(heading || '').replace(/^#+\s*/, '').replaceAll('**', '').trim();
   const [projectName, version] = title.includes(' / ') ? title.split(' / ').map(part => part.trim()) : [title, ''];
   const bullets = [];
   for (const line of lines) {
@@ -340,7 +342,7 @@ function buildPayload(options) {
   if (!version) fail('RELEASE_VERSION_MISSING', 1, { next: 'Start the description with "# <project> / <version>" or pass --version' });
   if (!description.items.length) fail('RELEASE_DESCRIPTION_EMPTY', 1, { next: 'List each change as a "- " bullet' });
   const environment = options.environment || null;
-  if (environment && !ENVIRONMENTS.includes(environment)) fail('ENVIRONMENT_INVALID', 1, { allowed: ENVIRONMENTS });
+  if (environment && !ENVIRONMENTS.has(environment)) fail('ENVIRONMENT_INVALID', 1, { allowed: [...ENVIRONMENTS] });
   return { projectName, version, ...(environment ? { environment } : {}), items: description.items.slice(0, LIMITS.items) };
 }
 
@@ -363,20 +365,23 @@ async function send(options) {
 }
 
 async function main() {
-const options = args(process.argv.slice(2));
-const command = options._[0] || 'help';
-if (command === 'check') {
-  const { url, source } = requireUrl(options);
-  const health = await checkHealth(url);
-  print({ ok: health.ok, url, source, health });
-  process.exit(health.ok ? 0 : 3);
-} else if (command === 'set-url') setUrl(options._[1]);
-else if (command === 'generate') generate(options);
-else if (command === 'send') await send(options);
-else {
-  print({ ok: command === 'help', usage: ['check', 'set-url <url>', 'generate --version <x.y.z> [--from <ref>] [--to <ref>] [--project-name <name>] [--out <file.md>]', 'send --description <file.md> [--environment Inhouse|Production] [--project-name <name>] [--version <x.y.z>] [--preview]'] });
-  process.exit(command === 'help' ? 0 : 1);
-}
+  const options = args(process.argv.slice(2));
+  const command = options._[0] || 'help';
+  if (command === 'check') {
+    const { url, source } = requireUrl(options);
+    const health = await checkHealth(url);
+    print({ ok: health.ok, url, source, health });
+    process.exit(health.ok ? 0 : 3);
+  } else if (command === 'set-url') {
+    setUrl(options._[1]);
+  } else if (command === 'generate') {
+    generate(options);
+  } else if (command === 'send') {
+    await send(options);
+  } else {
+    print({ ok: command === 'help', usage: ['check', 'set-url <url>', 'generate --version <x.y.z> [--from <ref>] [--to <ref>] [--project-name <name>] [--out <file.md>]', 'send --description <file.md> [--environment Inhouse|Production] [--project-name <name>] [--version <x.y.z>] [--preview]'] });
+    process.exit(command === 'help' ? 0 : 1);
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) await main();
