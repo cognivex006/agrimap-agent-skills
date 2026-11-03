@@ -28,7 +28,7 @@ The team and company agreed that the smells below are advisory: fixing them is o
 - **Edit only on request with enough evidence.** Fix when the requester explicitly asks for that finding or rule and the evidence proves the fix preserves behavior and contracts (scan result or verified code reading, plus the caveats below). Notify before and after editing as above. If evidence is missing, keep the recommendation and name what is missing.
 - **Safe tier in touched files (5.0.8).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17 and ADV-18 directly when the check column holds; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
 - **Skip when unsure.** ADV-12 (URIs) and ADV-13 (concrete types) only when the check column is fully proven; otherwise report and skip. A skipped smell is never a delivery blocker.
-- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/17/18 are mandatory for new C# code (csharp.md QUALITY-07), ADV-15/16 for new JS/TS.
+- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18 are mandatory for new C# code (csharp.md QUALITY-07), ADV-15/16 for new JS/TS.
 - Rules not listed here follow their scan severity and the normal decision boundary.
 
 | ID | Rule | Smell | Recommended fix | Check before fixing |
@@ -51,3 +51,47 @@ The team and company agreed that the smells below are advisory: fixing them is o
 | ADV-16 | S6353 (JS/TS, C#) | Verbose character class `[A-Za-z0-9_]`, `[0-9]` | `\w`, `\d` | Only exact equivalents: in JS without `u`/`v` and in C# with `RegexOptions.ECMAScript`; .NET `\w`/`\d` also match Unicode letters/digits, so keep the class in C# unless Unicode input is acceptable |
 | ADV-17 | CA1854 | `ContainsKey(k)` guarding `dict[k]` (also `Request.Headers`) | `dict.TryGetValue(k, out var v) ? v.ToString()... : null` | One lookup with the same result; `IHeaderDictionary` returns `StringValues`, so keep `.ToString()`; skip when the indexer write path differs (for example `dict[k] = ...`) |
 | ADV-18 | CA1850 | `using var sha = SHA256.Create(); sha.ComputeHash(bytes)` | `SHA256.HashData(bytes)` (also `SHA1`/`SHA384`/`SHA512`/`MD5`); hex via `Convert.ToHexStringLower(hash)` (.NET 9) or `Convert.ToHexString(hash).ToLowerInvariant()` | Needs .NET 5+; same bytes; keep lowercase hex if callers compare strings; streams and incremental hashing keep the instance API |
+
+## Fix examples (C#)
+
+ADV-14 (S3267): move the filter into `Where`; return the first match with `Any`/`FirstOrDefault`; when the loop writes into the collection it reads, keep the `ToList()` snapshot.
+
+```csharp
+// before: foreach (var signature in ZipSignatures) { if (StartsWith(bytes, signature)) { return ImportFileFormat.Xlsx; } }
+return ZipSignatures.Any(signature => StartsWith(bytes, signature)) ? ImportFileFormat.Xlsx : ImportFileFormat.Csv;
+
+// before: foreach (var key in masked.Keys.ToList()) { if (IsSensitive(key)) { masked[key] = Replacement; } }
+foreach (var key in masked.Keys.Where(IsSensitive).ToList())
+{
+    masked[key] = Replacement;
+}
+private static bool IsSensitive(string key) =>
+    SensitiveKeyFragments.Any(fragment => key.Contains(fragment, StringComparison.OrdinalIgnoreCase));
+```
+
+ADV-17 (CA1854), ADV-18 (CA1850) and ADV-08 (CA1861):
+
+```csharp
+public static string? GetCustomHeaderToken(HttpContext ctx) =>
+    ctx.Request.Headers.TryGetValue("token", out var token) ? token.ToString().Replace("Bearer ", "").Trim() : null;
+
+public static string ComputeSha256Hash(this string input) =>
+    Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+
+private static readonly string[] ExpectedGetActions = ["QueryAppLookupAsync", "QueryRightCodeAsync"];
+Assert.Equal(ExpectedGetActions, getActions);
+```
+
+SEC-20 (S2092 hotspot, security-baseline.md): `Secure` must be the literal `true` on every `CookieOptions`, append and delete. A helper such as `Policy.RequireSecureCookies(config)` keeps the hotspot open. Local HTTP uses the dev certificate (`dotnet dev-certs https --trust`) or an app-level `CookiePolicyOptions { Secure = CookieSecurePolicy.Always }`; `SameSite` may stay configurable.
+
+```csharp
+Response.Cookies.Append(name, rawToken, new CookieOptions
+{
+    Secure = true,
+    HttpOnly = true,
+    SameSite = LicenseAuthCookiePolicy.CookieSameSite(_configuration),
+    Path = "/",
+    Expires = new DateTimeOffset(DateTime.SpecifyKind(expiresAtUtc, DateTimeKind.Utc)),
+});
+Response.Cookies.Delete(name, new CookieOptions { Secure = true, HttpOnly = true, SameSite = LicenseAuthCookiePolicy.CookieSameSite(_configuration), Path = "/" });
+```
