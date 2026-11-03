@@ -2,7 +2,7 @@
 
 [เริ่มใช้งาน](GETTING-STARTED.md) · [ตรวจ installation](DOCTOR.md)
 
-เอกสารชุดนี้สำหรับ **5.0.13** — [Latest release](https://github.com/cognivex006/agrimap-agent-skills/releases/latest) · [Tags ทั้งหมด](https://github.com/cognivex006/agrimap-agent-skills/tags)
+เอกสารชุดนี้สำหรับ source **5.0.14** — [Latest release](https://github.com/cognivex006/agrimap-agent-skills/releases/latest) · [Tags ทั้งหมด](https://github.com/cognivex006/agrimap-agent-skills/tags) · เลขใน working copy ไม่ยืนยันว่ามี release แล้ว
 
 ## Tags ของ source รุ่นเก่า
 
