@@ -425,6 +425,8 @@ public class UserSearchRequestDto : QueryPagedRequestDto
 
 **QUALITY-06 — No redundant jumps (S3626).** Do not end a `void` method, a final `catch`/`finally` block or a loop body with a bare `return;` or `continue;` that changes nothing; keep the intent as a comment.
 
+**QUALITY-07 — New code is free of ADV-02/05/06/11.** Code you write or rewrite has no unused locals (`_ = Call();` for side effects), uses the char overload for one-char strings (`StartsWith('/')`), marks private helpers that use no instance data `static`, and asserts types with `Assert.IsType<T>(x, exactMatch: false)`. Existing occurrences stay recommend-first (QUALITY-05).
+
 **QUALITY-04/05:** [SonarQube notices; advisory smells](../sonarqube-remediation.md).
 
 Noncompliant cases:

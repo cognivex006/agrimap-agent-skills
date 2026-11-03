@@ -6,6 +6,11 @@ Release history, not current operating instructions. Start with [Getting Started
 
 - Bootstrap upgrades recognise every published template again. Between releases `npm run sync` overwrote the manifest hash with development content, so the version bump recorded that development hash as `previous` instead of the hash the version actually shipped. Projects still holding an unmodified `AGENTS.md` from 4.9.0, 4.9.7, 4.11.0 or 5.0.9, or `AGENTS.release.md` from 4.9.0, 4.9.4, 4.9.7 or 4.11.0, were treated as customized and auto-merged instead of updated. Sync now reads each file's published hash from its local `v<version>` tag (one `git cat-file --batch` call, `tools/bootstrap-hashes.mjs`) and keeps it as soon as the file changes. It falls back to the old behavior only for a version without a local tag. The manifest is backfilled with the eight missing hashes, and a test fails whenever a tagged release's template is not recognised.
 
+## 5.0.13 — 2026-11-03
+
+- Make the common SonarQube smells seen in agmws-* scans mandatory for new code. `csharp.md` adds QUALITY-07: code you write or rewrite has no unused locals (ADV-05, S1481), uses the char overload for one-char strings (ADV-11, CA1866), marks private helpers without instance data `static` (ADV-02, CA1822) and asserts types with `Assert.IsType<T>(x, exactMatch: false)` (ADV-06, xUnit2032). Existing occurrences stay recommend-first under QUALITY-05. S112 and S3928 remain covered by ERR-06/ERR-07.
+- `sonarqube-remediation.md` adds ADV-15 (`RegExp.exec` instead of `String.match` without `g`, S6594) and ADV-16 (concise `\w`/`\d` character classes, S6353, with the .NET Unicode caveat). Both join the safe tier for touched files.
+
 ## 5.0.12 — 2026-11-02
 
 - Add authoring rules for SonarQube findings seen in agmws-license-management, so new and rewritten code does not raise them. `csharp.md` adds ERR-06 (no reserved exceptions such as `NullReferenceException`, including `?? throw`; S112), ERR-07 (`Argument*Exception` `paramName` is `nameof` of a real parameter, otherwise `InvalidOperationException`; S3928, CA2208) and QUALITY-06 (no redundant trailing `return;`/`continue;`; S3626).
