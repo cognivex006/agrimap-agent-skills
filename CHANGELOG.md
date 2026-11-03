@@ -6,6 +6,10 @@ Release history, not current operating instructions. Start with [Getting Started
 
 - Bootstrap upgrades recognise every published template again. Between releases `npm run sync` overwrote the manifest hash with development content, so the version bump recorded that development hash as `previous` instead of the hash the version actually shipped. Projects still holding an unmodified `AGENTS.md` from 4.9.0, 4.9.7, 4.11.0 or 5.0.9, or `AGENTS.release.md` from 4.9.0, 4.9.4, 4.9.7 or 4.11.0, were treated as customized and auto-merged instead of updated. Sync now reads each file's published hash from its local `v<version>` tag (one `git cat-file --batch` call, `tools/bootstrap-hashes.mjs`) and keeps it as soon as the file changes. It falls back to the old behavior only for a version without a local tag. The manifest is backfilled with the eight missing hashes, and a test fails whenever a tagged release's template is not recognised.
 
+## 5.0.15 — 2026-11-03
+
+- Extend QUALITY-07 in `csharp.md`: new C# code also hoists constant array arguments to `static readonly` fields, tests included (ADV-08, CA1861), reads dictionaries and request headers with one `TryGetValue` instead of `ContainsKey` plus indexer (new ADV-17, CA1854) and hashes with static `SHA256.HashData` instead of `Create().ComputeHash` (new ADV-18, CA1850). `sonarqube-remediation.md` adds ADV-17/18 with their checks; both join the safe tier for touched files.
+
 ## 5.0.14 — 2026-11-03
 
 - Clean the SonarQube JS smells from the bootstrap script `tools/agrimap/release-notify.mjs` that product projects receive: `RegExp#exec` instead of `String#match` (S6594), `\w` instead of `[A-Za-z0-9_]` (S6353), `[ \t]` instead of `\s` under the multiline flag in the profile and registry patterns (S5852/SEC-23), `replaceAll` for a literal (S7781), `Set#has` for fixed lists, an escaped `﻿` instead of an invisible BOM character and a braced, indented `main()`. Behavior is unchanged; projects get the new file on their next bootstrap apply.
