@@ -22,6 +22,7 @@ Release history, not current operating instructions. Start with [Getting Started
 
 - Make the common SonarQube smells seen in agmws-* scans mandatory for new code. `csharp.md` adds QUALITY-07: code you write or rewrite has no unused locals (ADV-05, S1481), uses the char overload for one-char strings (ADV-11, CA1866), marks private helpers without instance data `static` (ADV-02, CA1822) and asserts types with `Assert.IsType<T>(x, exactMatch: false)` (ADV-06, xUnit2032). Existing occurrences stay recommend-first under QUALITY-05. S112 and S3928 remain covered by ERR-06/ERR-07.
 - `sonarqube-remediation.md` adds ADV-15 (`RegExp.exec` instead of `String.match` without `g`, S6594) and ADV-16 (concise `\w`/`\d` character classes, S6353, with the .NET Unicode caveat). Both join the safe tier for touched files.
+- The backend refactor light scenario token budget rises from 25100 to 25200 for QUALITY-07.
 
 ## 5.0.12 — 2026-11-02
 
