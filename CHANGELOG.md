@@ -2,8 +2,9 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased
+## 5.0.16 — 2026-11-04
 
+- Release keeps the final audit commit local. `release-workflow.md` already said so, but `release-steps.md` (F), `release-timing.md`, `release-flash.md` and the bootstrap `AGENTS.release.md`/`deployment.md` pushed `develop` once more after publication, so every release triggered one extra Jenkins build. The audit commit is now `carried-forward` and ships with the next release's single D push; push it at once only on explicit owner request. The completion gate checks remote `develop` against the release SHA and local `develop` against the final audit SHA. Projects get the new contract on their next bootstrap upgrade. The release-publication-sequence word budget rises from 10460 to 10500 for this wording.
 - Bootstrap upgrades recognise every published template again. Between releases `npm run sync` overwrote the manifest hash with development content, so the version bump recorded that development hash as `previous` instead of the hash the version actually shipped. Projects still holding an unmodified `AGENTS.md` from 4.9.0, 4.9.7, 4.11.0 or 5.0.9, or `AGENTS.release.md` from 4.9.0, 4.9.4, 4.9.7 or 4.11.0, were treated as customized and auto-merged instead of updated. Sync now reads each file's published hash from its local `v<version>` tag (one `git cat-file --batch` call, `tools/bootstrap-hashes.mjs`) and keeps it as soon as the file changes. It falls back to the old behavior only for a version without a local tag. The manifest is backfilled with the eight missing hashes, and a test fails whenever a tagged release's template is not recognised.
 
 ## 5.0.15 — 2026-11-04
