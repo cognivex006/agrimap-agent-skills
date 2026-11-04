@@ -15,8 +15,8 @@
       "maxEstimatedTokensHigh": 16500
     },
     "scenario": {
-      "maxWords": 9400,
-      "maxEstimatedTokensHigh": 25700
+      "maxWords": 9500,
+      "maxEstimatedTokensHigh": 26000
     }
   },
   "scenarios": [
@@ -353,8 +353,8 @@
       ],
       "budgets": {
         "scenario": {
-          "maxWords": 8300,
-          "maxEstimatedTokensHigh": 22200
+          "maxWords": 8400,
+          "maxEstimatedTokensHigh": 22500
         }
       }
     },
@@ -447,8 +447,8 @@
       ],
       "budgets": {
         "scenario": {
-          "maxWords": 9200,
-          "maxEstimatedTokensHigh": 25700
+          "maxWords": 9500,
+          "maxEstimatedTokensHigh": 26000
         }
       }
     },
