@@ -429,9 +429,9 @@ When writing or rewriting a method, score its Cognitive Complexity before finish
 
 **QUALITY-06 — No redundant jumps (S3626).** Do not end a `void` method, a final `catch`/`finally` block or a loop body with a bare `return;` or `continue;` that changes nothing; keep the intent as a comment.
 
-**QUALITY-07 — New code is free of ADV-02/05/06/08/11/14/17/18.** Code you write or rewrite has no unused locals (`_ = Call();` for side effects), uses the char overload for one-char strings (`StartsWith('/')`), marks private helpers that use no instance data `static`, asserts types with `Assert.IsType<T>(x, exactMatch: false)`, hoists constant array arguments to `static readonly` fields (tests too), reads dictionaries and headers with one `TryGetValue` instead of `ContainsKey` plus indexer, hashes with static `SHA256.HashData(bytes)`, and filters loops with `Where` instead of a body that is only an `if` (S3267). Existing occurrences stay recommend-first (QUALITY-05).
+**QUALITY-07 — New code is free of ADV-02/05/06/08/11/14/17/18/20/21.** Code you write or rewrite has no unused locals (`_ = Call();` for side effects), unused `using` directives or TODO/FIXME markers (S1128, S1135), uses the char overload for one-char strings (`StartsWith('/')`), marks private helpers that use no instance data `static`, asserts types with `Assert.IsType<T>(x, exactMatch: false)`, hoists constant array arguments to `static readonly` fields (tests too), reads dictionaries and headers with one `TryGetValue` instead of `ContainsKey` plus indexer, hashes with static `SHA256.HashData(bytes)`, and filters loops with `Where` instead of a body that is only an `if` (S3267). Existing occurrences stay recommend-first (QUALITY-05).
 
-**QUALITY-04/05:** [SonarQube notices; advisory smells](../sonarqube-remediation.md); fixes: [examples](sonarqube-fix-examples.md).
+**QUALITY-04/05:** [SonarQube notices; advisory smells](../sonarqube-remediation.md); fixes: [examples](sonarqube-fix-examples.md); C#/TypeScript split: [rule matrix](sonarqube-rule-matrix.md).
 
 Noncompliant cases:
 
