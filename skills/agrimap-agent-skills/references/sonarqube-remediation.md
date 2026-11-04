@@ -2,6 +2,10 @@
 
 For SonarQube-driven code changes in any lane, notify the requester before editing, even when the edit preserves behavior. This is a communication rule, not a new approval gate.
 
+## Contents
+
+[Before editing](#before-editing) · [After editing](#after-editing) · [Advisory code smells](#advisory-code-smells-quality-05) · [Fix examples (C#)](#fix-examples-c)
+
 ## Before editing
 
 - Identify the finding, affected files/methods and rule ID when known. Distinguish an actual scan finding from a suspected violation found by review; never invent scan evidence.
@@ -20,15 +24,15 @@ Summarize the actual change, its relationship to the previously completed work, 
 
 ## Advisory code smells (QUALITY-05)
 
-Before/after code for these rows and QUALITY-01..07: [patterns/sonarqube-fix-examples.md](patterns/sonarqube-fix-examples.md).
+Before/after code for these rows and QUALITY-01..07: [patterns/sonarqube-fix-examples.md](patterns/sonarqube-fix-examples.md). Every rule split by language (shared, C# only, TypeScript only) with one example each: [patterns/sonarqube-rule-matrix.md](patterns/sonarqube-rule-matrix.md).
 
 The team and company agreed that the smells below are advisory: fixing them is optional. They never block delivery and never lower QUALITY-01..03, bugs, vulnerabilities or security hotspots.
 
 - **Recommend first.** Report each one as a recommendation (review comment, QA/lint report item or summary line) with rule ID, `file:line`, evidence, proposed fix and risk. Do not edit for them during unrelated work, and do not add TODO or source comments unless asked.
 - **Edit only on request with enough evidence.** Fix when the requester explicitly asks for that finding or rule and the evidence proves the fix preserves behavior and contracts (scan result or verified code reading, plus the caveats below). Notify before and after editing as above. If evidence is missing, keep the recommendation and name what is missing.
-- **Safe tier in touched files (5.0.8).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17, ADV-18 and ADV-19 directly when the check column holds; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
+- **Safe tier in touched files (5.0.8).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17, ADV-18, ADV-19, ADV-20 and ADV-21 directly when the check column holds; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
 - **Skip when unsure.** ADV-12 (URIs) and ADV-13 (concrete types) only when the check column is fully proven; otherwise report and skip. A skipped smell is never a delivery blocker.
-- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18 are mandatory for new C# code (csharp.md QUALITY-07), ADV-15/16/19 for new JS/TS.
+- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18/20/21 are mandatory for new C# code (csharp.md QUALITY-07), ADV-05/15/16/19/20/21 for new JS/TS, and new code never adds a package it does not use (ADV-22).
 - Rules not listed here follow their scan severity and the normal decision boundary.
 
 | ID | Rule | Smell | Recommended fix | Check before fixing |
@@ -52,6 +56,9 @@ The team and company agreed that the smells below are advisory: fixing them is o
 | ADV-17 | CA1854 | `ContainsKey(k)` guarding `dict[k]` (also `Request.Headers`) | `dict.TryGetValue(k, out var v) ? v.ToString()... : null` | One lookup with the same result; `IHeaderDictionary` returns `StringValues`, so keep `.ToString()`; skip when the indexer write path differs (for example `dict[k] = ...`) |
 | ADV-18 | CA1850 | `using var sha = SHA256.Create(); sha.ComputeHash(bytes)` | `SHA256.HashData(bytes)` (also `SHA1`/`SHA384`/`SHA512`/`MD5`); hex via `Convert.ToHexStringLower(hash)` (.NET 9) or `Convert.ToHexString(hash).ToLowerInvariant()` | Needs .NET 5+; same bytes; keep lowercase hex if callers compare strings; streams and incremental hashing keep the instance API |
 | ADV-19 | S3735 (JS/TS) | `void promise`, `void this.facade.load(...)` | Call it as a statement, or `await`/`.catch()` a promise and `subscribe` an observable as the facade pattern does | Check what the call returns: a floating promise needs explicit error handling, so do not just delete `void` from an un-awaited async call |
+| ADV-20 | S1128, IDE0005 (C#, JS/TS) | Unused `using` or `import` | Delete it; keep global usings and side-effect imports such as polyfills | Not used in a template, decorator, type-only position or `#if` branch |
+| ADV-21 | S1135 (C#, JS/TS) | TODO/FIXME left in code, including snippet or generator scaffolds | Finish the work or report it in the summary; never add the marker | A person's existing TODO stays recommend-first unless this task completes its work |
+| ADV-22 | dependency hygiene (npm, NuGet) | Package declared in `package.json` or `.csproj` but never used | Remove the entry with the package manager and update the lock file | Search source, templates, `angular.json`, build scripts, DI/reflection and peer requirements, then restore, build and test; a used package with a known advisory is a security finding instead |
 
 ## Fix examples (C#)
 
