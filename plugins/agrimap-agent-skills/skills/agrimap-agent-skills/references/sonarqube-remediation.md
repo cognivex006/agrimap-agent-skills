@@ -20,6 +20,8 @@ Summarize the actual change, its relationship to the previously completed work, 
 
 ## Advisory code smells (QUALITY-05)
 
+Before/after code for these rows and QUALITY-01..07: [patterns/sonarqube-fix-examples.md](patterns/sonarqube-fix-examples.md).
+
 The team and company agreed that the smells below are advisory: fixing them is optional. They never block delivery and never lower QUALITY-01..03, bugs, vulnerabilities or security hotspots.
 
 - **Recommend first.** Report each one as a recommendation (review comment, QA/lint report item or summary line) with rule ID, `file:line`, evidence, proposed fix and risk. Do not edit for them during unrelated work, and do not add TODO or source comments unless asked.

@@ -419,6 +419,8 @@ public class UserSearchRequestDto : QueryPagedRequestDto
 
 **QUALITY-01 — Keep methods simple.** Team limit: seven `if`/`else if` decisions per method, including nested ones; `else` alone does not count. Use cohesive helpers and guard clauses, never nested ternaries to evade this limit. Also check the configured SonarQube Cognitive Complexity gate (S3776): its score differs from branch count. Seven is the team's branch limit, not a SonarQube default.
 
+When writing or rewriting a method, score its Cognitive Complexity before finishing, even with seven or fewer `if` decisions: `if`, `?:`, `switch`, loops and `catch` add 1 plus the nesting level; `else if`, `else`, `goto` and each change between `&&` and `||` add 1; lambdas raise nesting. Above 15 (Sonar default) refactor with guard clauses, named conditions and cohesive `private static` helpers while preserving behavior and contracts. Worked before/after fixes for every rule here: [sonarqube-fix-examples.md](sonarqube-fix-examples.md). Run the project's configured SonarQube analysis when available and use its actual S3776 result and Quality Profile threshold; do not infer a pass from branch count, a clean lint report or a build. If the analysis or result is unavailable, report S3776 as unverified and say what evidence is missing; do not invent a score.
+
 **QUALITY-02 — At most seven parameters.** Methods/constructors allow seven parameters (S107). Group related inputs into typed request/options objects or split responsibilities. Report necessary public-contract changes; never silently break callers, hide unrelated arguments in dictionaries or suppress the rule.
 
 **QUALITY-03 — No nested ternaries (S3358).** Extract nested ternaries, including anonymous-object properties, into statements/helpers. Standalone ternaries are allowed. Preserve lazy evaluation, ordering, exact strings and response shape.
@@ -427,7 +429,7 @@ public class UserSearchRequestDto : QueryPagedRequestDto
 
 **QUALITY-07 — New code is free of ADV-02/05/06/11.** Code you write or rewrite has no unused locals (`_ = Call();` for side effects), uses the char overload for one-char strings (`StartsWith('/')`), marks private helpers that use no instance data `static`, and asserts types with `Assert.IsType<T>(x, exactMatch: false)`. Existing occurrences stay recommend-first (QUALITY-05).
 
-**QUALITY-04/05:** [SonarQube notices; advisory smells](../sonarqube-remediation.md).
+**QUALITY-04/05:** [SonarQube notices; advisory smells](../sonarqube-remediation.md); fixes: [examples](sonarqube-fix-examples.md).
 
 Noncompliant cases:
 
