@@ -66,6 +66,10 @@ Current golden references are maintained guidance, not permission to bypass the 
 
 New and rewritten code follows [security baseline](security-baseline.md) SEC-15/16/21/22.
 
+## Complexity and SonarQube
+
+QUALITY-01/02 apply to TypeScript exactly as to C# ([csharp.md](csharp.md)): at most seven `if`/`else if` per function and seven parameters (a destructured options object counts as one), and keep SonarQube Cognitive Complexity (S3776) at 15 or below by splitting validation into named helpers or guard clauses. Never hand-edit `generated-apis/`: fix the gencode-api template and regenerate. ADV-15/16/19 in [sonarqube-remediation.md](../sonarqube-remediation.md) are mandatory for new code; for example `if (from && to) { this.facade.load(from, to); }`, never `void this.facade.load(...)` (S3735).
+
 ## FE verification
 
 Check generated-code boundaries, type checking, lint/build, component tests where present, loading/error/empty states, input/output contracts, subscription lifecycle, affected consumers, reuse-search evidence, and the updated frontend reuse index.
