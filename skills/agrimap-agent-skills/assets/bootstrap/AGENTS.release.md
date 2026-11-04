@@ -74,13 +74,13 @@ Normalize ได้เฉพาะ case/whitespace และ semantic phrase bou
 ### 2.3 กลุ่ม B รวมงานค้างทั้งหมด
 
 - `Version Inhouse`, `Version Both`, `Version Production` และ `Version + Tags` รวมการตรวจและ commit/push staged, unstaged, untracked และการลบไฟล์ทั้งหมดใน repository ตาม §6.3 โดยอัตโนมัติ ไม่จำกัดเฉพาะไฟล์ version/release
-- Exact intent กลุ่ม B ที่ owner สั่งเองเป็นการยืนยัน branch push ตลอด flow รวม final audit commit; tag push อนุญาตเฉพาะ `Version + Tags` ไม่ถามย้ำในแต่ละ checkpoint
+- Exact intent กลุ่ม B ที่ owner สั่งเองเป็นการยืนยัน branch push ตลอด flow (final audit commit อยู่ในเครื่อง ไม่ push); tag push อนุญาตเฉพาะ `Version + Tags` ไม่ถามย้ำในแต่ละ checkpoint
 - การอ้าง keyword ในคำขอแก้เอกสารไม่ใช่คำสั่ง release; กลุ่ม A และ deploy aliases อื่นคงขอบเขตเดิม
 - คำสั่ง publish อื่นที่ไม่ใช่กลุ่ม B (เช่น `release inhouse|production|full`, `pipeline inhouse|production`) รวมงานค้างทั้งหมดโดยอัตโนมัติเหมือนกลุ่ม B: dirty path และ local `develop` commit ที่ยังไม่ขึ้น remote นอก candidate ถูกรวมเป็น content commit ตาม §6.3 ก่อน version commit โดยไม่ถาม เก็บไว้ local เฉพาะเมื่อ owner สั่งยกเว้นชัดเจน ข้อมูลลับ ignored/runtime state และ nested repository ถูกตัดออกอัตโนมัติพร้อมรายงาน
 - `pipeline inhouse` ไม่ขึ้นเวอร์ชันทุกกรณี (owner decision 2026-11-02): รวมงานที่เสร็จและงานค้างเข้า `develop` แล้วส่ง `develop -> jenkins` ด้วยเลขใน `Jenkinsfile` ตอนนั้น ถ้าเลขนั้นอยู่บน `jenkins` แล้วก็ส่งซ้ำด้วยเลขเดิมได้ ไม่ถือว่า prerequisite ขาดและไม่ต้องถาม ถ้าต้องการเลข Inhouse ใหม่ให้ใช้ `release inhouse`; ส่วน `pipeline production` และ `promote` ยังต้องมี candidate Production ที่เตรียมไว้แล้ว
 - ทุกคำสั่ง prepare/pipeline/release เริ่มด้วย `release preflight` ตาม §6.5; sync `origin/develop`, back-merge `jenkins`/`jenkins-release` และแก้ conflict ทำเองโดยไม่ถาม branch ของคนอื่นไม่เกี่ยว
 - ทุกคำสั่ง prepare/pipeline/release และกลุ่ม B รวม work branch ที่ทำเสร็จแต่ยังไม่อยู่ใน `develop` เข้า local `develop` ก่อนเตรียม version ตาม §6.4 (M) ส่วน promote รวมเข้า `develop` ตอนจบโดยไม่แตะ candidate Production ที่ freeze แล้ว
-- เมื่อจบ release ให้ commit audit ที่เหลือและ push `develop` หนึ่งครั้ง แล้วตรวจ remote SHA ให้ `develop` สะอาดและเท่ากับ origin (ไม่ promote audit commit ไป `jenkins`/`jenkins-release` และไม่ย้าย tag)
+- เมื่อจบ release ให้ commit audit ที่เหลือบน `develop` ในเครื่องโดยไม่ push เพราะทุก push อาจสั่ง pipeline; commit นี้ไปกับการ push `develop` ของ release ถัดไป push ทันทีเฉพาะเมื่อ owner สั่ง (ไม่ promote audit commit ไป `jenkins`/`jenkins-release` และไม่ย้าย tag)
 
 ## 4. Shared CLI commands
 
@@ -286,9 +286,9 @@ develop -> jenkins -> jenkins-release   (checkout, merge --ff-only, push ที�
 3. Reconcile committed + working-copy changes กับ changelog และ project index ตรวจ tests/build ที่เหมาะกับงานที่รวมจริง Stage ด้วย exact paths เท่านั้น (`git add -- <reviewed-paths>`) รวม deletion ห้าม `git add .`, `git add -A`, `git commit --only` ที่ทำให้งานค้างตกหล่น หรือ stash เพื่อซ่อนงานจาก coverage gate
 4. Commit งานเดิมทั้งหมดเป็น content commit บน `develop` ก่อน prepare (ข้ามเมื่อไม่มี delta) ข้อความตามชนิดงานจริงใน AGENTS.md §10.6 (`feature:`/`fix:`/`comment:` แยก commit เมื่อต่างชนิด) โดย pipeline/governance ที่ค้างเป็นประวัติของ content commit จากนั้นบันทึก SHA นี้เป็น pre-prepare/source candidate ตรวจ baseline และ resume ก่อน bump version ตาม owner file และ commit release metadata แยกต่างหาก ดังนั้น version commit ยังแก้ Jenkins ได้เฉพาะ version pair แต่ promotion/tag รวม content commit ด้วย
 5. ก่อน push ตรวจ combined diff เทียบ initial HEAD, changelog coverage, staged diff check และ inventory อีกครั้ง ต้องไม่มี publishable path ตกหล่น แล้ว push `develop` และตรวจ remote SHA ก่อน promote ตาม §6.2 และทำ tag ตาม §7 เมื่อขอ หากพบการแก้ใหม่ระหว่าง freeze/promotion ให้หยุดและรายงาน ไม่แทรกเข้า candidate ที่ตรวจแล้วเงียบ ๆ
-6. หลัง remote release/tag checkpoint ให้ finalize report, recent memory, terminal event และ project index โดยบันทึก release SHA ที่ตรวจแล้วตามจริง จากนั้นทำ final audit commit (`audit: บันทึกประวัติ release <VERSION>`) เฉพาะ artifacts ที่ตรวจแล้วบน `develop` และ push/verify `origin/develop` อีกครั้ง การ push นี้อยู่ใน intent กลุ่ม B; ห้าม bump ซ้ำ, promote audit commit หรือย้าย tag ให้บันทึก release SHA กับ final develop SHA แยกกัน
-7. Final audit payload บันทึกว่า release checkpoint ผ่านและ audit publication ยัง pending จน push ผ่าน; รายงานผล push/remote verification ของ audit commit ในคำตอบสุดท้าย ไม่เขียน SHA ของ audit commit ลงตัวมันเองและไม่สร้าง artifact/commit วนซ้ำหลัง freeze หาก push fail ให้คง commit เดิมและ resume push SHA นั้นโดยไม่ bump/promote/tag ใหม่
-8. จบได้เมื่อ publishable staged/unstaged/untracked inventory เป็นศูนย์, remote release branches/tag ผ่าน checkpoint และ remote develop ตรง final audit SHA (หรือ release SHA ถ้าไม่มี audit delta) Final report ต้องแจกแจง exclusions/blocked paths, release SHA, final develop SHA และสถานะ pipeline ห้ามอ้างทุก branch เท่ากันหลัง audit follow-up
+6. หลัง remote release/tag checkpoint ให้ finalize report, recent memory, terminal event และ project index โดยบันทึก release SHA ที่ตรวจแล้วตามจริง จากนั้นทำ final audit commit (`audit: บันทึกประวัติ release <VERSION>`) เฉพาะ artifacts ที่ตรวจแล้วบน `develop` ในเครื่อง ไม่ push (ไปกับการ push `develop` ของ release ถัดไป หรือเมื่อ owner สั่ง); ห้าม bump ซ้ำ, promote audit commit หรือย้าย tag ให้บันทึก release SHA กับ final develop SHA แยกกัน
+7. Final audit payload บันทึกว่า release checkpoint ผ่านและ audit commit เป็น local carried-forward; รายงาน final develop SHA ในเครื่องในคำตอบสุดท้าย ไม่เขียน SHA ของ audit commit ลงตัวมันเองและไม่สร้าง artifact/commit วนซ้ำหลัง freeze หาก owner สั่ง push แล้ว fail ให้คง commit เดิมและ resume push SHA นั้นโดยไม่ bump/promote/tag ใหม่
+8. จบได้เมื่อ publishable staged/unstaged/untracked inventory เป็นศูนย์, remote release branches/tag ผ่าน checkpoint, remote develop ตรง release SHA และ local develop ตรง final audit SHA (เท่ากับ release SHA ถ้าไม่มี audit delta) Final report ต้องแจกแจง exclusions/blocked paths, release SHA, final develop SHA และสถานะ pipeline ห้ามอ้างทุก branch เท่ากันหลัง audit follow-up
 
 ### 6.4 รวมงานที่ทำเสร็จเข้า develop ก่อน release (M)
 
@@ -300,7 +300,7 @@ develop -> jenkins -> jenkins-release   (checkout, merge --ff-only, push ที�
 2. `integrate pending` แสดง work branch (prefix ตาม policy) ที่ยังไม่อยู่ใน `develop` พร้อมสถานะ: `ready` = ส่งผ่าน deliver และ test ผ่าน, `unverified`, `manual` (ไม่มี AGM-Execution หรือมี commit หลังส่งงาน) และ branch ที่ชนกับ `develop`
 3. `integrate gather plan` แล้ว `integrate gather apply --plan-hash <hash>`: รวม branch ของงานนี้ด้วย merge commit (ข้อความ Merge ของ Git) เข้า local `develop` โดยไม่ switch worktree และไม่ push ไม่มี card
 4. **Conflict ให้ Agent แก้เอง ไม่ถาม:** ถ้า branch ของงานนี้ชนกับ `develop` script คืน `resolve` พร้อมขั้นตอน ให้ merge `develop` เข้า branch นั้น แก้ conflict โดยรักษาเจตนาทั้งสองฝั่ง รัน test, commit (ข้อความ Merge ของ Git), push branch แล้ว gather ใหม่ ถามเฉพาะเมื่อสองฝั่งแก้ business logic เดียวกันขัดกันจนต้องให้คนเลือก
-5. ตรวจ build/test ของ `develop` หลังรวม แล้วจึง index/changelog/prepare; merge commit ไปกับการ push `develop` ครั้งเดียวของขั้น D (promote ไปกับ final audit push)
+5. ตรวจ build/test ของ `develop` หลังรวม แล้วจึง index/changelog/prepare; merge commit ไปกับการ push `develop` ครั้งเดียวของขั้น D (promote: merge commit ค้างในเครื่องกับ final audit และไปกับการ push `develop` ของ release ถัดไป)
 6. หลังมี candidate แล้ว (pipeline หรือ resume) M รายงานอย่างเดียวและไม่รันซ้ำ: ใช้ `integrate pending` ตรวจ ถ้ามี branch `ready` ใหม่ให้ถามครั้งเดียวว่าจะเตรียมใหม่ด้วย `release <env>` version เดิม (รวมแล้ว reconcile changelog/notes) หรือปล่อยไปรอบหน้า ห้ามแทรกงานเข้า candidate ที่ตรวจแล้วเงียบ ๆ
 7. ห้าม rebase, squash, force, stash หรือลบ branch อัตโนมัติ; รายงานชื่อ branch และ SHA ที่รวม, ที่ข้ามพร้อมเหตุผล และ merge SHA ใน final report
 
@@ -369,7 +369,7 @@ Owner decision 2026-09-29 (4.9.8): release ต้องจบในการส�
 
 - เลือก mode และทำรายการ required checkpoints ก่อน mutation; บันทึกผลจริงต่อ checkpoint และขั้นถัดไป ถ้าขั้นที่จำเป็นยังไม่ทำและไม่มี blocker ให้ดำเนินการต่อ ไม่ตอบ final ว่าสำเร็จบางส่วน
 - `completed` ของ report/lifecycle ต้องเกิดหลัง gate ของงานจริง ไม่ใช่ใช้การมี report/checklist หรือ helper exit 0 มาแทน gate; หากหยุดเพราะ failure ให้รายงาน `blocked` พร้อม exact command/exit code, checkpoint ที่ผ่านแล้วและ next action
-- บันทึกหลักฐาน release ที่จำเป็นก่อน freeze candidate; กลุ่ม B ต้อง publish final audit/report ตาม §6.3 และ completion gate รวม final develop remote checkpoint ส่วน mode อื่นที่ publish ให้ commit `audit:` และ push `develop` หนึ่งครั้งโดยไม่ promote/tag, mode local เก็บ final artifacts เป็น local follow-up ห้ามให้ release SHA บันทึกตัวเอง
+- บันทึกหลักฐาน release ที่จำเป็นก่อน freeze candidate; กลุ่ม B commit final audit/report ในเครื่องตาม §6.3 และ completion gate รวม local final develop checkpoint ส่วน mode อื่นที่ publish ให้ commit `audit:` ในเครื่องโดยไม่ push/promote/tag, mode local เก็บ final artifacts เป็น local follow-up ห้ามให้ release SHA บันทึกตัวเอง
 
 ### 8.2 Release Description และแจ้งเตือนทีม
 

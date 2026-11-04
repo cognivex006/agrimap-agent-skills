@@ -18,7 +18,7 @@ Read this file, release-timing.md, release-notify.md for Production, the target 
 6. Prepare once: explicit owner target, otherwise owner PATCH+1. Full prepares both; Production-only leaves Inhouse unchanged; Inhouse writes no Production notes/index/tag. Update the changelog for this delta and Production release.md/notes when selected; keep historical text.
 7. Verify owner pairs and allowed diffs, secrets, notes completeness, `git diff --check` and tag collision. Reuse test/build evidence only while content, dependencies and tools match; flash is not skip-tests.
 8. D: commit content (`feature|fix|comment:`, Thai description) and version (`bump:`) separately, run `release sync plan/apply` again, push develop once; if the push is rejected because someone pushed, sync and push again, at most twice, without asking. J: fast-forward and push jenkins. Q/C: show version, SHA and tag as one progress line and continue (ask only for a candidate anomaly). T: fast-forward jenkins-release, create and push the annotated tag from the notes blob.
-9. F: one final `audit:` commit and develop push, no intermediate audit commits; N for Production. End with command, versions, branch/tag results, verification reused/run, excluded work and the mandatory release-timing.md output block.
+9. F: one final local `audit:` commit, no develop push (it ships with the next D push) and no intermediate audit commits; N for Production. End with command, versions, branch/tag results, verification reused/run, excluded work and the mandatory release-timing.md output block.
 
 ## Avoid repeated overhead
 

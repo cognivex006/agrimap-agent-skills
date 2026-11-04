@@ -197,7 +197,8 @@ test('instruction diet: core AGENTS.md at most 24,000 chars; core + release keep
   // 5.0.1: owner decision 2026-10-14 — §2.1/§6.5 the owner command is the confirmation; only anomalies ask.
   // 5.0.11: owner requests 2026-11-02 — §8 a blocked verification proves its cause and restates the full handoff on retry;
   // §2.3 pipeline inhouse never bumps and may republish the current Inhouse version (specs/decisions/0003).
-  assert.equal(createHash('sha256').update(frozen).digest('hex'),'c433dcca53ce002a1bd466b5581b7ab00e3e4ba3f73fc0e4cdaf748066c63662');
+  // owner request 2026-11-04 — §2/§6.3 the final audit commit stays local and ships with the next release's develop push.
+  assert.equal(createHash('sha256').update(frozen).digest('hex'),'879432f6735e5df1ccd6c5c69549db6e9fbbf249a6c3ae63587fce363c1479e3');
   const headings=['## 0.','## 1.','## 2.','### 2.1','### 2.2','### 2.3','## 3.','## 4.','## 5.','### 5.1','### 5.2','## 6.','### 6.1','### 6.2','### 6.3','## 7.','## 8.','### 8.1','## 9.','### 9.1','### 9.5','## 10.','### 10.5','## Bootstrap contract freshness'];
   const all=(core+'\n'+release).split('\n');
   for(const h of headings)assert.ok(all.some(line=>line.startsWith(h)),h);
