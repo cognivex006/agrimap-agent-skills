@@ -58,7 +58,7 @@
     },
     {
       "id": "release-publication-sequence",
-      "description": "Product release loads deterministic sequences and tool compatibility before mutation; 4.5.2 adds measured timing and audit closure, 4.5.5 adds the pre-write gate item 6 golden-evidence line (bounded prose, unchanged direct/required budgets), 4.9.3 adds the pending-work gate and final develop push (+100 words), 4.9.6 adds release gather M for finished work branches (+120 words), 4.9.8 adds preflight and automatic sync (+70 words)",
+      "description": "Product release loads deterministic sequences and tool compatibility before mutation; 4.5.2 adds measured timing and audit closure, 4.5.5 adds the pre-write gate item 6 golden-evidence line (bounded prose, unchanged direct/required budgets), 4.9.3 adds the pending-work gate and final develop push (+100 words), 4.9.6 adds release gather M for finished work branches (+120 words), 4.9.8 adds preflight and automatic sync (+70 words), 5.0.16 keeps the final audit commit local (+40 words)",
       "operation": "release",
       "depth": "regulated",
       "activate": [
@@ -74,7 +74,7 @@
       ],
       "budgets": {
         "scenario": {
-          "maxWords": 10460,
+          "maxWords": 10500,
           "maxEstimatedTokensHigh": 26100
         }
       }
