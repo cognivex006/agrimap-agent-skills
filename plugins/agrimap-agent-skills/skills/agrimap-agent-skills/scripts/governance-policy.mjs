@@ -12,13 +12,6 @@ export function selectWorkflow({ operation, action, tracking = false, risk = '',
   return { depth: selected, reason: regulated ? risk : tracking ? 'resume-or-handoff' : 'bounded-authorized-work', task: selected !== 'light' };
 }
 
-export function instructionProfile({ measuredProfile, taskProfile, model } = {}) {
-  // Names and parameter counts are not capability evidence.
-  const profile = taskProfile || measuredProfile || 'guided';
-  if (!['outcome', 'guided', 'bounded'].includes(profile)) throw new Error('INVALID_INSTRUCTION_PROFILE');
-  return { profile, model: model || 'unknown', changesAuthority: false };
-}
-
 export function verificationDecision({ kind, behaviorChanged = false, sharedContract = false, release = false, evidenceMatches = false } = {}) {
   if (evidenceMatches) return 'reuse-matching-evidence';
   if (kind === 'discussion') return 'none';

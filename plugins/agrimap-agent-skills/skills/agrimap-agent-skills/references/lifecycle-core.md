@@ -16,7 +16,7 @@ Use existing requester authorization; never require a generated prompt merely to
 - light: bounded authorized work; current/recent memory and milestone audit; no tasks.
 - standard: actual resume/handoff/tracking need; the savepoint holds goal, done, remaining, next step and decisions.
 - regulated: actual public/data/security boundary, independent assurance or external publication; same task record plus evidence required by that boundary.
-Triage depth by risk ([delivery-workflow.md](delivery-workflow.md)); state `Depth: <level> — <reason>` first. Model instruction profiles outcome/guided/bounded affect scaffolding only.
+Triage depth by risk ([delivery-workflow.md](delivery-workflow.md)); state `Depth: <level> — <reason>` first.
 Use `agm-workspace.mjs start --operation <op> --session <id> --tracking --risk <reason>` where relevant. Read-only calls return started=false unless --persist/--tracking requests durable work. Never create empty task trees. Explicit init alone prepares project knowledge; --bootstrap installs project assets.
 
 ## Evidence and completion

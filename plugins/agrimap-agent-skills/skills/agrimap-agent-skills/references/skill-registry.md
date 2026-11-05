@@ -11,7 +11,6 @@
 | `agm:router` | `SKILL.md` | เลือก dedicated operation skill เท่านั้น; ไม่ execute task |
 | `agm:glossary` | `glossary.md` | นิยาม authority, work boundary, task size, QA, model identity |
 | `agm:lifecycle-core` | `lifecycle-core.md` | compact `light|standard|regulated` contract และ milestone selector สำหรับ aliases |
-| `agm:workflows` | `workflows.md` | compatibility source map; ไม่โหลดใน normal alias path |
 | `agm:roles` | `roles.md` | เลือก/สวมบทบาท |
 | `agm:qa-and-done` | `qa-and-done.md` | QA scope, sequence, completion gate |
 | `agm:analysis-discipline` | `analysis-discipline.md` | แยก FACT/INFERENCE/HYPOTHESIS/UNKNOWN |
