@@ -5,7 +5,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {createHarness,projectRoot} from '../helpers/harness.mjs';
 import {initRepo,createGitFixture,gitIn} from '../helpers/git-fixture.mjs';
-import {selectWorkflow,classifyRequest,instructionProfile,verificationDecision,sqlContextToolAllowed,validateReadQuery} from '../../skills/agrimap-agent-skills/scripts/governance-policy.mjs';
+import {selectWorkflow,classifyRequest,verificationDecision,sqlContextToolAllowed,validateReadQuery} from '../../skills/agrimap-agent-skills/scripts/governance-policy.mjs';
 import {normalizeIdentity,confirmationExpiry,localAuditMetadata} from '../../skills/agrimap-agent-skills/scripts/identity.mjs';
 import {createPromptVersion} from '../../skills/agrimap-agent-skills/scripts/agm-prompt-version.mjs';
 import {planBootstrap,applyBootstrap} from '../../skills/agrimap-agent-skills/scripts/project-bootstrap.mjs';
@@ -82,7 +82,6 @@ test('risk and real tracking select depth; model scaffolding is independent',()=
  assert.equal(selectWorkflow({operation:'execute',risk:'public-contract-change'}).depth,'regulated');
  assert.throws(()=>selectWorkflow({operation:'execute',depth:'regulated'}),/WORKFLOW_DEPTH_REASON_MISMATCH/);
  assert.throws(()=>selectWorkflow({operation:'execute',tracking:true,depth:'light'}),/WORKFLOW_DEPTH_REASON_MISMATCH/);
- assert.deepEqual(instructionProfile({model:'unknown-new-model'}),{profile:'guided',model:'unknown-new-model',changesAuthority:false});
  assert.equal(verificationDecision({kind:'discussion'}),'none');
  assert.equal(verificationDecision({kind:'docs'}),'structure-and-links');
  assert.equal(verificationDecision({behaviorChanged:true,evidenceMatches:true}),'reuse-matching-evidence');

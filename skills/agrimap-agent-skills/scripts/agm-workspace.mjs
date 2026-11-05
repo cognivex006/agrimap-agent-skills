@@ -24,7 +24,7 @@ import {
 } from "./identity.mjs";
 import { isLogEvent, logEventError, MILESTONE_TYPES, QA_FAILED_EVENT } from "./log-events.mjs";
 import { loadTaskArtifactSchema } from "./task-artifact-schema.mjs";
-import { selectWorkflow, instructionProfile } from './governance-policy.mjs';
+import { selectWorkflow } from './governance-policy.mjs';
 import { applyBootstrap } from './project-bootstrap.mjs';
 import { ensureStateIgnore } from './local-memory.mjs';
 import { snapshotDirty } from './git-flow.mjs';
@@ -886,7 +886,6 @@ async function start(root, args) {
     artifactVersion: args['legacy-artifacts'] ? 2 : 3,
     depthReason: selection.reason,
     risk: args.risk || '',
-    instructionProfile: instructionProfile({ taskProfile: args.profile }).profile,
     reportRequested: Boolean(args.report),
     executionId,
     runId: executionId,

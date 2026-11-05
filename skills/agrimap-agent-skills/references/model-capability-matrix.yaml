@@ -1,33 +1,11 @@
-schema_version: 2
+schema_version: 3
+# 6.1.1: current frontier and economy models follow outcome-style instructions
+# (constraints + acceptance). The outcome/guided/bounded profiles and requester
+# model-label lists were removed; model choice never changes authority, acceptance,
+# workflow risk or SQL permissions.
 model_identity_policy:
-  configured_field: modelLabel
   execution_field: model
   execution_field_semantics: actual_host_reported_model_or_unknown
-selection_policy:
-  project_override_file: .agrimap-agent/model-capability-matrix.yaml
-  default_profile: guided
-  rules:
-    - Select outcome, guided or bounded per measured task-family performance.
-    - Model capability changes scaffolding only, never authority, acceptance, workflow risk or SQL permissions.
-    - Unknown models start guided; preserve actual identity without inventing availability or rankings.
-    - Bounded work uses coherent behavior units, precise inputs/outputs and relevant examples.
-    - Outcome work gives constraints and acceptance while allowing implementation choices.
-    - Guided work adds a short dependency-aware checklist and one relevant example.
-    - Host tool/session/isolation support is separate from reasoning ability.
-    - Use one model sequentially when no appropriate delegation is available.
-candidate_labels:
-  openai: [GPT-5.2, GPT-5.4, GPT-5.5, GPT5.6-Luna, GPT5.6-Terra, GPT5.6-Sol, GPT6]
-  claude: [Sonnet5, Opus4.8, Opus5, Fable5, Fable5.1]
-  google: [] # Record the actual model reported by the runtime; no guessed Gemini version.
-  qwen: [QWEN3.8-30B]
-# Requester-provided routing labels only, not availability or capability claims.
-
-host_recording_examples:
-  antigravity_cli:
-    provider: antigravity
-    model: unknown
-    modelLabel: not-configured
-# Antigravity CLI is a host, not a model identifier. Keep legacy gemini records unchanged.
 
 # Owner decision 2026-10-14 (5.0.1): models for delegated execution, lightest first.
 # The Leader keeps the session model. First entry: mechanical units with a fixed contract
@@ -41,8 +19,8 @@ subagent_execution:
     - { model: opus, effort: low }
   codex:
     - { model: GPT6-Luna, effort: low }
-    - { model: GPT5.6-Terra, effort: low }
-    - { model: GPT5.6-Luna, effort: medium }
+    - { model: GPT6, effort: low }
+    - { model: GPT6.1, effort: medium }
   antigravity:
     - { model: Gemini-3.8-Flash, effort: default }
   no_model_choice: host-default
