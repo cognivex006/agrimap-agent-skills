@@ -25,7 +25,7 @@ Rules Sonar's JS/TS analyzer raises on every `.ts` file (`typescript:` keys; the
 | ADV-39 | S1066 | `if` nested directly in an `if` with no `else` | must | safe | pro-ng `47acb57` (`removeStaleMapLayers`) |
 | ADV-27 | S1788 | Default parameter before a required one | must | recommend | pro-ng `6eb3319`; platform-ng `efddd92b` |
 | ADV-28 | S4144 | Two functions with the same body | must | recommend | six copies of the trailing-slash loop (see anti-fixes) |
-| QUALITY-06 | S3626 | Redundant `return;`/`continue;` at the end | must | safe | agmws-* (same rule in TS) |
+| QUALITY-06 | S3626 | Redundant `return;`/`continue;` at the end | must | safe | agmws-* (same rule in TS); platform-ng `publish-name.component` (`return;` closing the last `if`) |
 
 ## Dead code and noise
 
@@ -33,8 +33,11 @@ Rules Sonar's JS/TS analyzer raises on every `.ts` file (`typescript:` keys; the
 | --- | --- | --- | --- | --- | --- |
 | ADV-05 | S1481 | Unused local | must | safe | license-management |
 | ADV-24 | S1854 | Useless assignment (overwritten or never read) | must | safe | pro-ng `37771f2` (`url`), `b62f00f` (`layerOptions`), `1611417` (`message`), `54697ed` (`identityAuthService`) |
-| ADV-20 | S1128 | Unused import, including one name in a list | must | safe | suite-ng `a23277e` (`permissionIds` ×3); platform-ng `1082b9f9`, `3a3c5d53`; license-management `XLSX` |
-| ADV-21 | S1135 | TODO/FIXME | must | safe | license-management |
+| ADV-20 | S1128 | Unused import, including one name in a list | must | safe | suite-ng `a23277e` (`permissionIds` ×3); platform-ng `1082b9f9`, `3a3c5d53`; license-management `XLSX`; platform-ng `data-import.facade` (`switchMap`, `of`), `data-warehouse.facade` (`formatDate`), `iot.facade` (`WarehouseIotUpdateRequestDto`), `my-content.facade` (`filter`, `FileExplorerItem`), `map-viewer` (`HttpClient`, unused DTO) |
+| ADV-48 | S3863 | The same module imported in two statements | must | safe | platform-ng `user-groups.store` (`./user-groups.model` ×2), dynamic-form models (×2), `group-item-setting` (`@angular/forms` lines 3 and 21) |
+| ADV-21 | S1135 | TODO/FIXME | must | safe | license-management; platform-ng `map-viewer.model.ts` (`// TODO: mock ไว้ก่อน — รอ backend ...`) |
+| ADV-47 | S1874 | Deprecated API (`event.returnValue`, `substr`, `toPromise()`, `KeyboardEvent.keyCode`) | must | recommend | platform-ng `app.component` `onBeforeUnload` (`event.returnValue = ''`) |
+| ADV-49 | S1301 | `switch` with one `case` plus `default` | must | safe | platform-ng `publish-datasource.component` `getLayerFetchStepLabel` |
 | ADV-23 | S125 | Commented-out code | must | safe | pro-ng `9607869`; platform-ng `d552a541`, `e7190db2`, `df97a0d9`, `d7c7429e`, `1a80c14c`, `efddd92b`; suite-ng `6a70e74` (a whole commented component) |
 | ADV-33 | S1186 | Empty function or handler | must | recommend | platform-ng `d7c7429e` (`onMoveToTarget(event) { // console.log }`, removed with its template binding) |
 | ADV-34 | S2486, S108 | Empty `catch {}` | must | recommend | platform-ng `catch {}` |
@@ -66,7 +69,7 @@ Rules Sonar's JS/TS analyzer raises on every `.ts` file (`typescript:` keys; the
 | ADV-42 | S7764 | `window`/`self`/`global` for the global object | should (`globalThis`) | safe (not for `window.location` in browser-only code) | catalog |
 | — | S4138 | `for (let i = 0; i < a.length; i++)` that only reads `a[i]`, or `forEach` with an early exit | should (`for...of`) | safe | platform-ng, pro-ng `47acb57` |
 | ADV-15 | S6594 | `str.match(re)` without `g` | must (`re.exec(str)`) | safe | release-notify.mjs |
-| ADV-16 | S6353 | `[0-9]`, `[A-Za-z0-9_]` | must (`\d`, `\w`) | safe | release-notify.mjs |
+| ADV-16 | S6353 | `[0-9]`, `[A-Za-z0-9_]` | must (`\d`, `\w`) | safe | release-notify.mjs; platform-ng `publish-name.component` (`/^[A-Za-z][A-Za-z0-9_]{0,119}$/` → `/^[A-Za-z]\w{0,119}$/`) |
 | — | S2245 | `Math.random()` for an id or key | must (`crypto.randomUUID()`) | safe | platform-ng `4ab68dc6` (role-detail key) — see SEC-08 |
 
 ## Async
@@ -283,3 +286,60 @@ function requirePattern(name: string, value: string | null | undefined, pattern:
 ```
 
 In `generated-apis/` apply this to the gencode-api template and regenerate; never hand-edit generated files.
+
+### ADV-20 / ADV-48 import hygiene
+
+```ts
+// before
+import { catchError, EMPTY, map, Observable, tap, throwError, finalize, switchMap, of } from 'rxjs' // switchMap, of unused
+import { FormGroup, AbstractControl, ValidationErrors, ReactiveFormsModule } from '@angular/forms'
+import { FormsModule } from '@angular/forms'                                                      // S3863
+// after
+import { catchError, EMPTY, map, Observable, tap, throwError, finalize } from 'rxjs'
+import { FormGroup, AbstractControl, ValidationErrors, ReactiveFormsModule, FormsModule } from '@angular/forms'
+```
+
+Before removing a module such as `FormsModule`, check the component's `imports: []` and the template (`ngModel`). `rxjs` and `rxjs/operators` are different modules; new code imports operators from `rxjs`.
+
+### ADV-47 deprecated beforeunload API
+
+```ts
+// before
+onBeforeUnload(event: BeforeUnloadEvent): void {
+  if (this.largeUpload.atRisk()) { event.preventDefault(); event.returnValue = '' }
+}
+// after: preventDefault() is the standard trigger for the leave-page prompt
+onBeforeUnload(event: BeforeUnloadEvent): void {
+  if (this.largeUpload.atRisk()) { event.preventDefault() }
+}
+```
+
+Check the supported browsers first: if one still needs `returnValue`, keep it and resolve the issue in SonarQube with that reason, not a bare NOSONAR (QUALITY-08).
+
+### ADV-49 one-case switch
+
+```ts
+// before
+switch (step) {
+  case 'CHECK_LAYER_IN_WORKSPACE': return 'กำลังตรวจสอบชั้นข้อมูลภายในไฟล์...'
+  default: return 'กำลังประมวลผล...'
+}
+// after
+return step === 'CHECK_LAYER_IN_WORKSPACE' ? 'กำลังตรวจสอบชั้นข้อมูลภายในไฟล์...' : 'กำลังประมวลผล...'
+```
+
+When more steps are coming, a `Record<Step, string>` lookup with a default is clearer than a growing switch.
+
+### QUALITY-06 return closing the last branch
+
+```ts
+// before
+if (this.currentStep() === 2) {
+  this.handleStepTwo();
+  return;   // last statement of the method
+}
+// after
+if (this.currentStep() === 2) {
+  this.handleStepTwo();
+}
+```

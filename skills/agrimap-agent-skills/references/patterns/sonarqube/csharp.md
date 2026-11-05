@@ -36,6 +36,8 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 | ADV-24 | S1854 | Value assigned and overwritten or never read | must | safe | identity `var key = configuration[keyName]` (`a08dd1d`); file-management `bbd0f29` |
 | ADV-20 | S1128, IDE0005 | Unused `using` | must | safe | file-management `804df07`; dynamic-dashboard `b7f1b87`; identity `1eee1c3` (21 unused usings in `Program.cs`) |
 | ADV-21 | S1135 | TODO/FIXME | must | safe | agmws-* |
+| ADV-47 | CS0618 | Call to an `[Obsolete]` member | must (use the replacement it names) | recommend | catalog |
+| ADV-49 | S1301 | `switch` with one case plus `default` | must (`if`/`else` or ternary) | safe | catalog (TS twin seen) |
 | ADV-23 | S125 | Commented-out code | must | safe | dynamic-dashboard `601d236` (`// var filterAppiled`); identity (`// var items = await LoadMockupData()`) |
 | ADV-29 | S1125 | `x == true`, `x != false` on `bool` | must | safe (non-nullable only) | dynamic-dashboard `9d52fd2`, `7700d73` |
 | ADV-33 | S1186 | Empty method without a comment | must | recommend | catalog |
@@ -47,18 +49,19 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 
 | Golden | Key | Smell | New code | Existing code | Seen |
 | --- | --- | --- | --- | --- | --- |
-| ADV-02 | CA1822, S2325 | Member uses no instance data (filters, middleware helpers too) | must | recommend | plus `ResponseActionResultFilter.OnAppException`, `OnException`; `GlobalExceptionMiddleware.ResolveStatusCode`, `GetDefaultErrorCode`; identity `RedirectWithErrorAsync`; plus `OnException` |
+| ADV-02 | CA1822, S2325 | Member uses no instance data (filters, middleware helpers too) | must | recommend | plus `ResponseActionResultFilter.OnAppException`, `OnException`; `GlobalExceptionMiddleware.ResolveStatusCode`, `GetDefaultErrorCode`; identity `RedirectWithErrorAsync`; plus `OnException`; plus tests `ServiceFixture.Create` |
 | ADV-32 | S2933 | Private field assigned only in the constructor is not `readonly` | must | safe | catalog |
 | ADV-01 | S4136 | Overloads not adjacent | should | recommend | identity `IOAuthUseCase` |
 | ADV-03 | S1905 | Redundant cast | must | recommend | identity `as List<...>` |
 | ADV-04 | S3236 | Caller-info argument passed explicitly | must | recommend | identity `ThrowIfNull(name, "key")` |
-| ADV-08 | CA1861 | Constant array argument | must | recommend | plus `LegacyCompatibilityTests` |
+| ADV-08 | CA1861 | Constant array argument | must | recommend | plus `LegacyCompatibilityTests`; plus legacy route list (`new[] { "GET api/...", ... }.Order().ToArray()`) and expected `getActions` |
 | ADV-09 | SYSLIB1045 | `Regex` with constant pattern, no `[GeneratedRegex]` | should | recommend | plus MAC address check |
-| ADV-10 | ASP0015 | Header indexer instead of typed property (`Cache-Control`, `Pragma`, `Expires` too) | must | safe | plus `BrowserCacheAttribute`, no-cache action filter, `ResponseActionResultFilter` "webscan cache policy"; identity `Authorization`, `X-Requested-With` |
+| ADV-10 | ASP0015 | Header indexer instead of typed property (`Cache-Control`, `Pragma`, `Expires` too) | must | safe | plus `BrowserCacheAttribute`, no-cache action filter, `ResponseActionResultFilter` "webscan cache policy"; identity `Authorization`, `X-Requested-With`; plus `ProgramExtensions.GetHeaderToken` (`Headers["Authorization"]`) |
 | ADV-11 | CA1866, CA1865 | One-char string overload | must | safe | identity `StartsWith("/")` |
 | ADV-12 | S1075 | Hardcoded absolute URI | should | skip-if-unsure | identity `Login.cshtml` |
 | ADV-13 | CA1859 | Interface or base type where one private concrete type flows (also `Exception` → `InvalidOperationException`) | should | skip-if-unsure | plus `DataTableExtensions.CreateConstructorException<T>`; identity `RedirectToLogin` |
-| ADV-17 | CA1854 | `ContainsKey` then indexer | must | safe | plus `GetCustomHeaderToken`; identity `59872c9` (`lddUser["USER_ID"]` → `TryGetValue`) |
+| ADV-17 | CA1854 | `ContainsKey` then indexer | must | safe | plus `GetCustomHeaderToken`; identity `59872c9` (`lddUser["USER_ID"]` → `TryGetValue`); plus `ProgramExtensions.GetCustomHeaderToken` (`Headers.ContainsKey("token")`), `TelerikReportExtensions` (`data.ContainsKey(datasetName)`) |
+| ADV-46 | CA1826 | `FirstOrDefault()`/`First()`/`Last()`/`Count()` on an `IReadOnlyList<T>`, array or `List<T>` | must | safe | plus `ProgramExtensions` route dump (`HttpMethods.FirstOrDefault() ?? "ANY"`) |
 | ADV-18 | CA1850 | `SHA256.Create().ComputeHash` (with a `StringBuilder` `x2` loop) | must | safe | plus `HashExtensions.ComputeSha256Hash`; plus `HashExtensions`; file-management `e32825d` still uses `Create()` |
 | ADV-44 | CA1869 | `new JsonSerializerOptions { ... }` inside a method called per request | must | safe | plus procedure-log helper (`WriteIndented`, `UnsafeRelaxedJsonEscaping`) |
 | ADV-45 | CA1510, CA1511, CA1512, CA1513 | `if (x is null) throw new ArgumentNullException(nameof(x))` and the `ArgumentException`/`ArgumentOutOfRangeException`/`ObjectDisposedException` twins | must | safe | plus `PathExtensions.GetUrl` |
@@ -419,3 +422,52 @@ ObjectDisposedException.ThrowIf(_disposed, this);      // CA1513
 ```
 
 Check: the message text changes to the framework default; keep the explicit `throw` only when a test or client asserts a custom message. `?? throw new InvalidOperationException(...)` for a non-parameter value is correct and stays (ERR-07).
+
+### ADV-10/17 token readers (ProgramExtensions)
+
+```csharp
+// before
+var auth = ctx.Request.Headers["Authorization"].FirstOrDefault();
+public static string? GetCustomHeaderToken(HttpContext ctx) =>
+    ctx.Request.Headers.ContainsKey("token") ? ctx.Request.Headers["token"].ToString().Replace("Bearer ", "").Trim() : null;
+// after
+var auth = ctx.Request.Headers.Authorization.FirstOrDefault();
+public static string? GetCustomHeaderToken(HttpContext ctx) =>
+    ctx.Request.Headers.TryGetValue("token", out var token) ? token.ToString().Replace("Bearer ", "").Trim() : null;
+```
+
+### ADV-17 dictionary from JSON
+
+```csharp
+// before
+if (data is not null && data.ContainsKey(datasetName)) { return JsonSerializer.Serialize(data[datasetName]?.ToString() ?? "[]"); }
+// after: one lookup, same output
+if (data is not null && data.TryGetValue(datasetName, out var dataset)) { return JsonSerializer.Serialize(dataset?.ToString() ?? "[]"); }
+```
+
+### ADV-46 indexable collection
+
+```csharp
+// before: HttpMethods is IReadOnlyList<string>
+var method = endpoint.Metadata.OfType<HttpMethodMetadata>().FirstOrDefault()?.HttpMethods.FirstOrDefault() ?? "ANY";
+// after
+var methods = endpoint.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods;
+var method = methods is { Count: > 0 } ? methods[0] : "ANY";
+```
+
+Only for a type with an indexer and `Count`/`Length`; keep LINQ on `IEnumerable<T>` and `IQueryable<T>`. `GetMetadata<T>()` returns the last matching entry, `OfType<T>().FirstOrDefault()` the first: keep `OfType` when several entries can exist.
+
+### ADV-08 expected lists in tests
+
+```csharp
+// before: a new array per run (CA1861)
+var expected = new[] { "GET api/allocations/{mac_address}", "PUT api/allocations/{mac_address}" }.Order().ToArray();
+Assert.Equal(new[] { "QueryAppLookupAsync", "QueryRightCodeAsync" }, getActions);
+// after
+private static readonly string[] ExpectedLegacyRoutes = ["GET api/allocations/{mac_address}", "PUT api/allocations/{mac_address}"];
+private static readonly string[] ExpectedGetActions = ["QueryAppLookupAsync", "QueryRightCodeAsync"];
+Assert.Equal(ExpectedLegacyRoutes.Order(), actual);
+Assert.Equal(ExpectedGetActions, getActions);
+```
+
+Also for `foreach (var type in new[] { typeof(...) })`: hoist to `private static readonly Type[]`.

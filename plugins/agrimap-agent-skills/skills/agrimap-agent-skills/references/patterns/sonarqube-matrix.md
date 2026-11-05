@@ -6,6 +6,7 @@ Entry point for every SonarQube code smell, bug and hotspot the Golden rules cov
 
 - [Language files](#language-files)
 - [How to read a language file](#how-to-read-a-language-file)
+- [Hygiene rules for every language](#hygiene-rules-for-every-language)
 - [Concept map across languages](#concept-map-across-languages)
 - [Anti-fixes seen in AgriMap commits](#anti-fixes-seen-in-agrimap-commits)
 - [Adding a language or a rule](#adding-a-language-or-a-rule)
@@ -35,6 +36,24 @@ TypeScript and JavaScript share one Sonar analyzer: `typescript.md` holds every 
 - **Existing code** — `safe`: also fix it in a file the authorized task already edits (mechanical, contract-free). `recommend`: report with evidence, fix only on request ([QUALITY-05](../sonarqube-remediation.md#advisory-code-smells-quality-05)). `skip-if-unsure`: report and leave it unless every check holds.
 - **Seen** — the repo or commit where the team met it. `catalog` rows are common Sonar findings the team has not hit yet; they follow the same tiers.
 
+## Hygiene rules for every language
+
+The most frequent findings in every AgriMap scan are leftovers, not design problems: unused imports, unused locals and TODO markers. They apply to every language, new code never has them, and in a file the task already edits they are fixed directly (safe tier).
+
+| Golden | Smell | C# | TypeScript/JS | HTML/CSS | Before you delete |
+| --- | --- | --- | --- | --- | --- |
+| ADV-20 | Unused import/`using`, including one name in a list (`switchMap`, `of`, `filter`, `HttpClient`, a DTO) | S1128, IDE0005 | S1128 | — | Not used in a template, decorator, `imports: []`, type-only position, `#if` or as a side-effect import (`import 'zone.js'`) |
+| ADV-48 | Same module imported twice | — | S3863 | — | Merge into one statement; keep `import type` separate only when the project's lint requires it |
+| ADV-05 | Unused local | S1481 | S1481 | — | The right-hand side has no side effect you need (`_ = Call();` in C#, a bare call in TS) |
+| ADV-24 | Value assigned and never read | S1854 | S1854 | — | Renaming to `_x` is not a fix |
+| ADV-21 | TODO/FIXME/HACK | S1135 | S1135 | S1135 | A person's TODO that records an open question is reported, not silently deleted |
+| ADV-23 | Commented-out code | S125 | S125 | verify | Git keeps history |
+| ADV-22 | Unused package | NuGet | npm | — | Search config, DI, reflection and build scripts; then build |
+
+**Snippet and generator TODOs.** IDE snippets, scaffolders and AI templates insert markers such as `// TODO: implement`, `// TODO: mock ไว้ก่อน — รอ backend` or `throw new NotImplementedException(); // TODO`. Never write one and never keep one you just generated: finish the code, or put the open item (for example "field X waits for the backend contract") in the delivery summary. A placeholder field the requester accepted is named as such without the TODO keyword (`// Placeholder until agmws-xxx returns contentId`).
+
+**Verify after removing.** Build (`dotnet build`, `ng build` or `tsc --noEmit`) and run the touched project's tests: an import used only by a template or decorator fails there, not in the editor.
+
 ## Concept map across languages
 
 One concept, one Golden ID, the key in each language. `—` means the language has no such rule or construct.
@@ -48,6 +67,9 @@ One concept, one Golden ID, the key in each language. `—` means the language h
 | ADV-03 | Redundant cast / assertion | S1905 | S4325 | — | — | — |
 | ADV-05 | Unused local | S1481 | S1481 | — | — | compiler |
 | ADV-20 | Unused import | S1128, IDE0005 | S1128 | — | — | compiler |
+| ADV-48 | Same module imported twice | — | S3863 | — | — | compiler |
+| ADV-47 | Deprecated API | CS0618 | S1874 | verify | — | verify |
+| ADV-49 | `switch` with fewer than 3 cases | S1301 | S1301 | — | — | S1301 |
 | ADV-21 | TODO/FIXME | S1135 | S1135 | S1135 | — | S1135 |
 | ADV-23 | Commented-out code | S125 | S125 | verify | — | S125 |
 | ADV-24 | Dead store | S1854 | S1854 | — | — | S1854 |
@@ -85,6 +107,6 @@ These "fixes" closed or moved a finding but left a defect or a new smell. Do not
 ## Adding a language or a rule
 
 1. Copy [sonarqube/_template.md](sonarqube/_template.md) to `sonarqube/<language>.md`, add a row to [Language files](#language-files) and one column to the concept map only when the language has a real analyzer.
-2. A new concept takes the next free ID (`ADV-46`, ...) and is defined once in the ADV table of [sonarqube-remediation.md](../sonarqube-remediation.md); every language file that raises it reuses that ID.
+2. A new concept takes the next free ID (`ADV-50`, ...) and is defined once in the ADV table of [sonarqube-remediation.md](../sonarqube-remediation.md); every language file that raises it reuses that ID.
 3. Each row needs Key, New code, Existing code and Seen. Add a before/after only when the fix is not obvious; keep the real code's behavior and contracts.
 4. A rule a linter can detect must keep its ID stable; record renames in CHANGELOG.
