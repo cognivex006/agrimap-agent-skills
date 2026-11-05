@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## 5.0.18 — Unreleased
+
+- Add ADV-53 (S3516, C# and TS/JS): a function whose every path returns the same value returns `void`/`Task`/`Promise<void>` and its caller returns the constant. Evidence and before/after from the license-management auth facade `handleLoginFailure(...): Promise<false>`, with the caller-ordering check. Every `must` row binds new code, so ADV-53 applies to code written from now on.
+
 ## 5.0.17 — 2026-11-05
 
 - Split the SonarQube and security rules by language from the start. New index `references/patterns/sonarqube-matrix.md` (language list, concept map with each language's key, anti-fixes, how to add a language) and one file per language under `references/patterns/sonarqube/`: `csharp.md`, `typescript.md`, `javascript.md`, `angular.md`, `html.md`, `css.md`, `go.md`, `nextjs.md` and `_template.md`. New index `references/patterns/security-matrix.md` (class × surface map, hotspot review) with `references/patterns/security/`: `csharp.md`, `typescript.md`, `angular.md`, `javascript.md`, `html.md`, `sql.md`, `nginx.md`, `docker.md`, `nextjs.md` and `_template.md`. `sonarqube-rule-matrix.md` (5.0.16) becomes a pointer; its rows and before/after moved to the language files under the same IDs. Go and Next.js are catalog-only: not a Golden lane yet.
