@@ -1,0 +1,325 @@
+# SonarQube — C#
+
+C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn analyzers). Column meanings and the cross-language concept map: [sonarqube-matrix.md](../sonarqube-matrix.md). Rule text: [csharp.md](../csharp.md); policy: [sonarqube-remediation.md](../../sonarqube-remediation.md); longer fixes: [sonarqube-fix-examples.md](../sonarqube-fix-examples.md). Security hotspots: [security/csharp.md](../security/csharp.md).
+
+## Contents
+
+- [Complexity and structure](#complexity-and-structure)
+- [Dead code and noise](#dead-code-and-noise)
+- [Types, members and APIs](#types-members-and-apis)
+- [Errors, async and logging](#errors-async-and-logging)
+- [Tests](#tests)
+- [Before/after](#beforeafter)
+- [More before/after](#more-beforeafter)
+
+## Complexity and structure
+
+| Golden | Key | Smell | New code | Existing code | Seen |
+| --- | --- | --- | --- | --- | --- |
+| QUALITY-01 | S3776 | Cognitive Complexity above 15 | must | recommend | plus `PlusRight` (18); dynamic-dashboard `601d236` (split into `ResolveContentProxyUrlAsync`, `ResolveQueryConfigPayload`) |
+| QUALITY-01 | team | More than 7 `if`/`else if` in one method | must | recommend | team limit |
+| QUALITY-02 | S107 | More than 7 parameters | must | recommend | identity `79dc5af` (`GenerateTokenParams` record); license-management `2d30133` (`ImportPreviewRequest`) |
+| QUALITY-03 | S3358 | Nested ternary, also `x is { } v ? (v == "a" ? ...)` | must | safe | identity `90c5edd`; dynamic-dashboard `ac3ff79` |
+| QUALITY-06 | S3626 | Redundant trailing `return;`/`continue;` | must | safe | agmws-* |
+| ADV-25 | S1871 | Two branches with the same body | must | recommend | catalog (TS twin seen in pro-ng) |
+| ADV-26 | S2681 | Multi-line `if`/loop body without braces | must | recommend | catalog |
+| ADV-39 | S1066 | `if` nested directly in an `if` with no `else` | must | safe | catalog |
+| ADV-14 | S3267 | `foreach` body is only an `if` filter | must | recommend | identity `BuildQueryString`; license-management `ImportFileParserResolver`; dynamic-dashboard `9d52fd2` |
+| ADV-30 | S2971, S6602, S6603, S6605 | `Where(p).FirstOrDefault()`, `Any(p)` on `List<T>`, `All(p)` on `List<T>` | must | safe | dynamic-dashboard `ade0d6e` (`FirstOrDefault(w => w.Checked)`) |
+
+## Dead code and noise
+
+| Golden | Key | Smell | New code | Existing code | Seen |
+| --- | --- | --- | --- | --- | --- |
+| ADV-05 | S1481 | Unused local | must | safe | identity `isDevMode`, `data2` |
+| ADV-24 | S1854 | Value assigned and overwritten or never read | must | safe | identity `var key = configuration[keyName]` (`a08dd1d`); file-management `bbd0f29` |
+| ADV-20 | S1128, IDE0005 | Unused `using` | must | safe | file-management `804df07`; dynamic-dashboard `b7f1b87`; identity `1eee1c3` (21 unused usings in `Program.cs`) |
+| ADV-21 | S1135 | TODO/FIXME | must | safe | agmws-* |
+| ADV-23 | S125 | Commented-out code | must | safe | dynamic-dashboard `601d236` (`// var filterAppiled`); identity (`// var items = await LoadMockupData()`) |
+| ADV-29 | S1125 | `x == true`, `x != false` on `bool` | must | safe (non-nullable only) | dynamic-dashboard `9d52fd2`, `7700d73` |
+| ADV-33 | S1186 | Empty method without a comment | must | recommend | catalog |
+| ADV-38 | S1192 | Same string literal 3+ times | should | recommend | catalog; use `const`, configuration or the message table, never invent a message (ERR rules) |
+| ADV-28 | S4144 | Two methods with the same body | must | recommend | file-management `f8a987e` (three preview actions → `ExecutePreview`) |
+| ADV-22 | team | Unused `PackageReference` | must (never add) | recommend | — |
+
+## Types, members and APIs
+
+| Golden | Key | Smell | New code | Existing code | Seen |
+| --- | --- | --- | --- | --- | --- |
+| ADV-02 | CA1822, S2325 | Member uses no instance data | must | recommend | identity `RedirectWithErrorAsync`; plus `OnException` |
+| ADV-32 | S2933 | Private field assigned only in the constructor is not `readonly` | must | safe | catalog |
+| ADV-01 | S4136 | Overloads not adjacent | should | recommend | identity `IOAuthUseCase` |
+| ADV-03 | S1905 | Redundant cast | must | recommend | identity `as List<...>` |
+| ADV-04 | S3236 | Caller-info argument passed explicitly | must | recommend | identity `ThrowIfNull(name, "key")` |
+| ADV-08 | CA1861 | Constant array argument | must | recommend | plus `LegacyCompatibilityTests` |
+| ADV-09 | SYSLIB1045 | `Regex` with constant pattern, no `[GeneratedRegex]` | should | recommend | plus MAC address check |
+| ADV-10 | ASP0015 | Header indexer instead of typed property | must | safe | identity `Authorization`, `X-Requested-With` |
+| ADV-11 | CA1866, CA1865 | One-char string overload | must | safe | identity `StartsWith("/")` |
+| ADV-12 | S1075 | Hardcoded absolute URI | should | skip-if-unsure | identity `Login.cshtml` |
+| ADV-13 | CA1859 | Interface where one private concrete type flows | should | skip-if-unsure | identity `RedirectToLogin` |
+| ADV-17 | CA1854 | `ContainsKey` then indexer | must | safe | plus `GetCustomHeaderToken`; identity `59872c9` (`lddUser["USER_ID"]` → `TryGetValue`) |
+| ADV-18 | CA1850 | `SHA256.Create().ComputeHash` | must | safe | plus `HashExtensions`; file-management `e32825d` still uses `Create()` |
+| ADV-36 | S6580, CA1305 | `Parse`/`ToString` without a format provider | should | skip-if-unsure | identity `a08dd1d` kept culture-sensitive `decimal.Parse` on purpose |
+| — | CS8618 | Non-nullable property not initialized | must (`required` or initializer) | recommend | file-management `218fb21` (`required T Data`) |
+| — | CS8600/CS8625 | `null` assigned to a non-nullable local | must (`T?`) | safe | dynamic-dashboard `5e87c65` (`MapServiceMetadata? mapService`) |
+| NULL-* | S4325-like `!` | `x!.Y!.Z!` chains to silence warnings | must not | recommend | identity `79dc5af`, dynamic-dashboard (`config!.TextConfig!.FieldFormats!`) — guard once, then use the narrowed value |
+
+## Errors, async and logging
+
+| Golden | Key | Smell | New code | Existing code | Seen |
+| --- | --- | --- | --- | --- | --- |
+| ERR-06 | S112 | Reserved exception thrown (`NullReferenceException`, `Exception`) | must | recommend | identity `?? throw new NullReferenceException()` |
+| ERR-07 | S3928, CA2208 | `paramName` is not a parameter of this method | must | recommend | identity `a08dd1d` (`ArgumentNullException("s")` → `ThrowIfNull(userId)`), `3531e90` (`RequireDependency`) |
+| ADV-34 | S108, S2486 | Empty `catch { }` or ignored exception | must | recommend | dynamic-dashboard, file-management `218fb21` |
+| ASYNC-03 | S4462, S6966 | `.GetAwaiter().GetResult()`, `.Result`, `.Wait()` in async-capable code | must | recommend | dynamic-dashboard `ac3ff79` (`ReadToEndAsync().GetAwaiter().GetResult()` kept) |
+| — | CS1998 | `async` method with no `await` | must (drop `async`, return `Task.FromResult` or make it sync) | safe | identity `5718b0f` (`Welcome()`) |
+| OBS-01 | S106 | `Console.Write*` for diagnostics | must | recommend | file-management `218fb21` |
+| OBS-* | S2629, CA2254 | Interpolated or concatenated log template | must | safe | catalog: `_logger.LogInformation("Loaded {Count}", n)` |
+| OBS-* | S2139 | Log and rethrow the same exception | should | recommend | catalog |
+| — | IDE0063 | Nested `using (...) { }` blocks | should (`using var`) | safe | dynamic-dashboard `ac3ff79`; file-management (`using var fs`) |
+
+## Tests
+
+| Golden | Key | Smell | New code | Existing code | Seen |
+| --- | --- | --- | --- | --- | --- |
+| ADV-06 | xUnit2032 | `Assert.IsAssignableFrom<T>` | must | recommend | identity tests |
+| ADV-07 | CA1816 | `Dispose()` without `GC.SuppressFinalize` | should | recommend | identity tests |
+| — | S2699 | Test without an assertion | must | recommend | catalog |
+| — | S3415 | `Assert.Equal(actual, expected)` argument order | must | safe | catalog |
+
+## Before/after
+
+Only rows not already in [sonarqube-fix-examples.md](../sonarqube-fix-examples.md).
+
+### ADV-24 dead store
+
+```csharp
+// before (identity AesConfigurationHelper): key read in the public method, read again below
+public static string Encrypt(IAesService aes, IConfiguration configuration, string? plainText, string keyName)
+{
+    var key = configuration[keyName];
+    ...
+}
+// after: the public method resolves once and delegates; the private overload owns validation
+public static string Encrypt(IAesService aes, IConfiguration configuration, string? plainText, string keyName)
+    => Encrypt(aes, plainText, configuration[keyName]);
+private static string Encrypt(IAesService aes, string? plainText, string? key) { /* same validation order */ }
+```
+
+### ADV-28 identical method bodies
+
+```csharp
+// before (file-management FileController): three actions, the same 8-line body
+public async Task<FileResult> PreviewImage(string file_id) { GuardFileId(file_id); var result = ...; ... }
+// after: one private body, the actions keep their routes and attributes
+public async Task<FileResult> PreviewImage(string file_id) => await ExecutePreview(file_id);
+private async Task<FileResult> ExecutePreview(string file_id) { GuardFileId(file_id); ... }
+```
+
+### ADV-29 boolean literal — nullable caveat
+
+```csharp
+.Where(w => w.Checked == true)       // Checked is bool  → .Where(w => w.Checked)
+items?.Any(p) == true                // bool? from ?.     → items?.Any(p) ?? false   (or `is true`)
+otherValue.Checked != true           // Checked is bool?  → keep, or `is not true`; never `!otherValue.Checked`
+```
+
+### ADV-30 LINQ terminal predicate
+
+```csharp
+// before
+var fieldFormat = config.TextConfig.FieldFormats.Where(w => w.Checked).FirstOrDefault();
+// after (on List<T>, S6602 prefers Find; keep FirstOrDefault on IEnumerable)
+var fieldFormat = config.TextConfig.FieldFormats.FirstOrDefault(w => w.Checked);
+```
+
+### ADV-34 swallowed exception
+
+```csharp
+// before
+try { list.Add(Create(row)); } catch { }
+// anti-fix (file-management 218fb21): Console.WriteLine + continue
+// after: narrow the type, log through ILogger with context, keep the loop going only if that is the intent
+catch (InvalidCastException ex)
+{
+    _logger.LogWarning(ex, "Skipped row {RowIndex}: cannot map to {Type}", index, typeof(T).Name);
+}
+```
+
+Keep an intentionally ignored exception explicit: narrow type plus a comment saying why it is safe.
+
+### QUALITY-02 parameter object
+
+```csharp
+// before: 9 parameters
+private Task<TokenResponseDto> GenerateAccessTokenResponse(string userId, string clientId, string deviceId, string username, string fcmToken, List<string> roles, List<int> roleIds, object? data, ...)
+// after (identity 79dc5af): a private record groups the inputs that travel together
+private sealed record GenerateTokenParams(string UserId, string ClientId, string DeviceId, string Username, string FcmToken, List<string> Roles, List<int> RoleIds);
+private Task<TokenResponseDto> GenerateAccessTokenResponse(GenerateTokenParams tokenParams, object? data = null)
+```
+
+A repository/SP parameter list becomes a request type in Domain (license-management `ImportPreviewRequest`); keep the SP parameter names and order.
+
+### ASYNC-03 sync over async
+
+```csharp
+// before (dynamic-dashboard StringExtensions)
+var bodyContent = reader.ReadToEndAsync().GetAwaiter().GetResult();
+// after: make the caller async and await; when the caller cannot be async, report it instead of hiding it
+var bodyContent = await reader.ReadToEndAsync(cancellationToken);
+```
+
+## More before/after
+
+### ADV-05 unused local
+
+```csharp
+// before
+var isDevMode = env == Environments.Development || env == "Inhouse";   // never read
+var data2 = result?.GetOutputParameter<DataTable>("data2")?.ToDictionary(); // never read
+// after: delete both; keep a needed side effect as `_ = Call();`
+```
+
+### ADV-20 unused import
+
+```csharp
+// before
+using System.Text;            // nothing from System.Text is used
+using AgriMap.Web.Service.Shared.Helpers;
+// after: delete the unused using; keep global usings untouched (NS-01)
+using AgriMap.Web.Service.Shared.Helpers;
+```
+
+Check: the symbol is not used in a template (`.html`), decorator, `declare`, type-only position or conditional compilation (`#if`). Removing a side-effect import (`import 'zone.js'`, polyfills) is not ADV-20.
+
+### ADV-21 TODO/FIXME
+
+```csharp
+// before (snippet scaffold left behind)
+public Task<PlotDto> GetAsync(int id)
+{
+    // TODO: implement
+    return _repository.GetAsync(id);
+}
+// after: the code is complete, so the TODO goes
+public Task<PlotDto> GetAsync(int id) => _repository.GetAsync(id);
+```
+
+A TODO that records an assumption must not just be deleted: that hides the risk. Encode the assumption in code and report it.
+
+Summary line: "Action codes 1/2/3 are not in the swagger; confirm with the agmws-license-management owner." When the backend contract documents them, use the generated enum instead.
+
+Never add TODO/FIXME/HACK markers, including ones copied from a snippet, template or generator. Unfinished work goes in the delivery summary. Existing TODOs written by people are reported (recommend), not deleted, unless the work they describe is done in this task.
+
+### ADV-22 unused package
+
+```xml
+<!-- before: .csproj -->
+<PackageReference Include="Newtonsoft.Json" Version="13.0.3" /> <!-- no Newtonsoft namespace used -->
+<!-- after: remove the PackageReference -->
+```
+
+Check before removing: search all source, templates, config (`angular.json` scripts/styles, `builder`), build scripts, transitive peer requirements and reflection/DI registration; then restore, build and test. Never add a package the change does not use. A used package with a known vulnerability (the npm `xlsx` 0.18.x line has published advisories) is a security finding: report it with the advisory; upgrading or replacing it is a dependency change that follows the decision boundary.
+
+### ADV-01 overload adjacency
+
+```csharp
+// before
+Task<RevokeTokenResponseDto> RevokeTokenAsync(ControllerBase controllerBase, RevokeTokenRequestDto request);
+Task<IActionResult> LoginAsync(...);
+Task<RevokeTokenResponseDto> RevokeTokenAsync(RevokeTokenRequestDto request);
+// after: all overloads together, fewest parameters first
+Task<RevokeTokenResponseDto> RevokeTokenAsync(RevokeTokenRequestDto request);
+Task<RevokeTokenResponseDto> RevokeTokenAsync(ControllerBase controllerBase, RevokeTokenRequestDto request);
+Task<IActionResult> LoginAsync(...);
+```
+
+### ADV-03 redundant cast
+
+```csharp
+// before
+return result.DataTable.ToDictionary() as List<Dictionary<string, object?>> ?? new List<Dictionary<string, object?>>();
+// after: ToDictionary() already returns that type
+return result.DataTable.ToDictionary() ?? [];
+```
+
+### ADV-02 static member
+
+```csharp
+// before
+private void OnException(ObjectResult result, ResultExecutingContext context) { /* no field or this */ }
+// after (and update callers that used an instance, e.g. fixture.Create() → ServiceFixture.Create())
+private static void OnException(ObjectResult result, ResultExecutingContext context) { /* ... */ }
+```
+
+### ADV-04 caller-info argument
+
+```csharp
+// before
+ArgumentNullException.ThrowIfNull(name, "key");
+// after
+ArgumentNullException.ThrowIfNull(name);
+```
+
+### ADV-09 generated regex
+
+```csharp
+// before
+if (!Regex.IsMatch(request.Macaddress, @"\A(?:[0-9A-Fa-f]{12}|...)\z", RegexOptions.CultureInvariant)) { ... }
+// after: class becomes partial; the timeout also closes S6444
+[GeneratedRegex(@"\A(?:[0-9A-Fa-f]{12}|...)\z", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: 1000)]
+private static partial Regex MacAddressRegex();
+if (!MacAddressRegex().IsMatch(request.Macaddress)) { ... }
+```
+
+### ADV-10 typed headers
+
+```csharp
+// before
+var auth = httpContext.Request.Headers["Authorization"].ToString();
+headers["Cache-Control"] = $"public,max-age={_days * 24 * 60 * 60}";
+var ajax = string.Equals(controller.Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+// after
+var auth = httpContext.Request.Headers.Authorization.ToString();
+headers.CacheControl = $"public,max-age={_days * 24 * 60 * 60}";
+var ajax = string.Equals(controller.Request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+```
+
+### ADV-12 hardcoded URI
+
+```csharp
+// before
+var easyServiceLoginUrl = "https://webapp.ldd.go.th/singlesignon/client/login.php";
+// after: only when every environment's value is proven
+var easyServiceLoginUrl = _configuration["WebServiceSettings:EasyService:LoginUrl"];
+```
+
+### ADV-13 concrete private types
+
+```csharp
+// before
+private IActionResult RedirectToLogin(Controller controller, Dictionary<string, StringValues> query) => controller.Redirect(url);
+// after: private, every return is a RedirectResult
+private RedirectResult RedirectToLogin(Controller controller, Dictionary<string, StringValues> query) => controller.Redirect(url);
+```
+
+### ADV-07 SuppressFinalize
+
+```csharp
+public void Dispose()
+{
+    LogManager.Configuration = _originalConfiguration;
+    GC.SuppressFinalize(this);
+}
+```
+
+### ERR-06 / ERR-07
+
+```csharp
+// before
+var scheme = (context.HttpContext ?? throw new NullReferenceException()).Request.Scheme;
+if (TryMatchValue(param.Name ?? throw new ArgumentNullException("key"), ...)) { ... }
+// after: not a parameter of this method, so not an Argument*Exception with a fake name
+var scheme = (context.HttpContext ?? throw new InvalidOperationException("HttpContext is not available.")).Request.Scheme;
+if (TryMatchValue(param.Name ?? throw new InvalidOperationException("Constructor parameter has no name."), ...)) { ... }
+```

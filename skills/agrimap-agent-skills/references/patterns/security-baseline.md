@@ -1,6 +1,6 @@
-# Application security baseline (SEC-01..24)
+# Application security baseline (SEC-01..31)
 
-Applies to `be-main`, `be-library`, `fe-main`, `fe-library` and `sql-procedure` code you write or edit. The same 22 classes are what AgriMap Golden Lint (0.1.15+) reports on existing projects; this file is the authoring side, so new code never introduces them. Class IDs, OWASP 2021 categories and CWE numbers match the lint catalog.
+Applies to `be-main`, `be-library`, `fe-main`, `fe-library` and `sql-procedure` code you write or edit, and to the nginx, Docker and CI files of those projects. Sonar keys and idioms per language and surface: [security-matrix.md](security-matrix.md). SEC-01..22 are what AgriMap Golden Lint (0.1.15+) reports on existing projects; SEC-23..31 are authoring rules a lint detector can follow later; this file is the authoring side, so new code never introduces them. Class IDs, OWASP 2021 categories and CWE numbers match the lint catalog.
 
 ## How to apply
 
@@ -40,7 +40,8 @@ Applies to `be-main`, `be-library`, `fe-main`, `fe-library` and `sql-procedure` 
 | --- | --- | --- |
 | SEC-15 open redirect | `window.location.href = <query or API value>` | In-app navigation through the Angular router; external hosts only from an allow-list in environment config |
 | SEC-16 sensitive query value | Tokens, passwords or personal IDs in route/query params or generated API query fields | Request body or header through the generated API ([gencode-api.md](gencode-api.md)) |
-| SEC-21 DOM XSS (A03, CWE-79/95) | `bypassSecurityTrust*` on variable content, `nativeElement.innerHTML`, `document.write`, `eval`/`new Function` | Interpolation for text; `[innerHTML]` with Angular sanitization; `bypassSecurityTrust*` only for constant or server-sanitized content |
+| SEC-21 DOM XSS (A03, CWE-79/95, S6268) | `bypassSecurityTrust*` on variable content, including through a pipe such as `safeHtml`; `nativeElement.innerHTML`, `document.write`, `eval`/`new Function` | Interpolation for text; `[innerHTML]` with Angular sanitization; `bypassSecurityTrust*` only for constant or server-sanitized content |
+| SEC-29 reverse tabnabbing (A01, CWE-1022, S5148) | `target="_blank"` without `rel`; `window.open(url)` that keeps `opener` | `rel="noopener noreferrer"` on every `_blank` link; `window.open(url, '_blank', 'noopener,noreferrer')` |
 | SEC-22 token in Web Storage (A07, CWE-922) | Access/refresh tokens or credentials in `localStorage`/`sessionStorage` in new code; passwords anywhere | Follow the project's established auth flow (HttpOnly Secure cookie or in-memory token with short-lived refresh); changing an existing flow is a cross-lane staged migration, never a local edit |
 
 ## Scripts and container builds
@@ -50,6 +51,17 @@ Applies to `be-main`, `be-library`, `fe-main`, `fe-library` and `sql-procedure` 
 | SEC-23 regex backtracking (A04, CWE-1333, S5852) | `^s*` with the multiline flag, adjacent overlapping quantifiers (`s*s+`, `s*;` across lines), nested quantifiers (`(w+)+`, `(.*)*`) in JS/TS/Node scripts or C# | Bound whitespace to one line with `[ 	]` (`/^[ 	]*SET[ 	]+NOCOUNT[ 	]+ON[ 	]*;/im`); one quantifier per span; C# regexes also take a match timeout (ADV-09) |
 | SEC-24 Docker build context (A05, CWE-538, S6470) | `COPY . .` in a Dockerfile without a `.dockerignore` that excludes secrets and local state | Every service with a Dockerfile has a `.dockerignore` with at least `**/.env`, `**/.git`, `**/.vs`, `**/.vscode`, `**/bin`, `**/obj`, `**/*.*proj.user`, `**/secrets*.yaml`, `**/values.dev.yaml`, `**/Scripts/*.ps1`, `**/node_modules`; prefer copying named paths. Sonar still lists `COPY . .` as a hotspot: the `.dockerignore` is the evidence to mark it Reviewed/Safe |
 
+## Archives, containers, secrets and edge
+
+| Class | Do not write | Write it this way |
+| --- | --- | --- |
+| SEC-25 archive expansion (A04/A01, CWE-22/409, S5042) | Reading a zip (`ZipArchive`, JSZip `loadAsync`) and using entry names or sizes without limits | Before using entries: cap the entry count, total uncompressed size and compression ratio, and reject names that are absolute or resolve outside the target (`..`, leading `/` or `\`); extract under an approved root (SEC-04). One shared guard per codebase, with a test |
+| SEC-26 container user (A05, CWE-250, S6471) | A runtime image that runs as root (no `USER`, or `USER root` last) | A non-root base (`nginxinc/nginx-unprivileged`) or `RUN useradd -m appuser`, `chown` of written paths and `USER appuser` as the last user switch; listen above port 1024 |
+| SEC-27 build secrets and scripts (A05/A08, CWE-214/829, S6472, S6505) | Tokens in `ARG`/`ENV`; `npm install` running package scripts during the build; certificates or keys copied into an image that does not need them | BuildKit secret mounts (`RUN --mount=type=secret,id=npmrc`); `npm ci --ignore-scripts` with an allow-list for scripts that must run; copy only what the runtime needs |
+| SEC-28 committed secrets (A07, CWE-798, S6418, S2068) | Passwords, keys, connection strings or tokens in source, `appsettings*.json`, `.vscode/launch.json`, `environment*.ts`, Jenkinsfile or SQL scripts | Configuration from the environment or secret store; user secrets for local runs. A committed secret is rotated, not only deleted: it stays in Git history |
+| SEC-30 web server hardening (A05, CWE-200/693) | nginx defaults: version banner, `add_header` in `server` while a `location` adds its own, headers without `always`, `autoindex on`, dotfiles served | [security/nginx.md](security/nginx.md): `server_tokens off`; the full header set in every `location` that calls `add_header` (or one `include`), with `always`; deny `/\.`; `alias` with matching trailing slashes |
+| SEC-31 forwarded-header trust (A01/A05, CWE-348) | `UseForwardedHeaders` with empty `KnownProxies`/`KnownNetworks` trusting every peer for the client IP; ignoring `X-Forwarded-Proto` behind the TLS gateway | Honour `X-Forwarded-Proto` from the gateway so `Request.IsHttps` and secure cookies work; trust `X-Forwarded-For` only from configured proxies or networks (license-management `fa9e69a`, `4ef4ee7`) |
+
 ## Out of scope here
 
-Dependency vulnerabilities (A06), deployment/infrastructure configuration beyond SEC-24 and data-flow proofs are not covered by these classes; do not claim them from this checklist. Secrets and service URLs in code follow [service-url-matrix.md](../service-url-matrix.md).
+Dependency vulnerabilities (A06), deployment/infrastructure configuration beyond SEC-24..31 and data-flow proofs are not covered by these classes; do not claim them from this checklist. Secrets and service URLs in code follow [service-url-matrix.md](../service-url-matrix.md).
