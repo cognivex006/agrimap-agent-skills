@@ -19,7 +19,7 @@ Rules Sonar's JS/TS analyzer raises on every `.ts` file (`typescript:` keys; the
 | QUALITY-01 | S3776 | Cognitive Complexity above 15 | must | recommend | pro-ng `505babb` (16 → `buildExternalAppUrl`); platform-ng `1082b9f9` (`validateFormBeforeSave`), `a2924c4a`, `c1fb6dd2`; license-management generated API |
 | QUALITY-01 | team | More than 7 `if`/`else if` in one function | must | recommend | team limit |
 | QUALITY-02 | S107 | More than 7 parameters (an options object counts as one) | must | recommend | team limit |
-| QUALITY-03 | S3358 | Nested ternary, also inside `computed()`, template-literal and object properties | must | safe | pro-ng `e70ec87`, `c8dee2d`, `f315c3a`; platform-ng `ed13c75d`, `96a7133d`; suite-ng `b68a9d9`, `6a70e74`, `c71acbb` |
+| QUALITY-03 | S3358 | Nested ternary, also inside `computed()`, template-literal and object properties | must | safe | pro-ng `e70ec87`, `c8dee2d`, `f315c3a`; platform-ng `ed13c75d`, `96a7133d`; suite-ng `b68a9d9`, `6a70e74`, `c71acbb`; license-management `operations-console.facade.ts:135` (recurring after earlier fixes) |
 | ADV-25 | S1871 | Two branches with the same body | must | recommend | pro-ng `10e5e1c`, `7645900` (merged into one condition) |
 | ADV-26 | S2681 | Multi-line body after an unbraced `if`: only the first line is conditional | must | recommend (it is a bug) | pro-ng `3bef5cd` |
 | ADV-39 | S1066 | `if` nested directly in an `if` with no `else` | must | safe | pro-ng `47acb57` (`removeStaleMapLayers`) |
@@ -51,6 +51,7 @@ Rules Sonar's JS/TS analyzer raises on every `.ts` file (`typescript:` keys; the
 | --- | --- | --- | --- | --- | --- |
 | ADV-03 | S4325 | Assertion that does not change the type (`x as T` when `x: T`, `!` on a non-null) | must | recommend | platform-ng `a2924c4a`; pro-ng |
 | ADV-40 | S4204, S6571 | `any` where a type exists; `as any` to silence the compiler; `string \| any` | must | recommend | platform-ng `a2924c4a` (`sharesResponse?.content as any`); suite-ng `caf7cfd` (`(response as any).soilLimitations`) |
+| ADV-52 | S4323 | The same inline union (`'a' \| 'b' \| 'c'`, `string \| null \| undefined`) written in a signature, field or generic instead of a named `type` | must | safe | license-management `operations-console.component.ts:784` (recurring) |
 | ADV-29 | S1125 | `x === true` on a `boolean` | must | safe | catalog |
 | ADV-32 | S2933 | Private member never reassigned is not `readonly` (`inject()`, `signal()`, `computed()`) | must | safe | platform-ng (279 `readonly` additions), suite-ng |
 | ADV-35 | S6551 | Object stringified with `${x}` or `+ ''` | must | safe | platform-ng `efddd92b` (`new Date(\`${value}\`)` → `new Date(String(value))`) |
@@ -343,3 +344,53 @@ if (this.currentStep() === 2) {
   this.handleStepTwo();
 }
 ```
+
+## Recurring findings: write them out of reach
+
+QUALITY-03 (S3358) and ADV-52 (S4323) came back in the same feature after being fixed, because new code was written in the same shape. When you write a branch that picks a value, or a type that lists options, use these shapes from the start; do not write the short form and plan to fix it later.
+
+### QUALITY-03 — never a ternary inside a ternary
+
+```ts
+// shape that keeps coming back
+const label = status === 1 ? 'Active' : status === 2 ? 'Disabled' : 'Unknown'
+const tone = item.error ? 'danger' : item.warning ? 'warn' : 'ok'
+// write this instead: a lookup for fixed keys
+const STATUS_LABEL: Record<number, string> = { 1: 'Active', 2: 'Disabled' }
+const label = STATUS_LABEL[status] ?? 'Unknown'
+// or early returns in a small helper when the conditions differ
+private toneOf(item: Item): Tone {
+  if (item.error) return 'danger'
+  if (item.warning) return 'warn'
+  return 'ok'
+}
+```
+
+Also inside template literals, object literals, `computed()`, `map()` callbacks and Angular templates (`{{ a ? x : b ? y : z }}` → a `computed` or pipe).
+
+### ADV-52 — name every union you use twice or in a public signature
+
+```ts
+// before (S4323)
+setMode(mode: 'login-trend' | 'daily-distribution' | 'hourly'): void { ... }
+readonly mode = signal<'login-trend' | 'daily-distribution' | 'hourly'>('login-trend')
+// after: one alias next to the model, reused everywhere
+export type ActivityMode = 'login-trend' | 'daily-distribution' | 'hourly'
+setMode(mode: ActivityMode): void { ... }
+readonly mode = signal<ActivityMode>('login-trend')
+```
+
+Put the alias in the feature's `*.model.ts`; when the generated API already exports the type, import it instead of writing a new one. `T | null` on a single local is fine.
+
+### Make the tool enforce it
+
+Rules in documents are read; a linter is run. When the project has ESLint, the same findings fail locally before a scan:
+
+```jsonc
+// eslint.config / .eslintrc rules (project change: propose it, do not add it unasked)
+"no-nested-ternary": "error",
+"@typescript-eslint/no-unused-vars": "error",
+"import/no-duplicates": "error"
+```
+
+Run the project's lint and `tsc --noEmit` before reporting done; report findings you could not run as unverified.

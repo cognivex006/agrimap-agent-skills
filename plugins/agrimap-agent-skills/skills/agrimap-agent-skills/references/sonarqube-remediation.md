@@ -41,9 +41,9 @@ The team and company agreed that the smells below are advisory: fixing them is o
 
 - **Recommend first.** Report each one as a recommendation (review comment, QA/lint report item or summary line) with rule ID, `file:line`, evidence, proposed fix and risk. Do not edit for them during unrelated work, and do not add TODO or source comments unless asked.
 - **Edit only on request with enough evidence.** Fix when the requester explicitly asks for that finding or rule and the evidence proves the fix preserves behavior and contracts (scan result or verified code reading, plus the caveats below). Notify before and after editing as above. If evidence is missing, keep the recommendation and name what is missing.
-- **Safe tier in touched files (5.0.8, extended 5.0.17).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17, ADV-18, ADV-19, ADV-20, ADV-21, ADV-23, ADV-24, ADV-29, ADV-30, ADV-31, ADV-32, ADV-35, ADV-37, ADV-39, ADV-41, ADV-42, ADV-43, ADV-44, ADV-45, ADV-46, ADV-48 and ADV-49 directly when the check column holds, and rows without an ID that a language file marks `safe`; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
+- **Safe tier in touched files (5.0.8, extended 5.0.17).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17, ADV-18, ADV-19, ADV-20, ADV-21, ADV-23, ADV-24, ADV-29, ADV-30, ADV-31, ADV-32, ADV-35, ADV-37, ADV-39, ADV-41, ADV-42, ADV-43, ADV-44, ADV-45, ADV-46, ADV-48, ADV-49, ADV-51 and ADV-52 directly when the check column holds, and rows without an ID that a language file marks `safe`; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
 - **Skip when unsure.** ADV-12 (URIs) and ADV-13 (concrete types) only when the check column is fully proven; otherwise report and skip. A skipped smell is never a delivery blocker.
-- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18/20/21 are mandatory for new C# code (csharp.md QUALITY-07), ADV-05/15/16/19/20/21 for new JS/TS, and new code never adds a package it does not use (ADV-22). From 5.0.17 every row a language file marks `must` is mandatory for new code in that language, including ADV-23..49.
+- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18/20/21 are mandatory for new C# code (csharp.md QUALITY-07), ADV-05/15/16/19/20/21 for new JS/TS, and new code never adds a package it does not use (ADV-22). From 5.0.17 every row a language file marks `must` is mandatory for new code in that language, including ADV-23..52. Test projects and specs follow the same rows.
 - Rules not listed here follow their scan severity and the normal decision boundary.
 
 | ID | Rule | Smell | Recommended fix | Check before fixing |
@@ -97,6 +97,9 @@ The team and company agreed that the smells below are advisory: fixing them is o
 | ADV-47 | S1874 (TS/JS), CS0618 (C#) | Deprecated or `[Obsolete]` API | The replacement the deprecation names | Supported browsers or runtimes may still need the old API: confirm before removing |
 | ADV-48 | S3863 (TS/JS) | The same module imported in more than one statement | Merge into one import | Keep side-effect imports and lint-required `import type` lines |
 | ADV-49 | S1301 (C#, TS/JS) | `switch` with fewer than three cases | `if`/`else` or a ternary; a lookup table for a growing list | Same fall-through and default behavior |
+| ADV-50 | CA1862 (C#) | Case comparison through `ToLower*`/`ToUpper*` | `string.Equals(a, b, StringComparison.OrdinalIgnoreCase)` when the code means "equal ignoring case" | When the code means "is already lower/upper case", the suggested fix inverts it: write the rule directly and test uppercase input |
+| ADV-51 | CS9258 (C#) | Lambda parameter or local named `field`/`value` inside a property | Rename (`f`, `item`) | Rename only that scope |
+| ADV-52 | S4323 (TS) | The same inline union type repeated or in a public signature | A named `type` alias in the feature model, or the generated API type | Pure type change: no runtime effect; export it only where it is shared |
 
 ## Fix examples (C#)
 

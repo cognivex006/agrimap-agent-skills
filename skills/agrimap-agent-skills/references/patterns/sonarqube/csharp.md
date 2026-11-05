@@ -25,7 +25,7 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 | ADV-25 | S1871 | Two branches with the same body | must | recommend | catalog (TS twin seen in pro-ng) |
 | ADV-26 | S2681 | Multi-line `if`/loop body without braces | must | recommend | catalog |
 | ADV-39 | S1066 | `if` nested directly in an `if` with no `else` | must | safe | catalog |
-| ADV-14 | S3267 | `foreach` body is only an `if` filter | must | recommend | identity `BuildQueryString`; license-management `ImportFileParserResolver`; dynamic-dashboard `9d52fd2` |
+| ADV-14 | S3267 | `foreach` body is only an `if` filter | must | recommend | identity `BuildQueryString`; license-management `ImportFileParserResolver`; dynamic-dashboard `9d52fd2`; license-management `ImportFileParserResolver` (`foreach (var signature in ZipSignatures)`), `SensitiveParameters` (`foreach (var key in masked.Keys.ToList())`) still open |
 | ADV-30 | S2971, S6602, S6603, S6605 | `Where(p).FirstOrDefault()`, `Any(p)` on `List<T>`, `All(p)` on `List<T>` | must | safe | dynamic-dashboard `ade0d6e` (`FirstOrDefault(w => w.Checked)`) |
 
 ## Dead code and noise
@@ -54,17 +54,19 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 | ADV-01 | S4136 | Overloads not adjacent | should | recommend | identity `IOAuthUseCase` |
 | ADV-03 | S1905 | Redundant cast | must | recommend | identity `as List<...>` |
 | ADV-04 | S3236 | Caller-info argument passed explicitly | must | recommend | identity `ThrowIfNull(name, "key")` |
-| ADV-08 | CA1861 | Constant array argument | must | recommend | plus `LegacyCompatibilityTests`; plus legacy route list (`new[] { "GET api/...", ... }.Order().ToArray()`) and expected `getActions` |
+| ADV-08 | CA1861 | Constant array argument | must | recommend | plus `LegacyCompatibilityTests`; plus legacy route list (`new[] { "GET api/...", ... }.Order().ToArray()`) and expected `getActions`; identity tests `Assert.Equal(new[] { "modetor" }, response.Roles)`, `new[] { "superadmin", "admin", "modetor" }`, `new[] { 1, 2 }.BuildPagedResponse(...)` |
 | ADV-09 | SYSLIB1045 | `Regex` with constant pattern, no `[GeneratedRegex]` | should | recommend | plus MAC address check |
 | ADV-10 | ASP0015 | Header indexer instead of typed property (`Cache-Control`, `Pragma`, `Expires` too) | must | safe | plus `BrowserCacheAttribute`, no-cache action filter, `ResponseActionResultFilter` "webscan cache policy"; identity `Authorization`, `X-Requested-With`; plus `ProgramExtensions.GetHeaderToken` (`Headers["Authorization"]`) |
 | ADV-11 | CA1866, CA1865 | One-char string overload | must | safe | identity `StartsWith("/")` |
 | ADV-12 | S1075 | Hardcoded absolute URI | should | skip-if-unsure | identity `Login.cshtml` |
-| ADV-13 | CA1859 | Interface or base type where one private concrete type flows (also `Exception` → `InvalidOperationException`) | should | skip-if-unsure | plus `DataTableExtensions.CreateConstructorException<T>`; identity `RedirectToLogin` |
+| ADV-13 | CA1859 | Interface or base type where one private concrete type flows (also `Exception` → `InvalidOperationException`) | should | skip-if-unsure | plus `DataTableExtensions.CreateConstructorException<T>`; identity `RedirectToLogin`; license-management `ReadSharedStrings` (`IReadOnlyList<string>` → `List<string>`), test helper `Upload(...)` (`IFormFile` → `FormFile`) |
 | ADV-17 | CA1854 | `ContainsKey` then indexer | must | safe | plus `GetCustomHeaderToken`; identity `59872c9` (`lddUser["USER_ID"]` → `TryGetValue`); plus `ProgramExtensions.GetCustomHeaderToken` (`Headers.ContainsKey("token")`), `TelerikReportExtensions` (`data.ContainsKey(datasetName)`) |
 | ADV-46 | CA1826 | `FirstOrDefault()`/`First()`/`Last()`/`Count()` on an `IReadOnlyList<T>`, array or `List<T>` | must | safe | plus `ProgramExtensions` route dump (`HttpMethods.FirstOrDefault() ?? "ANY"`) |
+| ADV-50 | CA1862 | Case check through `ToLower*()`/`ToUpper*()` and `==`/`!=` | must | recommend (see the caveat: the suggested fix can invert the check) | license-management `previewHash != previewHash.ToLowerInvariant()` |
+| ADV-51 | CS9258 | Identifier named `field` (or `value`) inside a property accessor or expression-bodied property | must (`f`, `item`, or `@field`) | safe | license-management CSV record `IsBlank => Fields.TrueForAll(field => field.Length == 0)` |
 | ADV-18 | CA1850 | `SHA256.Create().ComputeHash` (with a `StringBuilder` `x2` loop) | must | safe | plus `HashExtensions.ComputeSha256Hash`; plus `HashExtensions`; file-management `e32825d` still uses `Create()` |
-| ADV-44 | CA1869 | `new JsonSerializerOptions { ... }` inside a method called per request | must | safe | plus procedure-log helper (`WriteIndented`, `UnsafeRelaxedJsonEscaping`) |
-| ADV-45 | CA1510, CA1511, CA1512, CA1513 | `if (x is null) throw new ArgumentNullException(nameof(x))` and the `ArgumentException`/`ArgumentOutOfRangeException`/`ObjectDisposedException` twins | must | safe | plus `PathExtensions.GetUrl` |
+| ADV-44 | CA1869 | `new JsonSerializerOptions { ... }` inside a method called per request | must | safe | plus procedure-log helper (`WriteIndented`, `UnsafeRelaxedJsonEscaping`); identity test `JsonSerializer.Serialize(response, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower })` |
+| ADV-45 | CA1510, CA1511, CA1512, CA1513 | `if (x is null) throw new ArgumentNullException(nameof(x))` and the `ArgumentException`/`ArgumentOutOfRangeException`/`ObjectDisposedException` twins | must | safe | plus `PathExtensions.GetUrl`; license-management `PathExtensions.GetUrl` |
 | ADV-36 | S6580, CA1305 | `Parse`/`ToString` without a format provider | should | skip-if-unsure | identity `a08dd1d` kept culture-sensitive `decimal.Parse` on purpose |
 | — | CS8618 | Non-nullable property not initialized | must (`required` or initializer) | recommend | file-management `218fb21` (`required T Data`) |
 | — | CS8600/CS8625 | `null` assigned to a non-nullable local | must (`T?`) | safe | dynamic-dashboard `5e87c65` (`MapServiceMetadata? mapService`) |
@@ -471,3 +473,74 @@ Assert.Equal(ExpectedGetActions, getActions);
 ```
 
 Also for `foreach (var type in new[] { typeof(...) })`: hoist to `private static readonly Type[]`.
+
+## Test code and license-management scan (5.0.17)
+
+SonarQube scans test projects with the production rules. Every row above applies to `Tests/**`; the cases below were all reported from tests or from code written last month.
+
+### ADV-08 arrays in assertions and test data
+
+```csharp
+// before
+Assert.Equal(new[] { "modetor" }, response.Roles);
+Assert.Equal(new[] { "superadmin", "admin", "modetor" }, response.Data.Roles.Select(r => r.RoleCode));
+var response = new[] { 1, 2 }.BuildPagedResponse(pageNumber: 1, pageSize: 20, totalRecords: 45, totalPages: 0);
+// after
+private static readonly string[] ModeratorOnly = ["modetor"];
+private static readonly string[] AllRoleCodes = ["superadmin", "admin", "modetor"];
+private static readonly int[] TwoRows = [1, 2];
+Assert.Equal(ModeratorOnly, response.Roles);
+Assert.Equal(AllRoleCodes, response.Data.Roles.Select(r => r.RoleCode));
+var response = TwoRows.BuildPagedResponse(pageNumber: 1, pageSize: 20, totalRecords: 45, totalPages: 0);
+```
+
+Keep the values exactly (the role code `modetor` is test data; do not "correct" it). A method that mutates the array still needs its own copy (`[.. TwoRows]`).
+
+### ADV-44 options in tests
+
+```csharp
+private static readonly JsonSerializerOptions SnakeCase = new() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+var json = JsonSerializer.Serialize(response, SnakeCase);
+```
+
+### ADV-13 test helper return type
+
+```csharp
+// before
+private static IFormFile Upload(string fileName = "licenses.csv", string content = "...", long? declaredLength = null) { ...; return new FormFile(...); }
+// after: private, always a FormFile; callers that take IFormFile still accept it
+private static FormFile Upload(string fileName = "licenses.csv", string content = "...", long? declaredLength = null) { ...; return new FormFile(...); }
+```
+
+### ADV-50 case comparison — do not invert the check
+
+```csharp
+// before: "must be lowercase hex"
+if (previewHash is null || previewHash.Length != PreviewHashHexLength || previewHash != previewHash.ToLowerInvariant())
+    throw InvalidParameter(message);
+// wrong fix (the analyzer's suggestion): string.Equals(previewHash, previewHash.ToLowerInvariant(), OrdinalIgnoreCase)
+//   is always true, so uppercase input would pass
+// right fix: state the rule directly
+if (previewHash is null || previewHash.Length != PreviewHashHexLength || !previewHash.All(c => char.IsAsciiDigit(c) || c is >= 'a' and <= 'f'))
+    throw InvalidParameter(message);
+```
+
+CA1862 is right when the code means "equal ignoring case": `a.ToLower() == b.ToLower()` → `string.Equals(a, b, StringComparison.OrdinalIgnoreCase)`. When the code means "is already lowercase", the case-insensitive fix breaks it: express the rule (as above) and add a test with uppercase input.
+
+### ADV-51 `field` as an identifier
+
+```csharp
+// before (CS9258: field is a keyword in property accessors from C# 14)
+internal bool IsBlank => Fields.TrueForAll(field => field.Length == 0);
+// after
+internal bool IsBlank => Fields.TrueForAll(f => f.Length == 0);
+```
+
+### ADV-14 loops still open
+
+```csharp
+// ImportFileParserResolver
+return ZipSignatures.Any(signature => StartsWith(bytes, signature)) ? ImportFileFormat.Xlsx : ImportFileFormat.Csv;
+// SensitiveParameters: the loop writes into the dictionary it reads, so keep the snapshot
+foreach (var key in masked.Keys.Where(IsSensitive).ToList()) { masked[key] = Replacement; }
+```
