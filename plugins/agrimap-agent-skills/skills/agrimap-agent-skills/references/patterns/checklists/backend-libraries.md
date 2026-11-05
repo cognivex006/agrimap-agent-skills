@@ -67,6 +67,8 @@ One feature task updates all four ([patterns/backend.md](../backend.md#be-librar
 
 A library feature that skips the Playground or README is incomplete, not "done with follow-up".
 
+- Sonar self-check before finishing, on every file you wrote or edited, test projects included (`Tests/**`, fixtures, helpers): no unused `using`/local/dead store, no TODO, no commented code (ADV-20/05/24/21/23); `static` for members without instance data (CA1822), `static readonly` arrays and `JsonSerializerOptions` instead of inline `new[] {...}`/`new JsonSerializerOptions` (CA1861, CA1869), typed headers (ASP0015), `TryGetValue` (CA1854), `ThrowIfNull` (CA1510), concrete private return types (CA1859), `Where` instead of an `if`-only loop (S3267). Rows and test examples: [sonarqube/csharp.md](../sonarqube/csharp.md).
+
 ## SHOULD
 
 Security baseline SEC-01..31 ([security-baseline.md](../security-baseline.md), per surface: [security-matrix.md](../security-matrix.md)): new and rewritten code never introduces them; existing matches are reported with the response contract and fixed on request.

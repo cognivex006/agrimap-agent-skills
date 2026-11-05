@@ -52,6 +52,8 @@ The most frequent findings in every AgriMap scan are leftovers, not design probl
 
 **Snippet and generator TODOs.** IDE snippets, scaffolders and AI templates insert markers such as `// TODO: implement`, `// TODO: mock ไว้ก่อน — รอ backend` or `throw new NotImplementedException(); // TODO`. Never write one and never keep one you just generated: finish the code, or put the open item (for example "field X waits for the backend contract") in the delivery summary. A placeholder field the requester accepted is named as such without the TODO keyword (`// Placeholder until agmws-xxx returns contentId`).
 
+**Test code is scanned too.** SonarQube analyses `Tests/**`, fixtures and `*.spec.ts` with the same rules: CA1861 (`Assert.Equal(new[] { ... }, actual)`), CA1869 (`new JsonSerializerOptions` in a test), CA1859 (a helper returning `IFormFile` that always builds `FormFile`), CA1822 (`ServiceFixture.Create`) and unused imports in specs were all reported from test files. Write tests to the same rows as production code.
+
 **Verify after removing.** Build (`dotnet build`, `ng build` or `tsc --noEmit`) and run the touched project's tests: an import used only by a template or decorator fails there, not in the editor.
 
 ## Concept map across languages
@@ -107,6 +109,6 @@ These "fixes" closed or moved a finding but left a defect or a new smell. Do not
 ## Adding a language or a rule
 
 1. Copy [sonarqube/_template.md](sonarqube/_template.md) to `sonarqube/<language>.md`, add a row to [Language files](#language-files) and one column to the concept map only when the language has a real analyzer.
-2. A new concept takes the next free ID (`ADV-50`, ...) and is defined once in the ADV table of [sonarqube-remediation.md](../sonarqube-remediation.md); every language file that raises it reuses that ID.
+2. A new concept takes the next free ID (`ADV-53`, ...) and is defined once in the ADV table of [sonarqube-remediation.md](../sonarqube-remediation.md); every language file that raises it reuses that ID.
 3. Each row needs Key, New code, Existing code and Seen. Add a before/after only when the fix is not obvious; keep the real code's behavior and contracts.
 4. A rule a linter can detect must keep its ID stable; record renames in CHANGELOG.

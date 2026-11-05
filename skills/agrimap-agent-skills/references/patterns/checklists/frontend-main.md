@@ -52,6 +52,8 @@ Any task that adds, changes, or consumes a generated endpoint reads
 is never edited by hand. `018-11-generated-api-contract.md` is a pointer to that file. API URLs in
 `environment.*.ts` follow [service-url-matrix.md](../../service-url-matrix.md).
 
+- Sonar self-check before finishing, on every file you wrote or edited, `*.spec.ts` included: no unused import or name in an import list, one import per module, no unused local/dead store, no TODO, no commented code (S1128, S3863, S1481, S1854, S1135, S125); `readonly` members, no nested ternary anywhere (lookups or early returns instead), no one-case `switch`, unions named with a `type` alias (S4323), no redundant `return;`, no deprecated API (S2933, S3358, S1301, S3626, S1874). Rows: [sonarqube/typescript.md](../sonarqube/typescript.md), [angular.md](../sonarqube/angular.md).
+
 ## SHOULD
 
 - Security baseline SEC-15/16/21/22/29 ([security-baseline.md](../security-baseline.md), [security/angular.md](../security/angular.md)): new and rewritten code never introduces them; existing matches are reported and fixed on request.
