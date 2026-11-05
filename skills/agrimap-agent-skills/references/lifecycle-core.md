@@ -13,10 +13,10 @@ Follow explicit project recording requirements (bootstrap AGENTS §9) without du
 Follow recommendations.md in every operation: proactively give supported advice with gaps, assumptions and confidence. Advice grants no write authority.
 
 Use existing requester authorization; never require a generated prompt merely to repeat approval.
-- light: bounded authorized work; concise current/recent memory and milestone audit; no tasks.
+- light: bounded authorized work; current/recent memory and milestone audit; no tasks.
 - standard: actual resume/handoff/tracking need; the savepoint holds goal, done, remaining, next step and decisions.
 - regulated: actual public/data/security boundary, independent assurance or external publication; same task record plus evidence required by that boundary.
-Depth follows the work, not model or file count; record its reason. Model instruction profiles outcome/guided/bounded affect scaffolding only.
+Triage depth by risk ([delivery-workflow.md](delivery-workflow.md)); state `Depth: <level> — <reason>` first. Model instruction profiles outcome/guided/bounded affect scaffolding only.
 Use `agm-workspace.mjs start --operation <op> --session <id> --tracking --risk <reason>` where relevant. Read-only calls return started=false unless --persist/--tracking requests durable work. Never create empty task trees. Explicit init alone prepares project knowledge; --bootstrap installs project assets.
 
 ## Evidence and completion

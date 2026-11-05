@@ -2,7 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## 5.0.18 — Unreleased
+## 6.0.1 — Unreleased
+
+- Risk-weighted delivery workflow (owner decision 2026-11-05, maintainer record `specs/decisions/0004-delivery-workflow.md`), from six owner questions on SDLC for AI agents. New `references/delivery-workflow.md`: four-question triage that selects light/standard/regulated by risk instead of size and is announced before the first write; an invariant floor that runs at every depth (real state, language rules, self-gate including tests, cheapest proving check, verified/not-verified report, nothing irreversible without authority); steps A–O from intake to post-release observation and learning, with the steps, checks and human gates each depth runs; gates between steps; announced escalation when a new risk appears mid-way. `lifecycle-core.md` now requires the triage line. Depth names, savepoint and task-record rules are unchanged; their meaning widens to cover checks and human gates, hence the major version. The direct-entrypoint token budget rises from 3560 to 3600 and the qa-fe-main-golden-regulated scenario budget from 22500 to 22600 for the triage line.
+- `subagents-and-branches.md` adds roles (Leader, read-only Explorer/Analyst/Verifier, Worker limited to its packet files), which roles each depth uses (none at light), the owner's workspace rule (parallel writers use worktrees, a single writer uses the work branch, everything integrated back before closing) and a four-check verification of every subagent return with one rework round before the Leader takes it back.
 
 - Add ADV-53 (S3516, C# and TS/JS): a function whose every path returns the same value returns `void`/`Task`/`Promise<void>` and its caller returns the constant. Evidence and before/after from the license-management auth facade `handleLoginFailure(...): Promise<false>`, with the caller-ordering check. Every `must` row binds new code, so ADV-53 applies to code written from now on.
 

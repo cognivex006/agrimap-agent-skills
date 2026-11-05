@@ -8,7 +8,7 @@
   "budgets": {
     "direct": {
       "maxWords": 1320,
-      "maxEstimatedTokensHigh": 3560
+      "maxEstimatedTokensHigh": 3600
     },
     "required": {
       "maxWords": 6400,
@@ -354,7 +354,7 @@
       "budgets": {
         "scenario": {
           "maxWords": 8400,
-          "maxEstimatedTokensHigh": 22500
+          "maxEstimatedTokensHigh": 22600
         }
       }
     },
