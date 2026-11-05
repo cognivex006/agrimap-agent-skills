@@ -2,6 +2,10 @@
 
 Load for every plan or execution with two or more units, and whenever delegation is considered. Delegation does not itself select regulated depth. Use one writer per file/contract and Leader integration; sequential work is valid.
 
+## Contents
+
+[Orchestration decision (5.0.1)](#orchestration-decision-501) · [Roles and depth (6.0)](#roles-and-depth-60) · [Leader loop](#leader-loop) · [Worktree lifecycle: ephemeral worktree, durable job context](#worktree-lifecycle-ephemeral-worktree-durable-job-context) · [Packet additions for a job](#packet-additions-for-a-job) · [Dispatch boundary](#dispatch-boundary) · [Workspace contract](#workspace-contract) · [Delegation packet](#delegation-packet) · [Visible progress](#visible-progress) · [Verify every return (6.0)](#verify-every-return-60) · [Handoff and integration](#handoff-and-integration)
+
 ## Orchestration decision (5.0.1)
 
 Owner decision 2026-10-14: decide this for every plan or execution with two or more units, not only when delegation was requested, and state it in one line (`Orchestration: sequential` or `Orchestration: N agents — units …`).
@@ -11,6 +15,20 @@ Owner decision 2026-10-14: decide this for every plan or execution with two or m
 3. Parallel when files or repositories are disjoint and no unit consumes a contract another unit is still producing; otherwise sequence. Work smaller than a few minutes per unit stays with the Leader.
 4. Agents: never ask how many; use up to five, sized to the ready units.
 5. Models: `model-capability-matrix.yaml` `subagent_execution` for the host — first entry for mechanical units with a fixed contract and golden pattern, second for normal units, third for units that need design judgement; a host without model choice uses its default. Record the actual model.
+
+## Roles and depth (6.0)
+
+| Role | Does | Writes |
+| --- | --- | --- |
+| Leader | Talks to the human, triages, fixes contracts, dispatches, integrates, verifies, commits, delivers | yes |
+| Explorer | Broad search and reading (callers, helpers, history across repositories); returns a summary | no |
+| Analyst | Impact or root cause for one lane | no |
+| Worker | One unit in one lane, only the files its packet names | packet files only |
+| Verifier | Independent review, QA or security check of finished work; never the unit's author | no |
+
+Use by depth ([delivery-workflow.md](delivery-workflow.md)): light — none; standard — Explorers when the search is wide, Workers rarely; regulated — Explorers/Analysts in parallel per lane, Workers per lane, one Verifier. Broad mechanical work (many repositories or folders) may fan out Explorers at any depth. Subagents never talk to the human, commit outside their worktree, push, merge, release or run anything irreversible.
+
+Workspace (owner decision 2026-11-05, 6.0.1): several people or agents writing at once use worktrees as below; one writer works on the normal work branch. Either way, everything is integrated back before the work closes.
 
 ## Leader loop
 
@@ -75,6 +93,17 @@ Current Codex surfaces expose native agent activity: app thread, CLI `/agent`, a
 Native activity is the detailed trace. Only when the active surface genuinely lacks it, declare `.agrimap-agent/runtime/progress/<task-id>.jsonl` as fallback. Write `started`, meaningful phase/status transitions, and `finished|blocked`; do not write per step, tool call, read, or unchanged poll. Optional unchanged liveness is capped at once per five minutes.
 
 Official Codex behavior: [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents).
+
+## Verify every return (6.0)
+
+A returned `done` is testimony. Before integrating, the Leader checks:
+
+1. Scope: `git diff --name-only` against the packet's writable files; drop anything outside it.
+2. Results: the Leader runs lint/build/tests itself after integration.
+3. Rules: the self-gate of the [invariant floor](delivery-workflow.md#invariant-floor) on the combined diff.
+4. Contracts: DTO, route and SP signature diffs are empty or match what was approved.
+
+A failed check goes back to the same agent once, with the actual output. After that the Leader fixes it or re-plans; never loop. A unit that turns out to need a contract change stops and escalates.
 
 ## Handoff and integration
 

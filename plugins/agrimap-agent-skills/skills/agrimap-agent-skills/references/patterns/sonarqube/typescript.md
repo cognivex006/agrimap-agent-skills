@@ -38,6 +38,7 @@ Rules Sonar's JS/TS analyzer raises on every `.ts` file (`typescript:` keys; the
 | ADV-21 | S1135 | TODO/FIXME | must | safe | license-management; platform-ng `map-viewer.model.ts` (`// TODO: mock ไว้ก่อน — รอ backend ...`) |
 | ADV-47 | S1874 | Deprecated API (`event.returnValue`, `substr`, `toPromise()`, `KeyboardEvent.keyCode`) | must | recommend | platform-ng `app.component` `onBeforeUnload` (`event.returnValue = ''`) |
 | ADV-49 | S1301 | `switch` with one `case` plus `default` | must | safe | platform-ng `publish-datasource.component` `getLayerFetchStepLabel` |
+| ADV-53 | S3516 | Function whose every path returns the same value (`Promise<false>`, always `return true`) | must | recommend (callers may read the value) | license-management auth facade `handleLoginFailure(...): Promise<false>` |
 | ADV-23 | S125 | Commented-out code | must | safe | pro-ng `9607869`; platform-ng `d552a541`, `e7190db2`, `df97a0d9`, `d7c7429e`, `1a80c14c`, `efddd92b`; suite-ng `6a70e74` (a whole commented component) |
 | ADV-33 | S1186 | Empty function or handler | must | recommend | platform-ng `d7c7429e` (`onMoveToTarget(event) { // console.log }`, removed with its template binding) |
 | ADV-34 | S2486, S108 | Empty `catch {}` | must | recommend | platform-ng `catch {}` |
@@ -394,3 +395,31 @@ Rules in documents are read; a linter is run. When the project has ESLint, the s
 ```
 
 Run the project's lint and `tsc --noEmit` before reporting done; report findings you could not run as unverified.
+
+### ADV-53 invariant return
+
+```ts
+// before: every path returns false, so the value carries no information
+private async handleLoginFailure(error: HttpErrorResponse, epoch: number): Promise<false> {
+  if (error.status === 403) await this.refreshCsrf(epoch)
+  if (!this.store.isCurrentEpoch(epoch)) return false
+  const unavailable = error.status === 429 || error.status === 0 || error.status >= 500
+  this.store.setLoginError(unavailable ? LOGIN_UNAVAILABLE_ERROR : GENERIC_LOGIN_ERROR)
+  return false
+}
+// caller
+catch (error) { return this.handleLoginFailure(error as HttpErrorResponse, epoch) }
+// after: the helper performs side effects only; the caller owns the result
+private async handleLoginFailure(error: HttpErrorResponse, epoch: number): Promise<void> {
+  if (error.status === 403) await this.refreshCsrf(epoch)
+  if (!this.store.isCurrentEpoch(epoch)) return
+  const unavailable = error.status === 429 || error.status === 0 || error.status >= 500
+  this.store.setLoginError(unavailable ? LOGIN_UNAVAILABLE_ERROR : GENERIC_LOGIN_ERROR)
+}
+catch (error) {
+  await this.handleLoginFailure(error as HttpErrorResponse, epoch)
+  return false
+}
+```
+
+Check every caller: the public `login()` still returns `Promise<boolean>` with the same values, and the `await` keeps the old ordering (the CSRF refresh finishes before `false` is returned). Do not "fix" it by returning a different value on one path. A literal return type such as `Promise<false>` is itself the signal: when you write it, the function should return `void`.

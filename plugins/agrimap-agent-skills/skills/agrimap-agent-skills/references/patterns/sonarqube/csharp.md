@@ -38,6 +38,7 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 | ADV-21 | S1135 | TODO/FIXME | must | safe | agmws-* |
 | ADV-47 | CS0618 | Call to an `[Obsolete]` member | must (use the replacement it names) | recommend | catalog |
 | ADV-49 | S1301 | `switch` with one case plus `default` | must (`if`/`else` or ternary) | safe | catalog (TS twin seen) |
+| ADV-53 | S3516 | Method whose every path returns the same value | must (`void`/`Task`, the caller returns the constant) | recommend | catalog (TS twin seen) |
 | ADV-23 | S125 | Commented-out code | must | safe | dynamic-dashboard `601d236` (`// var filterAppiled`); identity (`// var items = await LoadMockupData()`) |
 | ADV-29 | S1125 | `x == true`, `x != false` on `bool` | must | safe (non-nullable only) | dynamic-dashboard `9d52fd2`, `7700d73` |
 | ADV-33 | S1186 | Empty method without a comment | must | recommend | catalog |

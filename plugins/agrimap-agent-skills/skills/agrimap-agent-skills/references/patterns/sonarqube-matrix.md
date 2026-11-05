@@ -72,6 +72,7 @@ One concept, one Golden ID, the key in each language. `—` means the language h
 | ADV-48 | Same module imported twice | — | S3863 | — | — | compiler |
 | ADV-47 | Deprecated API | CS0618 | S1874 | verify | — | verify |
 | ADV-49 | `switch` with fewer than 3 cases | S1301 | S1301 | — | — | S1301 |
+| ADV-53 | Every path returns the same value | S3516 | S3516 | — | — | S3516 |
 | ADV-21 | TODO/FIXME | S1135 | S1135 | S1135 | — | S1135 |
 | ADV-23 | Commented-out code | S125 | S125 | verify | — | S125 |
 | ADV-24 | Dead store | S1854 | S1854 | — | — | S1854 |
@@ -109,6 +110,6 @@ These "fixes" closed or moved a finding but left a defect or a new smell. Do not
 ## Adding a language or a rule
 
 1. Copy [sonarqube/_template.md](sonarqube/_template.md) to `sonarqube/<language>.md`, add a row to [Language files](#language-files) and one column to the concept map only when the language has a real analyzer.
-2. A new concept takes the next free ID (`ADV-53`, ...) and is defined once in the ADV table of [sonarqube-remediation.md](../sonarqube-remediation.md); every language file that raises it reuses that ID.
+2. A new concept takes the next free ID (`ADV-54`, ...) and is defined once in the ADV table of [sonarqube-remediation.md](../sonarqube-remediation.md); every language file that raises it reuses that ID.
 3. Each row needs Key, New code, Existing code and Seen. Add a before/after only when the fix is not obvious; keep the real code's behavior and contracts.
 4. A rule a linter can detect must keep its ID stable; record renames in CHANGELOG.
