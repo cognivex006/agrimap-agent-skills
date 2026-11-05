@@ -69,7 +69,7 @@ A library feature that skips the Playground or README is incomplete, not "done w
 
 ## SHOULD
 
-Security baseline SEC-01..20 ([security-baseline.md](../security-baseline.md)): new and rewritten code never introduces them; existing matches are reported with the response contract and fixed on request.
+Security baseline SEC-01..31 ([security-baseline.md](../security-baseline.md), per surface: [security-matrix.md](../security-matrix.md)): new and rewritten code never introduces them; existing matches are reported with the response contract and fixed on request.
 
 Configuration shape, README section order, and logging field conventions as shown in the matching
 entry, where the active package does not already prove a different published surface.

@@ -4,7 +4,9 @@ For SonarQube-driven code changes in any lane, notify the requester before editi
 
 ## Contents
 
-[Before editing](#before-editing) · [After editing](#after-editing) · [Advisory code smells](#advisory-code-smells-quality-05) · [Fix examples (C#)](#fix-examples-c)
+[Before editing](#before-editing) · [After editing](#after-editing) · [Suppressions](#suppressions-quality-08) · [Advisory code smells](#advisory-code-smells-quality-05) · [Fix examples (C#)](#fix-examples-c)
+
+Rules by language: [patterns/sonarqube-matrix.md](patterns/sonarqube-matrix.md) (C#, TypeScript, JavaScript, Angular, HTML, CSS, Go, Next.js); security hotspots by language and surface (nginx, Docker, SQL ...): [patterns/security-matrix.md](patterns/security-matrix.md). Read only the file for the language you are in.
 
 ## Before editing
 
@@ -22,17 +24,26 @@ Use the current authorization and [autonomy rules](autonomy.md). Continue author
 
 Summarize the actual change, its relationship to the previously completed work, behavior/contract impact, and verification performed. State whether SonarQube was rerun and the actual result; a local refactor or build does not establish that the SonarQube issue is resolved. Disclose remaining findings or missing scan evidence.
 
+## Suppressions (QUALITY-08)
+
+`// NOSONAR`, `#pragma warning disable`, `[SuppressMessage]`, `eslint-disable` and `.editorconfig` severity changes hide a finding; they never fix it.
+
+- Do not add one to make a scan pass. Fix the code, or report the finding.
+- Allowed only when the shape is required and a guard makes it safe, after that guard exists, on the one line it covers, with the rule and reason: `// NOSONAR(S5042): entries checked by loadSafeArchive()`. A bare `// NOSONAR` is a finding.
+- Security hotspots are closed in SonarQube (Reviewed → Safe) by a person with that permission, with the evidence; a code comment is not the review.
+- Existing bare suppressions are reported (recommend), not removed blindly: removing one can reopen a gate.
+
 ## Advisory code smells (QUALITY-05)
 
-Before/after code for these rows and QUALITY-01..07: [patterns/sonarqube-fix-examples.md](patterns/sonarqube-fix-examples.md). Every rule split by language (shared, C# only, TypeScript only) with one example each: [patterns/sonarqube-rule-matrix.md](patterns/sonarqube-rule-matrix.md).
+Before/after code for these rows and QUALITY-01..07: [patterns/sonarqube-fix-examples.md](patterns/sonarqube-fix-examples.md). Per-language keys, tiers, team evidence and examples: [patterns/sonarqube-matrix.md](patterns/sonarqube-matrix.md).
 
 The team and company agreed that the smells below are advisory: fixing them is optional. They never block delivery and never lower QUALITY-01..03, bugs, vulnerabilities or security hotspots.
 
 - **Recommend first.** Report each one as a recommendation (review comment, QA/lint report item or summary line) with rule ID, `file:line`, evidence, proposed fix and risk. Do not edit for them during unrelated work, and do not add TODO or source comments unless asked.
 - **Edit only on request with enough evidence.** Fix when the requester explicitly asks for that finding or rule and the evidence proves the fix preserves behavior and contracts (scan result or verified code reading, plus the caveats below). Notify before and after editing as above. If evidence is missing, keep the recommendation and name what is missing.
-- **Safe tier in touched files (5.0.8).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17, ADV-18, ADV-19, ADV-20 and ADV-21 directly when the check column holds; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
+- **Safe tier in touched files (5.0.8, extended 5.0.17).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17, ADV-18, ADV-19, ADV-20, ADV-21, ADV-23, ADV-24, ADV-29, ADV-30, ADV-31, ADV-32, ADV-35, ADV-37, ADV-39, ADV-41, ADV-42, ADV-43, ADV-44, ADV-45, ADV-46, ADV-48 and ADV-49 directly when the check column holds, and rows without an ID that a language file marks `safe`; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
 - **Skip when unsure.** ADV-12 (URIs) and ADV-13 (concrete types) only when the check column is fully proven; otherwise report and skip. A skipped smell is never a delivery blocker.
-- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18/20/21 are mandatory for new C# code (csharp.md QUALITY-07), ADV-05/15/16/19/20/21 for new JS/TS, and new code never adds a package it does not use (ADV-22).
+- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18/20/21 are mandatory for new C# code (csharp.md QUALITY-07), ADV-05/15/16/19/20/21 for new JS/TS, and new code never adds a package it does not use (ADV-22). From 5.0.17 every row a language file marks `must` is mandatory for new code in that language, including ADV-23..49.
 - Rules not listed here follow their scan severity and the normal decision boundary.
 
 | ID | Rule | Smell | Recommended fix | Check before fixing |
@@ -59,6 +70,33 @@ The team and company agreed that the smells below are advisory: fixing them is o
 | ADV-20 | S1128, IDE0005 (C#, JS/TS) | Unused `using` or `import` | Delete it; keep global usings and side-effect imports such as polyfills | Not used in a template, decorator, type-only position or `#if` branch |
 | ADV-21 | S1135 (C#, JS/TS) | TODO/FIXME left in code, including snippet or generator scaffolds | Finish the work or report it in the summary; never add the marker | A person's existing TODO stays recommend-first unless this task completes its work |
 | ADV-22 | dependency hygiene (npm, NuGet) | Package declared in `package.json` or `.csproj` but never used | Remove the entry with the package manager and update the lock file | Search source, templates, `angular.json`, build scripts, DI/reflection and peer requirements, then restore, build and test; a used package with a known advisory is a security finding instead |
+| ADV-23 | S125 (all) | Commented-out code | Delete it; Git keeps history | A comment that explains intent stays; keep `<!-- -->` license headers |
+| ADV-24 | S1854 (all) | Dead store: value overwritten or never read | Delete the assignment; keep a needed call as `_ = Call();` (C#) or a bare call (TS) | Renaming to `_x` is not a fix; check the right-hand side has no side effect you need |
+| ADV-25 | S1871 (all) | Two branches with the same body | Merge the conditions with `\|\|`, or hoist the common code | Keep evaluation order and short-circuiting; branches that differ only in comments are still identical |
+| ADV-26 | S2681 (all) | Multi-line body after an unbraced `if`/loop | Add braces | This is a bug: confirm which lines were meant to be conditional and add a test |
+| ADV-27 | S1788 (TS) | Default parameter before a required one | Move optional parameters last or use an options object | Public/shared API: add the new signature and migrate callers; never just drop the default |
+| ADV-28 | S4144 (all) | Two functions/methods with the same body | Extract one shared private method or utility with a test | Search for an existing helper first; keep routes, attributes and public names |
+| ADV-29 | S1125 (all) | `x == true`, `x != false` | `x`, `!x` | Only on non-nullable `bool`; for `bool?` use `?? false` or `is true` |
+| ADV-30 | S2971, S6602, S6603, S6605 (C#) | `Where(p).First*()`, `Any`/`All` on `List<T>` | `FirstOrDefault(p)`; `Find`/`Exists`/`TrueForAll` on `List<T>` | Same result; keep deferred execution where an `IQueryable` translates to SQL |
+| ADV-31 | S7773 (TS/JS) | Global `isNaN`, `parseInt`, `parseFloat` | `Number.isNaN`, `Number.parseInt(x, 10)` | Global `isNaN('abc')` is true, `Number.isNaN('abc')` is false: convert first when the input can be a string |
+| ADV-32 | S2933 (all) | Field assigned only at declaration/constructor is not `readonly` | Add `readonly` | Not when a test, framework or `ngOnInit` reassigns it |
+| ADV-33 | S1186 (all) | Empty function or handler | Delete it with its binding, or comment why it is empty (interface no-op) | Removing an event handler also removes the template binding and `implements` entry |
+| ADV-34 | S108, S2486 (all) | Empty `catch` or ignored exception | Narrow the type and log through `ILogger` (OBS-01) or the app logging service | Never `Console.WriteLine`; an intentional ignore names why in a comment |
+| ADV-35 | S6551 (TS/JS) | Object stringified with a template literal or `+ ''` | `String(x)` for primitives; a formatter for objects | Same text for strings and numbers; `[object Object]` was a bug |
+| ADV-36 | S6580, CA1305 (C#) | `Parse`/`ToString` without a format provider | `CultureInfo.InvariantCulture` for wire/storage values | Behavior change for culture-formatted input: skip when unsure and report |
+| ADV-37 | S1090, S1077, S5254, S5256 (HTML) | `iframe` without `title`, `img` without `alt`, `html` without `lang`, table without headers | Add the attribute or element | Text from existing labels or the requester; no layout change |
+| ADV-38 | S1192 (all) | Same string literal three or more times | A `const`, configuration key or message code | Message text comes from the message table (ERR rules); do not merge literals that mean different things |
+| ADV-39 | S1066 (all) | `if` nested in an `if` with no `else` | `if (a && b)` | Keep side-effect order |
+| ADV-40 | S4204, S6571 (TS) | `any`, `as any`, `T \| any` | The generated API type, a narrow local type or `unknown` plus a guard | Do not change a public library type without its consumers |
+| ADV-41 | team (TS) | Import from `node_modules/...` or a package's internal chunk | The package's public entry (`@angular/common/http`) | Same symbol; build to confirm |
+| ADV-42 | S7781, S7755, S7764 (TS/JS) | `replace(/lit/g)`, `a[a.length - 1]`, `window` as the global | `replaceAll`, `at(-1)`, `globalThis` | Target ES2022 or later; `window.location` in browser code stays |
+| ADV-43 | S4647..S4667, S5362 (CSS) | Empty blocks, duplicate properties or selectors, invalid values | Delete or merge in cascade order | Keep the value that is in effect today |
+| ADV-44 | CA1869 (C#) | `new JsonSerializerOptions` per call | One `private static readonly` options instance | The instance must not be changed after first use; keep every option value |
+| ADV-45 | CA1510..CA1513 (C#) | Manual `if (x is null) throw new ArgumentNullException(nameof(x))` | `ArgumentNullException.ThrowIfNull(x)` and the `ThrowIfNullOrEmpty`/`ThrowIfNegative`/`ObjectDisposedException.ThrowIf` twins | Same type and `ParamName`; the message becomes the framework default, so keep the explicit throw when a custom message is asserted |
+| ADV-46 | CA1826 (C#) | `FirstOrDefault()`/`First()`/`Count()` on an indexable collection | Index or `Count`/`Length` directly | Only for arrays, `List<T>`, `IReadOnlyList<T>`; never on `IEnumerable`/`IQueryable` |
+| ADV-47 | S1874 (TS/JS), CS0618 (C#) | Deprecated or `[Obsolete]` API | The replacement the deprecation names | Supported browsers or runtimes may still need the old API: confirm before removing |
+| ADV-48 | S3863 (TS/JS) | The same module imported in more than one statement | Merge into one import | Keep side-effect imports and lint-required `import type` lines |
+| ADV-49 | S1301 (C#, TS/JS) | `switch` with fewer than three cases | `if`/`else` or a ternary; a lookup table for a growing list | Same fall-through and default behavior |
 
 ## Fix examples (C#)
 

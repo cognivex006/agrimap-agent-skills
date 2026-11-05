@@ -1,6 +1,6 @@
 # SonarQube fix examples
 
-Before/after examples for the SonarQube rules in [csharp.md](csharp.md) (QUALITY-01..07) and the advisory smells in [sonarqube-remediation.md](../sonarqube-remediation.md) (ADV-*). Rules split by language: [sonarqube-rule-matrix.md](sonarqube-rule-matrix.md). Read this before writing or refactoring a method that branches, loops or validates input, and before fixing a scan finding. The examples show the shape of the fix; keep the real method's order, messages, side effects and contracts.
+Before/after examples for the SonarQube rules in [csharp.md](csharp.md) (QUALITY-01..07) and the advisory smells in [sonarqube-remediation.md](../sonarqube-remediation.md) (ADV-*). Rules by language: [sonarqube-matrix.md](sonarqube-matrix.md). Read this before writing or refactoring a method that branches, loops or validates input, and before fixing a scan finding. The examples show the shape of the fix; keep the real method's order, messages, side effects and contracts.
 
 ## Contents
 

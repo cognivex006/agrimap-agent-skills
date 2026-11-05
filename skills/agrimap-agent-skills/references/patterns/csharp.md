@@ -134,7 +134,7 @@ Do not hardcode request keys, duplicate trim/blank logic, eagerly read a body, o
 - Throw the established `AppException`/procedure exception with the exact contract code; keep internal detail out of user-facing messages.
 - Build stored-procedure parameters in Infrastructure, log the procedure call structurally, check `result.Success`, then map data explicitly.
 - Never log secrets, tokens, cookies, authorization values, or personal data merely because they appear in a parameter dictionary.
-- New and rewritten code follows the [security baseline](security-baseline.md) SEC-01..20.
+- New and rewritten code follows the [security baseline](security-baseline.md) SEC-01..31 ([security/csharp.md](security/csharp.md), [security/docker.md](security/docker.md)).
 
 ```csharp
 var result = await _dataAccessConfiguration.CallProcedureAsync(
@@ -431,7 +431,7 @@ When writing or rewriting a method, score its Cognitive Complexity before finish
 
 **QUALITY-07 — New code is free of ADV-02/05/06/08/11/14/17/18/20/21.** Code you write or rewrite has no unused locals (`_ = Call();` for side effects), unused `using` directives or TODO/FIXME markers (S1128, S1135), uses the char overload for one-char strings (`StartsWith('/')`), marks private helpers that use no instance data `static`, asserts types with `Assert.IsType<T>(x, exactMatch: false)`, hoists constant array arguments to `static readonly` fields (tests too), reads dictionaries and headers with one `TryGetValue` instead of `ContainsKey` plus indexer, hashes with static `SHA256.HashData(bytes)`, and filters loops with `Where` instead of a body that is only an `if` (S3267). Existing occurrences stay recommend-first (QUALITY-05).
 
-**QUALITY-04/05:** [SonarQube notices; advisory smells](../sonarqube-remediation.md); fixes: [examples](sonarqube-fix-examples.md); C#/TypeScript split: [rule matrix](sonarqube-rule-matrix.md).
+**QUALITY-04/05:** [SonarQube notices; advisory smells](../sonarqube-remediation.md); fixes: [examples](sonarqube-fix-examples.md); C# rules with keys and evidence: [sonarqube/csharp.md](sonarqube/csharp.md); every `must` row there binds new code (QUALITY-07); suppressions: QUALITY-08.
 
 Noncompliant cases:
 
