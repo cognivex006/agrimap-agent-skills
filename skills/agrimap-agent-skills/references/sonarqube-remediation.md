@@ -41,9 +41,9 @@ The team and company agreed that the smells below are advisory: fixing them is o
 
 - **Recommend first.** Report each one as a recommendation (review comment, QA/lint report item or summary line) with rule ID, `file:line`, evidence, proposed fix and risk. Do not edit for them during unrelated work, and do not add TODO or source comments unless asked.
 - **Edit only on request with enough evidence.** Fix when the requester explicitly asks for that finding or rule and the evidence proves the fix preserves behavior and contracts (scan result or verified code reading, plus the caveats below). Notify before and after editing as above. If evidence is missing, keep the recommendation and name what is missing.
-- **Safe tier in touched files (5.0.8, extended 5.0.17).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17, ADV-18, ADV-19, ADV-20, ADV-21, ADV-23, ADV-24, ADV-29, ADV-30, ADV-31, ADV-32, ADV-35, ADV-37, ADV-39, ADV-41, ADV-42 and ADV-43 directly when the check column holds, and rows without an ID that a language file marks `safe`; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
+- **Safe tier in touched files (5.0.8, extended 5.0.17).** In a file the current authorized task already edits, fix ADV-05, ADV-10, ADV-11, ADV-15, ADV-16, ADV-17, ADV-18, ADV-19, ADV-20, ADV-21, ADV-23, ADV-24, ADV-29, ADV-30, ADV-31, ADV-32, ADV-35, ADV-37, ADV-39, ADV-41, ADV-42, ADV-43, ADV-44 and ADV-45 directly when the check column holds, and rows without an ID that a language file marks `safe`; they are mechanical and contract-free. Mention them in the summary. Everything else stays recommend-first.
 - **Skip when unsure.** ADV-12 (URIs) and ADV-13 (concrete types) only when the check column is fully proven; otherwise report and skip. A skipped smell is never a delivery blocker.
-- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18/20/21 are mandatory for new C# code (csharp.md QUALITY-07), ADV-05/15/16/19/20/21 for new JS/TS, and new code never adds a package it does not use (ADV-22). From 5.0.17 every row a language file marks `must` is mandatory for new code in that language, including ADV-23..43.
+- **New code.** Code you write avoids these smells when doing so costs no behavior or contract change; ADV-02/05/06/08/11/14/17/18/20/21 are mandatory for new C# code (csharp.md QUALITY-07), ADV-05/15/16/19/20/21 for new JS/TS, and new code never adds a package it does not use (ADV-22). From 5.0.17 every row a language file marks `must` is mandatory for new code in that language, including ADV-23..45.
 - Rules not listed here follow their scan severity and the normal decision boundary.
 
 | ID | Rule | Smell | Recommended fix | Check before fixing |
@@ -91,6 +91,8 @@ The team and company agreed that the smells below are advisory: fixing them is o
 | ADV-41 | team (TS) | Import from `node_modules/...` or a package's internal chunk | The package's public entry (`@angular/common/http`) | Same symbol; build to confirm |
 | ADV-42 | S7781, S7755, S7764 (TS/JS) | `replace(/lit/g)`, `a[a.length - 1]`, `window` as the global | `replaceAll`, `at(-1)`, `globalThis` | Target ES2022 or later; `window.location` in browser code stays |
 | ADV-43 | S4647..S4667, S5362 (CSS) | Empty blocks, duplicate properties or selectors, invalid values | Delete or merge in cascade order | Keep the value that is in effect today |
+| ADV-44 | CA1869 (C#) | `new JsonSerializerOptions` per call | One `private static readonly` options instance | The instance must not be changed after first use; keep every option value |
+| ADV-45 | CA1510..CA1513 (C#) | Manual `if (x is null) throw new ArgumentNullException(nameof(x))` | `ArgumentNullException.ThrowIfNull(x)` and the `ThrowIfNullOrEmpty`/`ThrowIfNegative`/`ObjectDisposedException.ThrowIf` twins | Same type and `ParamName`; the message becomes the framework default, so keep the explicit throw when a custom message is asserted |
 
 ## Fix examples (C#)
 

@@ -85,6 +85,6 @@ These "fixes" closed or moved a finding but left a defect or a new smell. Do not
 ## Adding a language or a rule
 
 1. Copy [sonarqube/_template.md](sonarqube/_template.md) to `sonarqube/<language>.md`, add a row to [Language files](#language-files) and one column to the concept map only when the language has a real analyzer.
-2. A new concept takes the next free ID (`ADV-44`, ...) and is defined once in the ADV table of [sonarqube-remediation.md](../sonarqube-remediation.md); every language file that raises it reuses that ID.
+2. A new concept takes the next free ID (`ADV-46`, ...) and is defined once in the ADV table of [sonarqube-remediation.md](../sonarqube-remediation.md); every language file that raises it reuses that ID.
 3. Each row needs Key, New code, Existing code and Seen. Add a before/after only when the fix is not obvious; keep the real code's behavior and contracts.
 4. A rule a linter can detect must keep its ID stable; record renames in CHANGELOG.

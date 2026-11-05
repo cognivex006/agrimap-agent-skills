@@ -11,6 +11,7 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 - [Tests](#tests)
 - [Before/after](#beforeafter)
 - [More before/after](#more-beforeafter)
+- [agmws-plus scan (5.0.17)](#agmws-plus-scan-5017)
 
 ## Complexity and structure
 
@@ -46,19 +47,21 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 
 | Golden | Key | Smell | New code | Existing code | Seen |
 | --- | --- | --- | --- | --- | --- |
-| ADV-02 | CA1822, S2325 | Member uses no instance data | must | recommend | identity `RedirectWithErrorAsync`; plus `OnException` |
+| ADV-02 | CA1822, S2325 | Member uses no instance data (filters, middleware helpers too) | must | recommend | plus `ResponseActionResultFilter.OnAppException`, `OnException`; `GlobalExceptionMiddleware.ResolveStatusCode`, `GetDefaultErrorCode`; identity `RedirectWithErrorAsync`; plus `OnException` |
 | ADV-32 | S2933 | Private field assigned only in the constructor is not `readonly` | must | safe | catalog |
 | ADV-01 | S4136 | Overloads not adjacent | should | recommend | identity `IOAuthUseCase` |
 | ADV-03 | S1905 | Redundant cast | must | recommend | identity `as List<...>` |
 | ADV-04 | S3236 | Caller-info argument passed explicitly | must | recommend | identity `ThrowIfNull(name, "key")` |
 | ADV-08 | CA1861 | Constant array argument | must | recommend | plus `LegacyCompatibilityTests` |
 | ADV-09 | SYSLIB1045 | `Regex` with constant pattern, no `[GeneratedRegex]` | should | recommend | plus MAC address check |
-| ADV-10 | ASP0015 | Header indexer instead of typed property | must | safe | identity `Authorization`, `X-Requested-With` |
+| ADV-10 | ASP0015 | Header indexer instead of typed property (`Cache-Control`, `Pragma`, `Expires` too) | must | safe | plus `BrowserCacheAttribute`, no-cache action filter, `ResponseActionResultFilter` "webscan cache policy"; identity `Authorization`, `X-Requested-With` |
 | ADV-11 | CA1866, CA1865 | One-char string overload | must | safe | identity `StartsWith("/")` |
 | ADV-12 | S1075 | Hardcoded absolute URI | should | skip-if-unsure | identity `Login.cshtml` |
-| ADV-13 | CA1859 | Interface where one private concrete type flows | should | skip-if-unsure | identity `RedirectToLogin` |
+| ADV-13 | CA1859 | Interface or base type where one private concrete type flows (also `Exception` → `InvalidOperationException`) | should | skip-if-unsure | plus `DataTableExtensions.CreateConstructorException<T>`; identity `RedirectToLogin` |
 | ADV-17 | CA1854 | `ContainsKey` then indexer | must | safe | plus `GetCustomHeaderToken`; identity `59872c9` (`lddUser["USER_ID"]` → `TryGetValue`) |
-| ADV-18 | CA1850 | `SHA256.Create().ComputeHash` | must | safe | plus `HashExtensions`; file-management `e32825d` still uses `Create()` |
+| ADV-18 | CA1850 | `SHA256.Create().ComputeHash` (with a `StringBuilder` `x2` loop) | must | safe | plus `HashExtensions.ComputeSha256Hash`; plus `HashExtensions`; file-management `e32825d` still uses `Create()` |
+| ADV-44 | CA1869 | `new JsonSerializerOptions { ... }` inside a method called per request | must | safe | plus procedure-log helper (`WriteIndented`, `UnsafeRelaxedJsonEscaping`) |
+| ADV-45 | CA1510, CA1511, CA1512, CA1513 | `if (x is null) throw new ArgumentNullException(nameof(x))` and the `ArgumentException`/`ArgumentOutOfRangeException`/`ObjectDisposedException` twins | must | safe | plus `PathExtensions.GetUrl` |
 | ADV-36 | S6580, CA1305 | `Parse`/`ToString` without a format provider | should | skip-if-unsure | identity `a08dd1d` kept culture-sensitive `decimal.Parse` on purpose |
 | — | CS8618 | Non-nullable property not initialized | must (`required` or initializer) | recommend | file-management `218fb21` (`required T Data`) |
 | — | CS8600/CS8625 | `null` assigned to a non-nullable local | must (`T?`) | safe | dynamic-dashboard `5e87c65` (`MapServiceMetadata? mapService`) |
@@ -323,3 +326,96 @@ if (TryMatchValue(param.Name ?? throw new ArgumentNullException("key"), ...)) { 
 var scheme = (context.HttpContext ?? throw new InvalidOperationException("HttpContext is not available.")).Request.Scheme;
 if (TryMatchValue(param.Name ?? throw new InvalidOperationException("Constructor parameter has no name."), ...)) { ... }
 ```
+
+## agmws-plus scan (5.0.17)
+
+### ADV-10 cache headers in filters
+
+```csharp
+// before (BrowserCacheAttribute, no-cache filter, ResponseActionResultFilter)
+var headers = context.HttpContext.Response.Headers;
+headers["Cache-Control"] = $"public,max-age={_days * 24 * 60 * 60}";
+headers["Expires"] = DateTime.UtcNow.AddDays(_days).ToString("R");
+headers["Pragma"] = "no-cache";
+// after: same StringValues, same text
+headers.CacheControl = $"public,max-age={_days * 24 * 60 * 60}";
+headers.Expires = DateTime.UtcNow.AddDays(_days).ToString("R");
+headers.Pragma = "no-cache";
+```
+
+Write the whole header group in one place; when the same no-store set appears in several filters, one helper sets it (ADV-28).
+
+### ADV-02 filter and middleware helpers
+
+```csharp
+// before: private helpers that read only their parameters
+private void OnAppException(ObjectResult result, ResultExecutingContext context) { /* uses context.HttpContext only */ }
+private int ResolveStatusCode(HttpContext context, Exception ex) { /* static maps + parameters */ }
+private string GetDefaultErrorCode(int statusCode) => StatusErrorCodeMap.TryGetValue(statusCode, out var code) ? code : string.Empty;
+// after
+private static void OnAppException(ObjectResult result, ResultExecutingContext context) { /* ... */ }
+private static int ResolveStatusCode(HttpContext context, Exception ex) { /* ... */ }
+private static string GetDefaultErrorCode(int statusCode) => StatusErrorCodeMap.TryGetValue(statusCode, out var code) ? code : string.Empty;
+```
+
+Check: not an interface member (`OnActionExecuting`, `InvokeAsync`), not `virtual`/`override`, no `_field` or `this` use. The maps they read must already be `static readonly`.
+
+### ADV-13 concrete exception type
+
+```csharp
+// before
+private static Exception CreateConstructorException<T>(DataTable table) => new InvalidOperationException(...);
+// after: every return is InvalidOperationException; `throw CreateConstructorException<T>(table);` stays the same
+private static InvalidOperationException CreateConstructorException<T>(DataTable table) => new InvalidOperationException(...);
+```
+
+### ADV-18 hash with hex string
+
+```csharp
+// before
+using (var sha256 = SHA256.Create())
+{
+    var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(input));
+    var sb = new StringBuilder();
+    foreach (var b in hashBytes) { sb.Append(b.ToString("x2")); }
+    return sb.ToString();
+}
+// after: same lowercase hex
+return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+```
+
+### ADV-44 cached JsonSerializerOptions
+
+```csharp
+// before: a new options object (and its metadata cache) on every call
+var payload = JsonSerializer.Serialize(parameters, new JsonSerializerOptions
+{
+    WriteIndented = true,
+    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+});
+// after
+private static readonly JsonSerializerOptions ProcedureLogJsonOptions = new()
+{
+    WriteIndented = true,
+    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+};
+var payload = JsonSerializer.Serialize(parameters, ProcedureLogJsonOptions);
+```
+
+Check: nothing mutates the options after first use (they become read-only). `UnsafeRelaxedJsonEscaping` is for log text only; never use it for HTML or a response body. Logging full procedure parameters is SEC-07: keep it Development-only (`ShouldWriteProcedureLog`) and mask sensitive keys.
+
+### ADV-45 throw helpers
+
+```csharp
+// before
+if (context is null)
+    throw new ArgumentNullException(nameof(context));
+// after: same exception type and ParamName
+ArgumentNullException.ThrowIfNull(context);
+// twins
+ArgumentException.ThrowIfNullOrEmpty(name);            // CA1511
+ArgumentOutOfRangeException.ThrowIfNegative(count);    // CA1512
+ObjectDisposedException.ThrowIf(_disposed, this);      // CA1513
+```
+
+Check: the message text changes to the framework default; keep the explicit `throw` only when a test or client asserts a custom message. `?? throw new InvalidOperationException(...)` for a non-parameter value is correct and stays (ERR-07).
