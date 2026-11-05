@@ -111,10 +111,11 @@ With a matching `*.Tests.csproj`/`*.Test.csproj`, the production `.csproj` needs
 - Changes to `*.Tests.csproj`/`*.Test.csproj`: check affected Dockerfiles for an explicit production `.csproj` in `dotnet publish`, with the correct stage path and matching restore (TEST-04).
 - Per method: at most seven `if`/`else if` decisions; per method/constructor: at most seven parameters. No nested ternaries, including inside anonymous-object branches. Preserve behavior when extracting statements/helpers, and check the configured SonarQube gate separately (QUALITY-01..03).
 - For written or rewritten methods, score Cognitive Complexity (S3776 increments in csharp.md QUALITY-01) even below the branch limit and refactor above 15 as in [sonarqube-fix-examples.md](../sonarqube-fix-examples.md); use the actual configured S3776 analysis and threshold when available. If unavailable, report S3776 unverified rather than treating lint or build success as a pass.
+- Sonar self-check on every file you wrote or edited, tests included: no unused `using`/local, no TODO or commented code; CA1822 `static`, CA1861/CA1869 `static readonly` arrays and options, ASP0015, CA1854, CA1510, CA1859, S3267 ([sonarqube/csharp.md](../sonarqube/csharp.md)).
 
 ## SHOULD
 
-- Security baseline SEC-01..20 ([security-baseline.md](../security-baseline.md)): new and rewritten code never introduces them; existing matches are reported with the response contract and fixed on request.
+- Security baseline SEC-01..31 ([security-baseline.md](../security-baseline.md), per surface: [security-matrix.md](../security-matrix.md)): new and rewritten code never introduces them; existing matches are reported with the response contract and fixed on request.
 - Controller shape and route/verb conventions — `001..003-1-presentation-controller-examples.cs`,
   `020-7-http-verb-and-route-reference.cs`, `021-8-rest-operation-mapping.txt`.
 - Binding reference — `006-2-3-binding-reference.cs`.

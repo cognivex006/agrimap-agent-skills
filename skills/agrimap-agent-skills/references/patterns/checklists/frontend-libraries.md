@@ -64,9 +64,11 @@ Per [patterns/frontend.md](../frontend.md#fe-library) and
 public API and compatibility notes · `README.md` · the Playground example ·
 library tests/build and the Playground verification path (`011-10-playground-demo-pattern.md`).
 
+- Sonar self-check before finishing, on every file you wrote or edited, `*.spec.ts` included: no unused import or name in an import list, one import per module, no unused local/dead store, no TODO, no commented code (S1128, S3863, S1481, S1854, S1135, S125); `readonly` members, no nested ternary anywhere (lookups or early returns instead), no one-case `switch`, unions named with a `type` alias (S4323), no redundant `return;`, no deprecated API (S2933, S3358, S1301, S3626, S1874). Rows: [sonarqube/typescript.md](../sonarqube/typescript.md), [angular.md](../sonarqube/angular.md).
+
 ## SHOULD
 
-- Security baseline SEC-15/16/21/22 ([security-baseline.md](../security-baseline.md)): new and rewritten code never introduces them; existing matches are reported and fixed on request.
+- Security baseline SEC-15/16/21/22/29 ([security-baseline.md](../security-baseline.md), [security/angular.md](../security/angular.md)): new and rewritten code never introduces them; existing matches are reported and fixed on request.
 - UI-kit form controls: `ControlContainer` + `controlName` — `009-9-ui-kit-form-control-pattern.ts`.
 - Config-driven forms (CVA + Validator) — `010-9-form-ctrl-config-driven.ts`.
 - Test shape: TestBed + `whenStable()` — `012-11-testing-conventions.ts`.

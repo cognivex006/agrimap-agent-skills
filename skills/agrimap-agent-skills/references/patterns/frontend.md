@@ -64,11 +64,11 @@ Current golden references are maintained guidance, not permission to bypass the 
 
 ## Security
 
-New and rewritten code follows [security baseline](security-baseline.md) SEC-15/16/21/22.
+New and rewritten code follows [security baseline](security-baseline.md) SEC-15/16/21/22/29 with Angular idioms in [security/angular.md](security/angular.md); nginx and Docker files follow [security/nginx.md](security/nginx.md) and [security/docker.md](security/docker.md).
 
 ## Complexity and SonarQube
 
-QUALITY-01/02 apply to TypeScript exactly as to C# ([csharp.md](csharp.md)): at most seven `if`/`else if` per function and seven parameters (a destructured options object counts as one), and keep SonarQube Cognitive Complexity (S3776) at 15 or below by splitting validation into named helpers or guard clauses. Never hand-edit `generated-apis/`: fix the gencode-api template and regenerate. ADV-05/15/16/19/20/21 in [sonarqube-remediation.md](../sonarqube-remediation.md) are mandatory for new code (no unused locals, imports or TODO markers; ADV-22: never add an unused package), with TypeScript examples in [sonarqube-rule-matrix.md](sonarqube-rule-matrix.md); for example `if (from && to) { this.facade.load(from, to); }`, never `void this.facade.load(...)` (S3735).
+QUALITY-01/02 apply to TypeScript exactly as to C# ([csharp.md](csharp.md)): at most seven `if`/`else if` per function and seven parameters (a destructured options object counts as one), and keep SonarQube Cognitive Complexity (S3776) at 15 or below by splitting validation into named helpers or guard clauses. Never hand-edit `generated-apis/`: fix the gencode-api template and regenerate. ADV-05/15/16/19/20/21 in [sonarqube-remediation.md](../sonarqube-remediation.md) are mandatory for new code (no unused locals, imports or TODO markers; ADV-22: never add an unused package), and every `must` row of [sonarqube/typescript.md](sonarqube/typescript.md), [angular.md](sonarqube/angular.md) and [html.md](sonarqube/html.md) binds new code; for example `if (from && to) { this.facade.load(from, to); }`, never `void this.facade.load(...)` (S3735).
 
 ## FE verification
 
