@@ -14,21 +14,21 @@ Owner decision 2026-10-14: decide this for every plan or execution with two or m
 2. Contract first: the Leader fixes every shared contract before any consumer starts.
 3. Parallel when files or repositories are disjoint and no unit consumes a contract another unit is still producing; otherwise sequence. Work smaller than a few minutes per unit stays with the Leader.
 4. Agents: never ask how many; use up to five, sized to the ready units.
-5. Models: `model-capability-matrix.yaml` `subagent_execution` for the host — first entry for mechanical units with a fixed contract and golden pattern, second for normal units, third for units that need design judgement; a host without model choice uses its default. Record the actual model.
+5. Models: `model-capability-matrix.yaml` `subagent_execution` for the host — entries are tiers, not pinned picks: tier 1 for mechanical units with a fixed contract and golden pattern, tier 2 for normal units, tier 3 for units that need design judgement. A model the user or session selected wins; a tier the host lacks or does not offer falls back to the nearest higher available tier, then the host default. Record the actual model.
 
 ## Roles and depth (6.0)
 
 | Role | Does | Writes |
 | --- | --- | --- |
-| Leader | Talks to the human, triages, fixes contracts, dispatches, integrates, verifies, commits, delivers | yes |
+| Leader | Talks to the human, triages, fixes contracts, dispatches, integrates, verifies, owns the work-branch commits and all publication, delivers | yes |
 | Explorer | Broad search and reading (callers, helpers, history across repositories); returns a summary | no |
 | Analyst | Impact or root cause for one lane | no |
-| Worker | One unit in one lane, only the files its packet names | packet files only |
+| Worker | One unit in one lane, only the files its packet names; may commit inside its own job worktree | packet files only |
 | Verifier | Independent review, QA or security check of finished work; never the unit's author | no |
 
 Use by depth ([delivery-workflow.md](delivery-workflow.md)): light — none; standard — Explorers when the search is wide, Workers rarely; regulated — Explorers/Analysts in parallel per lane, Workers per lane, one Verifier. Broad mechanical work (many repositories or folders) may fan out Explorers at any depth. Subagents never talk to the human, commit outside their worktree, push, merge, release or run anything irreversible.
 
-Workspace (owner decision 2026-11-05, 6.0.1): several people or agents writing at once use worktrees as below; one writer works on the normal work branch. Either way, everything is integrated back before the work closes.
+Workspace (owner decision 2026-11-05, 6.0.1): two or more writers running at the same time always use worktrees as below; one writer works on the normal work branch. There is no shared-workspace exception for concurrent writers. Either way, everything is integrated back before the work closes.
 
 ## Leader loop
 
@@ -38,7 +38,7 @@ The Leader dispatches, integrates and verifies evidence; subagents write. Keep a
 
 - Two or more parallel writers: each gets a job. `branch plan|apply --worktree --slug <s> [--type hotfix] [--into <leader-branch>]` creates `<system temp>/agm-worktrees/<repo>-<hash>/<job-id>` (5.0.10: never inside or beside the project folder) on `feature/<slug>-<id>` from the Leader's integrated tip. One writer keeps the normal work branch without a worktree.
 - The subagent commits everything in its worktree; it never pushes, merges or removes the worktree.
-- The Leader verifies, then `integrate apply --job <id> --verification passed --evidence "<checks>"`: merge into the Leader branch, audit record, then removal of the worktree and the temporary branch. Merge, rebase and squash are each proven before deletion (`-d` only for proven ancestry).
+- The Leader runs the pre-integration checks of [Verify every return](#verify-every-return-60), then `integrate apply --job <id> --verification passed --evidence "<checks>"`: merge into the Leader branch, audit record, then removal of the worktree and the temporary branch. Merge, rebase and squash are each proven before deletion (`-d` only for proven ancestry).
 - A failed gate, a dirty or locked worktree, or a conflict blocks cleanup and keeps everything. Only the owning Leader session removes a job; an interrupted cleanup finishes on the next `integrate` call.
 - Rework is a new job: `--parent-job <id>` with a fresh worktree from the latest integrated tip. A worktree is never reused.
 - Host-created worktrees (Claude `isolation: worktree`, Codex managed worktrees) follow the same rule: the Leader integrates them back into the main project branch and then removes them and their temp folder; never leave integrated worktrees behind.
@@ -60,7 +60,7 @@ Every packet defines `workspace_need`: isolation, requested mode, `base_ref`, ex
 
 | Mode | Use | Integration return |
 | --- | --- | --- |
-| shared workspace | bounded non-overlapping writers or sequential work | changed file set |
+| shared workspace | one writer at a time (sequential work) | changed file set |
 | worktree | parallel writers: `branch apply --worktree` job, or a host worktree the provider proves | visible commit SHA; Leader integrates and removes it |
 | isolated-sandbox | filesystem is isolated without a shared Git ref | portable patch or changed artifacts |
 | unknown | do not parallelize writers until visibility is proven | sequential handoff |
@@ -96,14 +96,19 @@ Official Codex behavior: [Subagents](https://learn.chatgpt.com/docs/agent-config
 
 ## Verify every return (6.0)
 
-A returned `done` is testimony. Before integrating, the Leader checks:
+A returned `done` is testimony; nothing is marked verified before its evidence exists. Two stages:
+
+Before integrating (per job):
 
 1. Scope: `git diff --name-only` against the packet's writable files; drop anything outside it.
-2. Results: the Leader runs lint/build/tests itself after integration.
-3. Rules: the self-gate of the [invariant floor](delivery-workflow.md#invariant-floor) on the combined diff.
-4. Contracts: DTO, route and SP signature diffs are empty or match what was approved.
+2. Contracts: DTO, route and SP signature diffs are empty or match what was approved.
+3. Rules: the self-gate of the [invariant floor](delivery-workflow.md#invariant-floor) on the job diff.
 
-A failed check goes back to the same agent once, with the actual output. After that the Leader fixes it or re-plans; never loop. A unit that turns out to need a contract change stops and escalates.
+After integrating (on the Leader branch):
+
+4. Results: the Leader runs lint/build/tests itself on the combined result and records them as the evidence.
+
+A failed pre-integration check is rework: one new job (`--parent-job <id>`, fresh worktree from the latest integrated tip, same agent identity when the host can resume it) carrying the actual output. A failed post-integration check: the Leader fixes it on the Leader branch or reverts that job's merge with a new commit and re-plans. Never loop beyond one rework job per unit. A unit that turns out to need a contract change stops and escalates.
 
 ## Handoff and integration
 

@@ -134,7 +134,7 @@ test('owner release command is the confirmation; only a version or candidate ano
   assert.match(workflow,/the owner-typed command is the confirmation/);
   assert.match(workflow,/Version anomaly: an owner-supplied version is not its environment's PATCH\+1/);
   assert.match(workflow,/A bare command with the default PATCH\+1 versions is never an anomaly/);
-  assert.match(steps,/ask its questions in one round \(AGENTS\.release\.md §6\.5\), together with a version anomaly/);
+  assert.match(steps,/ask its anomaly questions, if any, in one round \(AGENTS\.release\.md §6\.5; never a routine go-ahead or Production confirmation\), together with a version anomaly/);
   assert.match(template,/คำสั่งของ owner คือการยืนยัน/);
   for(const text of [workflow,steps,flash,JSON.stringify(release)]){
     assert.doesNotMatch(text,/not concrete Production approval|is not confirmation\.|Never infer that confirmation|one Production confirmation/);
@@ -391,4 +391,29 @@ test('release-notify commandPath uses only explicit install locations, never PAT
   assert.equal(commandPath('git'),git);
   assert.equal(commandPath('reg'),path.join(system,'System32','reg.exe'));
   assert.equal(commandPath('setx'),path.join(system,'System32','setx.exe'));
+});
+
+test('bootstrap manages a Roslyn analyzer block in .editorconfig for backend kinds only',async()=>{
+  // Owner request 2026-11-06: CA1510/CA1822/CA1826 reached SonarQube although Golden marks them must.
+  const {mkdtemp,writeFile,rm}=await import('node:fs/promises');
+  const os=await import('node:os');
+  const {applyBootstrap,applyEditorconfigBlock}=await import('../../skills/agrimap-agent-skills/scripts/project-bootstrap.mjs');
+  const block='[*.cs]\ndotnet_diagnostic.CA1822.severity = warning\n';
+  const custom='root = true\n\n[*.cs]\ndotnet_diagnostic.CA1822.severity = none\n';
+  const once=applyEditorconfigBlock(custom,block);
+  assert.ok(once.indexOf('BEGIN AGRIMAP ANALYZERS')<once.indexOf('severity = none'),'project section stays after the block and keeps winning');
+  assert.ok(once.startsWith('root = true'));
+  assert.equal(applyEditorconfigBlock(once,block),once,'idempotent');
+  assert.equal(applyEditorconfigBlock(once,block.replace('CA1822','CA1826')).match(/BEGIN AGRIMAP ANALYZERS/g).length,1,'replaced in place');
+  for(const [kind,expected] of [['be-main',true],['fe-main',false]]){
+    const temp=await mkdtemp(path.join(os.tmpdir(),'agm-editorconfig-'));
+    try{
+      await writeFile(path.join(temp,'.editorconfig'),custom);
+      const applied=await applyBootstrap({target:temp,kind});
+      const text=await readFile(path.join(temp,'.editorconfig'),'utf8');
+      assert.equal(text.includes('dotnet_diagnostic.CA1826.severity = warning'),expected,kind);
+      assert.ok(text.includes('severity = none'),'project override preserved');
+      assert.equal(applied.entries.some(e=>e.target==='.editorconfig'),expected);
+    }finally{await rm(temp,{recursive:true,force:true});}
+  }
 });

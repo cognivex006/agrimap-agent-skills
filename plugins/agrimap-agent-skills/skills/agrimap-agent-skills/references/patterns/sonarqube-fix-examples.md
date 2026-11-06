@@ -20,7 +20,11 @@ Score the method yourself before you call it done. Branch count alone is not the
 | `if`, `?:`, `switch` (statement or expression), `for`, `foreach`, `while`, `do`, `catch` | 1 + current nesting level |
 | `else if`, `else`, `goto` | 1 (no nesting bonus) |
 | each run of `&&` or `\|\|` that changes operator (`a && b && c` = 1, `a && b \|\| c` = 2) | 1 |
+| C# pattern combinators `or` / `and` (`x is not ("a" or "b")`), each run that changes combinator | 1 (count them like `&&`/`\|\|`) |
+| `?:` inside an `if`/loop condition | 1 + current nesting level (the condition is not free) |
 | lambda body | no increment, but nesting + 1 inside it |
+
+Self-scores undercount. Without an actual S3776 result, a method that self-scores 13 or more is refactored further, not reported as passing. The same discriminator (string, enum, flag) tested in more than two places is a refactor signal: resolve it once into a `bool`/enum and move each decision that depends on it into a named helper. Restructuring DTOs or data does not lower the score; only fewer decisions per method does.
 
 Nesting rises by one inside the body of each `if`/`else`/loop/`switch`/`catch`/`?:`/lambda. A local function is scored on its own.
 
@@ -118,6 +122,25 @@ private static string MessageCode(string? status) => status switch
 ```
 
 Ways to lower the score, cheapest first: return/throw early instead of wrapping the rest in `if`; move a nested block into a named `private static` helper; name a mixed `&&`/`||` condition; filter a loop with `Where` instead of `if … continue`; map values with a flat `switch` expression instead of an `if` chain. Never hide branches in nested ternaries (QUALITY-03) or dictionaries of lambdas to game the score.
+
+Second case (Sonar 18; the old table scored it 15 because it missed the two `or` patterns): `ProcessAuthorizationAsync` tested `request.AuthorizeResult == "success"` six times, each a `?:`, plus a nested `?:` in each branch of an `if`/`else`. Fix: resolve `var isSuccess = request.AuthorizeResult == "success";` once, then move the state check and the expected-message choice into helpers.
+
+```csharp
+var isSuccess = request.AuthorizeResult == "success";
+// ...
+RequireAuthorizableStatus(isSuccess, status);              // helper: one ?: + one if
+// ...
+RequireMessage(message, ExpectedAuthorizationMessage(isSuccess, status, message));
+
+private static string ExpectedAuthorizationMessage(bool isSuccess, string status, string message)
+{
+    if (!isSuccess)
+    {
+        return message == "diable_success" ? "diable_success" : "disable_success"; // legacy SP spelling kept
+    }
+    return status == "RESERVE" ? "active_success" : "reuse_right_code";
+}
+```
 
 ## QUALITY-02 — At most seven parameters (S107)
 

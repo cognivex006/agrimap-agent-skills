@@ -501,6 +501,17 @@
           "sha256": "2be2a48499722733cc930e2a3709cac22bf5e710929dd273a448bb6cfd454454"
         }
       ]
+    },
+    {
+      "source": "analyzers.editorconfig",
+      "target": ".editorconfig",
+      "mode": "editorconfig",
+      "kinds": [
+        "be-main",
+        "be-library"
+      ],
+      "sha256": "a749a8988d765f5e235d84c430d08e558deb659e2130f17970adec5576d73f00",
+      "previous": []
     }
   ]
 }
