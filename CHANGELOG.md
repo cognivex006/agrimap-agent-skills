@@ -2,7 +2,7 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased
+## 6.1.2 — 2026-11-06
 
 - Bootstrap now manages a Roslyn analyzer block in the project `.editorconfig` for be-main/be-library (new manifest mode `editorconfig`, asset `analyzers.editorconfig`): every CA/IDE rule Golden marks `must` in `patterns/sonarqube/csharp.md` at warning, so `dotnet build` reports CA1510/CA1822/CA1826 and the rest before SonarQube does. The block is created, or replaced in place between its markers on upgrade, and inserted before the first section so later project sections keep overriding it; FE kinds are untouched. The invariant floor and BE checklists now require fixing every analyzer finding in each touched file, older ones included, with `safe`-tier fixes applied directly.
 - Close the S3776 self-check gap (Sonar 18 on `ProcessAuthorizationAsync` that the table scored 15): the scoring table in `sonarqube-fix-examples.md` now counts C# pattern combinators `or`/`and` and `?:` inside conditions; without an actual S3776 result a self-score of 13+ is refactored further; a discriminator tested in more than two places is resolved once into a bool/enum with helpers; second worked example added. The invariant floor in `delivery-workflow.md` now always checks every edited file with lint, SonarQube `must` patterns and the lane's golden checklist, reporting unrunnable checks as unverified; `backend-main.md` S3776 line matches.
