@@ -11,6 +11,20 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const kinds = ['fe-main', 'be-main', 'fe-library', 'be-library'];
 const start = '<!-- BEGIN AGRIMAP DEPLOYMENT -->';
 const end = '<!-- END AGRIMAP DEPLOYMENT -->';
+const EC_START = '# BEGIN AGRIMAP ANALYZERS (managed by bootstrap upgrade; override in a later [*.cs] section)';
+const EC_END = '# END AGRIMAP ANALYZERS';
+// Managed analyzer block (6.1.2): replaced in place, or inserted before the first
+// section so every project section after it keeps winning (later sections override).
+export function applyEditorconfigBlock(text, block) {
+  const managed = `${EC_START}\n${block.trimEnd()}\n${EC_END}\n`;
+  const lf = text.replaceAll('\r\n', '\n');
+  const s = lf.indexOf(EC_START), e = lf.indexOf(EC_END);
+  if (s >= 0 && e > s) return lf.slice(0, s) + managed + lf.slice(e + EC_END.length).replace(/^\n/, '');
+  if (!lf.trim()) return managed;
+  const first = lf.search(/^\s*\[/m);
+  if (first < 0) return lf.trimEnd() + '\n\n' + managed;
+  return lf.slice(0, first) + managed + '\n' + lf.slice(first);
+}
 async function readMaybe(file) { try { return await readFile(file); } catch (e) { if (e.code === 'ENOENT') return null; throw e; } }
 
 // Automatic merge of a customized copy file (4.9.9): template-lines.json holds the
@@ -95,6 +109,7 @@ export async function planBootstrap({ target, kind, upgrade = false, reviewedMer
   const templateLines = JSON.parse(await readFile(path.join(bundle, 'template-lines.json'), 'utf8').catch(() => '{"files":{}}'));
   const entries = [];
   for (const item of manifest.files) {
+    if (item.kinds && !item.kinds.includes(kind)) continue;
     const source = await readFile(path.join(bundle, item.source));
     if (hash(source) !== item.sha256) throw new Error('BOOTSTRAP_BUNDLE_HASH_MISMATCH');
     const dest = await safeTarget(root, item.target);
@@ -104,6 +119,11 @@ export async function planBootstrap({ target, kind, upgrade = false, reviewedMer
     // Managed tool files are owned by the bundle: always replaced (with backup), never merged.
     if ((prior || upgrade === true || item.mode === 'managed') && status === 'conflict') status = 'update';
     let previousVersion = prior?.version || null;
+    if (item.mode === 'editorconfig') {
+      const next = applyEditorconfigBlock(before?.toString('utf8') || '', source.toString('utf8'));
+      content = Buffer.from(next);
+      status = !before ? 'create' : before.toString('utf8').replaceAll('\r\n', '\n') === next ? 'unchanged' : 'update';
+    }
     if (item.mode === 'section') {
       const text = before?.toString('utf8') || '';
       const block = source.toString('utf8').trimEnd();
