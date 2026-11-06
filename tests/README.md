@@ -7,4 +7,4 @@
 - `npm run audit:tokens:strict`: route coverage and context-budget audit.
 - `npm run test:legacy-v2`: retained historical v2 expectations, not a 3.0.0 release gate. They assert intentionally removed five-file/default-QA behavior; failures here are not a claim of v3 compatibility.
 
-Tests use isolated temporary workspaces, no live database, release publication or Jenkins pipelines. Script-level tests do not establish model-family performance; outcome/guided/bounded profiles need real task-family evaluations.
+Tests use isolated temporary workspaces, no live database, release publication or Jenkins pipelines. Script-level tests do not establish model-family performance.

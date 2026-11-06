@@ -1209,10 +1209,6 @@
           "why": "embedded design support for brief and acceptance"
         },
         {
-          "path": "model-capability-matrix.yaml",
-          "why": "capability-profile routing labels"
-        },
-        {
           "path": "recommendations.md",
           "why": "visible evidence-calibrated recommendations and routine uncertainty disclosure"
         }

@@ -60,4 +60,4 @@ Current gates ตรวจ v3 runtime, utilities, SQL file contracts, MCP, gener
 
 Golden byte integrity ต้องคงไว้ข้าม Windows/Linux checkout ไม่ normalize หรือเปลี่ยน manifest hashes เพื่อกลบ content mismatch
 
-ยังไม่มี live benchmark รับรองว่าแต่ละ model family ทำงานได้ระดับใด เลือก outcome/guided/bounded จากผล task จริง ไม่จัดอันดับด้วยชื่อรุ่น
+ตั้งแต่ 6.1.1 ไม่มี instruction profile ตามรุ่น model แล้ว ทุกรุ่นรับ constraints + acceptance แบบเดียวกัน
