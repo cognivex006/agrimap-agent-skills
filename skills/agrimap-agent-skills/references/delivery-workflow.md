@@ -55,7 +55,7 @@ Runs at every depth, including a one-line change. Each item takes seconds to min
 | J Integrate | Merge into develop; resolve conflicts without overwriting unrelated work | New develop | Agent | git |
 | K Inhouse | Publish develop to Jenkins Inhouse | Inhouse build | Agent within authority | `agm-release` pipeline inhouse |
 | L Accept | Test against the step C criteria on the real environment | Pass/fail + evidence | QA/BA + agent | `agm-qa` |
-| M Production | Version, changelog, promote | Production release | Human approves, agent runs | `agm-release` production/promote |
+| M Production | Version, changelog, promote | Production release | The owner's explicit `agm-release` command is the approval; agent runs ([release-workflow.md](release-workflow.md#command-authority-and-anomaly-confirmation)) | `agm-release` production/promote |
 | N Observe | Logs, error rate, main-branch Sonar, user feedback after release | Post-release note | Agent + human | logs, Sonar |
 | O Learn | New or recurring finding → Golden rule (stable ID) → write-time checklist → lint rule when machine-checkable | Rule change proposal | Agent proposes, owner decides | this package, golden-lint |
 
@@ -76,7 +76,7 @@ Runs at every depth, including a one-line change. Each item takes seconds to min
 | J Integrate | ● | ● | ● |
 | K Inhouse | ◐ with the next run | ● | ● |
 | L Accept | — | ◐ when users see the result | ● against every criterion |
-| M Production | ◐ with the next release | ● | ● human approval |
+| M Production | ◐ with the next release | ● | ● owner release command |
 | N Observe | — | ◐ | ● |
 | O Learn | ◐ only for a new finding | ◐ | ● post-review after an incident |
 
@@ -89,7 +89,7 @@ Light work typically runs A → B → F → G → H → J and rides the next rel
 | G Implement | "Done" is a runnable check; branch and file state confirmed |
 | I PR | Step H passed on actual runs, not on expectation |
 | K Inhouse | develop builds |
-| M Production | Step L passed; version and changelog ready; human approval |
+| M Production | Step L passed; version and changelog ready; an explicit owner `agm-release` command |
 | Closing | Summary separates verified from not verified |
 
 ## Escalation
@@ -104,11 +104,11 @@ Stop and announce when a signal appears mid-way, then run the steps of the new d
 
 > ⚠️ **Escalating light → standard:** the CA1862 suggestion makes the lowercase check always pass; rewriting the condition and adding an uppercase test.
 
-Escalating to standard: announce and continue. Escalating to regulated: wait for the human. De-escalating needs evidence (for example the change proved FE-only) and is announced too; never de-escalate for speed.
+Escalating to standard: announce and continue. Escalating to regulated: wait for the human, unless the current explicit command already authorizes the regulated work (for example an owner `agm-release` command). De-escalating needs evidence (for example the change proved FE-only) and is announced too; never de-escalate for speed.
 
 ## Human decision points
 
-The only places a human is required. Everything else follows existing authority ([autonomy.md](autonomy.md)).
+The only places a human is required. Everything else follows existing authority ([autonomy.md](autonomy.md)). A specialized operation contract (for example [release-workflow.md](release-workflow.md) for `agm-release`) takes precedence over these generic steps for its own command: steps A–L are not prerequisites of an explicit release command, and the command itself is the human decision for M. Its stop conditions and the invariant floor still apply. Planning or review requests never publish.
 
 | Point | When |
 | --- | --- |
@@ -116,7 +116,7 @@ The only places a human is required. Everything else follows existing authority 
 | D approach | regulated |
 | I PR summary | standard when behavior changes; regulated always |
 | L acceptance | when users see the result |
-| M production | always |
+| M production | always: the owner's explicit `agm-release` command is that decision; no second confirmation |
 | Anything irreversible | every depth |
 
 ## Examples
@@ -127,4 +127,4 @@ The only places a human is required. Everything else follows existing authority 
 | `handleLoginFailure` → `Promise<void>` | standard | internal signature with a caller; ordering of `await` matters |
 | CA1862 on `previewHash` | light → standard | the suggested fix inverts the check |
 | Forwarded-header trust (SEC-31) | regulated | security, every environment, caused a production 500 before |
-| Package release | regulated | published artifacts are irreversible |
+| Package release | regulated | published artifacts are irreversible; the explicit release command is the approval |

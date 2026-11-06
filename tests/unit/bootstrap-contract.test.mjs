@@ -134,7 +134,7 @@ test('owner release command is the confirmation; only a version or candidate ano
   assert.match(workflow,/the owner-typed command is the confirmation/);
   assert.match(workflow,/Version anomaly: an owner-supplied version is not its environment's PATCH\+1/);
   assert.match(workflow,/A bare command with the default PATCH\+1 versions is never an anomaly/);
-  assert.match(steps,/ask its questions in one round \(AGENTS\.release\.md §6\.5\), together with a version anomaly/);
+  assert.match(steps,/ask its anomaly questions, if any, in one round \(AGENTS\.release\.md §6\.5; never a routine go-ahead or Production confirmation\), together with a version anomaly/);
   assert.match(template,/คำสั่งของ owner คือการยืนยัน/);
   for(const text of [workflow,steps,flash,JSON.stringify(release)]){
     assert.doesNotMatch(text,/not concrete Production approval|is not confirmation\.|Never infer that confirmation|one Production confirmation/);
