@@ -68,6 +68,7 @@ export function parseSavepoint(text) {
     branch: field(text, "Branch"),
     updated: field(text, "Updated"),
     workflowDepth: field(text, "Workflow depth"),
+    verification: field(text, "Verification"),
     next: section(text, "Next step").map(line => line.trim()).filter(Boolean).join(" ") || null,
     done: lists.Done,
     remaining: lists.Remaining,
@@ -167,7 +168,12 @@ export function reconcileSavepoint(root, entry, { git } = {}) {
     catch { return { ok: false, out: "" }; }
   });
   const evidence = [];
-  const result = (state, reason, nextSafeAction) => ({ state, reason, nextSafeAction, evidence });
+  // Freshness: a recorded PASS only covers the savepoint commit; newer commits
+  // or uncommitted edits on that branch expire it.
+  const recorded = String(entry.verification || entry.checkpoint?.verification?.join?.("; ") || "").trim();
+  const hasVerification = Boolean(recorded) && !/^not yet run$/i.test(recorded);
+  const freshness = { verification: hasVerification ? "recorded" : "none", worktree: "unknown", uncommitted: 0 };
+  const result = (state, reason, nextSafeAction) => ({ state, reason, nextSafeAction, evidence, freshness });
   if (/^(?:completed|done|closed)$/i.test(String(entry.status || ""))) {
     evidence.push(`savepoint status=${entry.status}`);
     return result("ALREADY_COMPLETED", "The savepoint itself records a terminal status.", "Do not resume; archive the savepoint.");
@@ -207,8 +213,27 @@ export function reconcileSavepoint(root, entry, { git } = {}) {
       }
     }
   }
-  if (evidence.some(item => / commit\(s\) since/.test(item))) {
-    return result("PENDING_CONFIRMED", "Branch exists and contains the savepoint, with newer commits; recheck remaining items and past test results.", "Resume, but rerun verification older than the newest commit.");
+  const current = run(["rev-parse", "--abbrev-ref", "HEAD"]);
+  if (current.ok && current.out === branch) {
+    const status = run(["status", "--porcelain", "--untracked-files=normal"]);
+    if (status.ok) {
+      freshness.uncommitted = status.out ? status.out.split(/\r?\n/).filter(Boolean).length : 0;
+      freshness.worktree = freshness.uncommitted ? "dirty" : "clean";
+      if (freshness.uncommitted) evidence.push(`${freshness.uncommitted} uncommitted change(s) on ${branch}`);
+    }
+  } else if (current.ok) {
+    freshness.worktree = "not-checked-out";
+  }
+  const moved = evidence.some(item => / commit\(s\) since/.test(item));
+  if (hasVerification && (moved || freshness.worktree === "dirty")) {
+    freshness.verification = "expired";
+    evidence.push("recorded verification predates the current branch state");
+  } else if (hasVerification) {
+    freshness.verification = sha ? "fresh" : "unverified";
+  }
+  if (moved || freshness.worktree === "dirty") {
+    const why = [moved && "newer commits", freshness.worktree === "dirty" && "uncommitted changes"].filter(Boolean).join(" and ");
+    return result("PENDING_CONFIRMED", `Branch exists and contains the savepoint, with ${why}; recheck remaining items and past test results.`, "Resume, but rerun verification before claiming PASS; inspect uncommitted changes first.");
   }
   return result("PENDING_CONFIRMED", "Branch exists and still contains the savepoint commit.", "Resume from the next step.");
 }
@@ -241,6 +266,7 @@ export async function listPending(state, { now = Date.now(), root = null, git } 
       updated: sp.updated,
       ageHours: updatedMs ? Math.round((now - updatedMs) / 360_000) / 10 : null,
       next: sp.next,
+      verification: sp.verification,
       remaining: sp.remaining,
       done: sp.done.length,
       path: path.relative(state, file).split(path.sep).join("/"),

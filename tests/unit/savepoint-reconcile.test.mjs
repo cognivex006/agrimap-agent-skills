@@ -34,7 +34,20 @@ test('real repository: confirmed, moved, merged and deleted branches',async t=>{
   const sp={status:'in-progress',branch:`feature/a @ ${saved}`};
   assert.equal(reconcileSavepoint(dir,sp).state,'PENDING_CONFIRMED');
 
+  const tested={...sp,verification:'npm test PASS'};
+  assert.equal(reconcileSavepoint(dir,tested).freshness.verification,'fresh');
+  assert.equal(reconcileSavepoint(dir,tested).freshness.worktree,'clean');
+  await writeFile(path.join(dir,'a1'),'edited');
+  const dirty=reconcileSavepoint(dir,tested);
+  assert.equal(dirty.state,'PENDING_CONFIRMED');
+  assert.equal(dirty.freshness.worktree,'dirty');
+  assert.equal(dirty.freshness.uncommitted,1);
+  assert.equal(dirty.freshness.verification,'expired');
+  git(dir,'checkout','-q','--','a1');
+  assert.equal(reconcileSavepoint(dir,{...sp,verification:'Not yet run'}).freshness.verification,'none');
+
   await commit('a2');
+  assert.equal(reconcileSavepoint(dir,tested).freshness.verification,'expired');
   const ahead=reconcileSavepoint(dir,sp);
   assert.equal(ahead.state,'PENDING_CONFIRMED');
   assert.ok(ahead.evidence.some(e=>/1 commit\(s\) since/.test(e)));
