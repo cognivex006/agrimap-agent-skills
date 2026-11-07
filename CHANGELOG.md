@@ -2,6 +2,12 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased (6.2.0)
+
+- `pending` and `resume` reconcile each savepoint against Git before treating it as unfinished work (`reconcileSavepoint()` in `savepoint.mjs`). States: `PENDING_CONFIRMED`, `ALREADY_COMPLETED`, `STALE` (branch deleted, already merged into develop/main, moved away from the recorded commit, or commit missing) and `UNVERIFIED` (no Git or no recorded branch), each with evidence, reason and next safe action. `pending` returns `confirmed`/`unconfirmed` counts; `resume` refuses completed work and needs `--accept-stale` for a stale claim. The hook tells the agent to list confirmed work apart from stale claims.
+- FE and SQL scenario evals now run in `npm test` (they ran only in `test:legacy-v2`). This exposed a drift: the FE test still expected 12 scenarios while the catalog has had 13 since 5.0.1; the test now expects 13.
+- Maintainer plan for 6.2–6.4 from the post-6.1.2 architecture review: `specs/improvement-plan-6.2-6.4.md`.
+
 ## 6.1.2 — 2026-11-06
 
 - Bootstrap now manages a Roslyn analyzer block in the project `.editorconfig` for be-main/be-library (new manifest mode `editorconfig`, asset `analyzers.editorconfig`): every CA/IDE rule Golden marks `must` in `patterns/sonarqube/csharp.md` at warning, so `dotnet build` reports CA1510/CA1822/CA1826 and the rest before SonarQube does. The block is created, or replaced in place between its markers on upgrade, and inserted before the first section so later project sections keep overriding it; FE kinds are untouched. The invariant floor and BE checklists now require fixing every analyzer finding in each touched file, older ones included, with `safe`-tier fixes applied directly.
