@@ -11,6 +11,7 @@ Which file owns each quality or security concern. Read the owner; other files li
 | Security classes SEC-01..31: definition, OWASP/CWE, response contract, tiers | Policy | [security-baseline.md](patterns/security-baseline.md) |
 | Security classes by language and surface (Sonar keys, idioms) | Matrix | [security-matrix.md](patterns/security-matrix.md) |
 | Security coverage: authoring surfaces and Golden Lint scanner status per class | Metadata | [sec-coverage.json](../assets/sec-coverage.json) |
+| Read-only security scan over Golden Lint: stable fingerprints, manual-review and blocked lists (report schema agm-security-report/1) | Tool | [security-scan.mjs](../scripts/security-scan.mjs) |
 | Code smells, bugs and hotspots by language; concept map across languages | Matrix | [sonarqube-matrix.md](patterns/sonarqube-matrix.md) |
 | Remediation policy: notice before editing, recommend-first, safe tier, suppression (QUALITY-*), ADV-* definitions | Policy | [sonarqube-remediation.md](sonarqube-remediation.md) |
 | Worked C# fixes (S3776 scoring, refactor shapes) | Examples | [sonarqube-fix-examples.md](patterns/sonarqube-fix-examples.md) |
