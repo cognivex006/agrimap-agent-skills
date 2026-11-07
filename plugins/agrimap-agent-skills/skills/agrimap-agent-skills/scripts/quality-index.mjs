@@ -2,7 +2,7 @@
 // assets/quality-security-index.json and assets/sec-coverage.json. Pure function;
 // tools/sync-adapters.mjs writes the file, a test rejects hand edits.
 export function renderQualitySecurityIndex(index, coverage) {
-  const kinds = { policy: "Policy", matrix: "Matrix", metadata: "Metadata", examples: "Examples" };
+  const kinds = { policy: "Policy", matrix: "Matrix", metadata: "Metadata", examples: "Examples", tool: "Tool" };
   const link = (p) => `[${p.split("/").pop()}](${p})`;
   const counts = {};
   for (const c of coverage.classes) counts[c.scanner.status] = (counts[c.scanner.status] || 0) + 1;
