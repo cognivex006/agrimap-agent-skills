@@ -11,6 +11,7 @@
 
 | Class | Do not write | Write it this way | Seen in current configs |
 | --- | --- | --- | --- |
+| SEC-31 | `real_ip_header X-Forwarded-For;` without `set_real_ip_from`, or `set_real_ip_from 0.0.0.0/0` | `set_real_ip_from` only the load balancer CIDRs, `real_ip_recursive on`; never trust the header from other sources | baseline |
 | SEC-30 | `add_header` in `server` and again in a `location`: the `location` drops every `server` header | Put the full header set in one `include` file and include it in `server` and in every `location` that adds a header | pro-ng/platform-ng/suite-ng repeat the set by hand in each `location` (correct, but drifts) |
 | SEC-19/30 | Security headers without `always` (missing on 4xx/5xx) | `add_header ... always;` on every security header | HSTS and `X-Content-Type-Options` lack `always` |
 | SEC-19 | HSTS without `includeSubDomains` or set on plain HTTP | `Strict-Transport-Security "max-age=31536000; includeSubDomains" always` at the TLS owner only | HSTS without `includeSubDomains` |
