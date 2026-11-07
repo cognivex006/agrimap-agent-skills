@@ -11,6 +11,7 @@
 
 | Class | Key | Do not write | Write it this way | Seen |
 | --- | --- | --- | --- | --- |
+| SEC-07 | team | `echo "$TOKEN"`, `sh "curl -H 'Authorization: ${TOKEN}'"` (Groovy interpolation) or `set -x` around credentials in a Jenkinsfile or `RUN` | `withCredentials` with single-quoted `sh '...'` so the shell, not Groovy, expands it; no `set -x` near secrets | baseline |
 | SEC-24 | S6470 | `COPY . .` without a `.dockerignore` covering secrets and local state | `.dockerignore` with the SEC-24 minimum (`**/.env`, `**/.git`, `**/bin`, `**/obj`, `**/node_modules`, `**/*.ps1`, `**/secrets*.yaml`, ...); prefer named paths | file-management `e32825d`; front ends' `.dockerignore` lack `**/.env` |
 | SEC-26 | S6471 | Runtime stage without `USER`, or `USER root` as the last switch | `useradd -m appuser`, `chown` written paths, `USER appuser` last; FE uses `nginxinc/nginx-unprivileged` | dynamic-dashboard `b7f1b87`, identity `1eee1c3`, file-management `e32825d` |
 | SEC-27 | S6472 | `ARG NPM_TOKEN` / `ENV TOKEN=` (visible in image history) | `RUN --mount=type=secret,id=npmrc,target=/app/.npmrc npm ci` | pro-ng `Dockerfile_Production` (`ARG NPM_TOKEN`, `.npmrc.docker` copied then removed in a later layer) |

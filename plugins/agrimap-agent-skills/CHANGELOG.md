@@ -2,6 +2,11 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased (6.3.0)
+
+- New `assets/sec-coverage.json`: one map of SEC-01..31 with the baseline title and OWASP/CWE mapping, the authoring surfaces from `security-matrix.md`, and Golden Lint scanner status, lanes and detector IDs recorded read-only from Golden Lint 0.1.23 (SEC-01..23 `automated`, SEC-24..31 `not-implemented`). `tests/unit/sec-coverage.test.mjs` in `npm test` fails when the map, the baseline, the matrix, a surface file or the installed Golden Lint drift apart; the Golden Lint check skips when it is not installed (`AGM_GOLDEN_LINT_DIR` overrides the location).
+- `security-matrix.md` gains rows for SEC-03 LDAP injection, SEC-14 method override and SEC-18 unbounded input, and splits SEC-16 from SEC-17. Surface files gain the rows the matrix already claimed: C# SEC-03/05/14/16/17/19, TypeScript SEC-04, Docker/CI SEC-07 and nginx SEC-31. Angular is no longer marked for SEC-17.
+
 ## 6.2.0 — 2026-11-08
 
 - `pending` and `resume` reconcile each savepoint against Git before treating it as unfinished work (`reconcileSavepoint()` in `savepoint.mjs`). States: `PENDING_CONFIRMED`, `ALREADY_COMPLETED`, `STALE` (branch deleted, already merged into develop/main, moved away from the recorded commit, or commit missing) and `UNVERIFIED` (no Git or no recorded branch), each with evidence, reason and next safe action. `pending` returns `confirmed`/`unconfirmed` counts; `resume` refuses completed work and needs `--accept-stale` for a stale claim. The hook tells the agent to list confirmed work apart from stale claims.
