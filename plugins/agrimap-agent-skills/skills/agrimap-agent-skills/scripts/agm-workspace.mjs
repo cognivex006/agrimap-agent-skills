@@ -2300,7 +2300,9 @@ async function savepoint(root, args) {
 async function pending(root) {
   const state = path.join(root, ".agrimap-agent");
   if (!(await exists(state))) return { ok: true, pending: [] };
-  return { ok: true, pending: await listPending(state) };
+  const items = await listPending(state, { root });
+  const confirmed = items.filter(item => item.reconciliation?.state === "PENDING_CONFIRMED").length;
+  return { ok: true, pending: items, confirmed, unconfirmed: items.length - confirmed };
 }
 
 // Resume (5.0.1): attach an unfinished execution to this session. The runtime
@@ -2312,8 +2314,12 @@ async function resume(root, args) {
   const sessionId = safeSessionId(args.session);
   if (!executionId || !sessionId) return { ok: false, message: "--execution and --session are required." };
   const state = await ensureLayout(root);
-  const entry = (await listPending(state)).find(item => item.executionId === executionId);
+  const entry = (await listPending(state, { root })).find(item => item.executionId === executionId);
   if (!entry) return { ok: false, code: "SAVEPOINT_NOT_FOUND", message: "No unfinished execution has this ID; run pending to list them." };
+  // Reconcile before resume (6.2.0): finished work is never resumed silently.
+  if (entry.reconciliation?.state === "ALREADY_COMPLETED" || (entry.reconciliation?.state === "STALE" && !args["accept-stale"])) {
+    return { ok: false, code: `SAVEPOINT_${entry.reconciliation.state}`, reconciliation: entry.reconciliation, message: `${entry.reconciliation.reason} ${entry.reconciliation.nextSafeAction}${entry.reconciliation.state === "STALE" ? " Retry with --accept-stale after checking." : ""}` };
+  }
   const targetPath = activeTaskPath(state, sessionId);
   const current = await readJson(targetPath).catch(() => null);
   if (current && current.executionId !== executionId) {
