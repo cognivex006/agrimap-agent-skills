@@ -160,3 +160,5 @@ Stabilization gate:
 - blocking effects are fixed or explicitly accepted;
 - refactor preservation/change mode is proven;
 - no cleanup is hidden inside an unrelated bug fix.
+
+For a release evaluation after changing this backend discipline or its golden guidance, run [be-scenarios.md](evals/be-scenarios.md). Do not load the eval catalog during ordinary backend work.
