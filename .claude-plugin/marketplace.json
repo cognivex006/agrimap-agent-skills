@@ -12,7 +12,7 @@
       "name": "agrimap-agent-skills",
       "source": "./plugins/agrimap-agent-skills",
       "description": "Routing skill plus dedicated one-operation AgriMap workflows",
-      "version": "6.1.2",
+      "version": "6.2.0",
       "homepage": "https://github.com/cognivex006/agrimap-agent-skills"
     }
   ]
