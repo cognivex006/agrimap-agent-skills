@@ -2,6 +2,8 @@
 
 Entry point for security hotspots and vulnerabilities by where they are written. Class IDs (SEC-01..31), their OWASP/CWE mapping, the response contract and the tiers are defined once in [security-baseline.md](security-baseline.md); this index and the files under [security/](security/) map each class to the Sonar keys and the idiom of one language or configuration surface. Code smells are in [sonarqube-matrix.md](sonarqube-matrix.md).
 
+
+Owner of each quality/security concern: [quality-security-index.md](../quality-security-index.md).
 ## Contents
 
 - [Surface files](#surface-files)

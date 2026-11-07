@@ -2,6 +2,8 @@
 
 Entry point for every SonarQube code smell, bug and hotspot the Golden rules cover. One file per language under [sonarqube/](sonarqube/); this index holds the shared vocabulary, the concept map across languages and the fixes the team got wrong. Security classes have their own index: [security-matrix.md](security-matrix.md). Policy (notice before editing, recommend-first, safe tier, suppression) stays in [sonarqube-remediation.md](../sonarqube-remediation.md); worked C# fixes stay in [sonarqube-fix-examples.md](sonarqube-fix-examples.md).
 
+
+Owner of each quality/security concern: [quality-security-index.md](../quality-security-index.md).
 ## Contents
 
 - [Language files](#language-files)
