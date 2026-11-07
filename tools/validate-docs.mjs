@@ -19,6 +19,24 @@ function anchors(text) {
     ...[...withoutFences(text).matchAll(/^#{1,6}\s+(.+)$/gm)].map(m=>m[1].toLowerCase().replace(/[^\p{L}\p{N}\s_-]/gu,'').replace(/\s/g,'-')),
   ]);
 }
+// Relative links and #anchors in the given Markdown files (6.3.0: also the
+// quality/security references, not only beginner docs).
+export async function checkLinks(root,files) {
+  const errors=[];
+  for(const file of files) {
+    const text=await readFile(file,'utf8');
+    for(const match of withoutFences(text).matchAll(/\[[^\]]*\]\(([^)\s]+)\)/g)) {
+      const link=match[1];
+      if(/^[a-z]+:/i.test(link))continue;
+      const [relative,fragment]=link.split('#');
+      const target=relative?path.resolve(path.dirname(file),decodeURIComponent(relative)):file;
+      if(!await exists(target)) errors.push(`${path.relative(root,file).split(path.sep).join('/')}: missing link ${link}`);
+      else if(fragment&&target.endsWith('.md')&&!anchors(await readFile(target,'utf8')).has(decodeURIComponent(fragment))) errors.push(`${path.relative(root,file).split(path.sep).join('/')}: missing anchor ${link}`);
+    }
+  }
+  return errors;
+}
+export {markdownFiles};
 export async function validateDocumentation(root,{mirrors=true}={}) {
   const errors=[];
   const files=[path.join(root,'README.md'),...await markdownFiles(path.join(root,'docs')),...await markdownFiles(path.join(root,'examples'))];

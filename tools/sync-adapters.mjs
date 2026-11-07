@@ -31,6 +31,7 @@ import {
   SQL_CONTEXT_END,
   SQL_CONTEXT_START,
 } from "../skills/agrimap-agent-skills/scripts/skill-routing.mjs";
+import { renderQualitySecurityIndex } from "../skills/agrimap-agent-skills/scripts/quality-index.mjs";
 
 const root = process.cwd();
 const canonicalSkill = path.join(root, "skills", "agrimap-agent-skills");
@@ -64,6 +65,9 @@ for (const name of ['AGENTS.md', 'AGENTS.release.md']) {
   await writeFile(bootstrapAgentsPath, bootstrapAgents.replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/, `<!-- AGRIMAP BOOTSTRAP VERSION: ${packageVersion} -->`).replaceAll('\r\n', '\n'), 'utf8');
 }
 await writeFile(path.join(canonicalSkill, 'references', 'skill-routing.md'), renderRoutingReference(routing), 'utf8');
+// 6.3.0: quality/security owner index from assets metadata.
+const readAsset = async name => JSON.parse(await readFile(path.join(canonicalSkill, 'assets', name), 'utf8'));
+await writeFile(path.join(canonicalSkill, 'references', 'quality-security-index.md'), renderQualitySecurityIndex(await readAsset('quality-security-index.json'), await readAsset('sec-coverage.json')), 'utf8');
 const sqlContextPath = path.join(canonicalSkill, 'references', 'sql-context-readonly.md');
 await writeFile(sqlContextPath, applyMarkedBlock((await readFile(sqlContextPath, 'utf8')).replaceAll('\r\n', '\n'), SQL_CONTEXT_START, SQL_CONTEXT_END, renderSqlContextBlock(routing)), 'utf8');
 const bootstrapRepoPath = item => path.relative(root, path.join(bootstrapRoot, item.source)).replaceAll('\\', '/');
