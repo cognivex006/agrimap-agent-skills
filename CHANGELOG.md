@@ -2,7 +2,7 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased (6.2.0)
+## 6.2.0 — 2026-11-08
 
 - `pending` and `resume` reconcile each savepoint against Git before treating it as unfinished work (`reconcileSavepoint()` in `savepoint.mjs`). States: `PENDING_CONFIRMED`, `ALREADY_COMPLETED`, `STALE` (branch deleted, already merged into develop/main, moved away from the recorded commit, or commit missing) and `UNVERIFIED` (no Git or no recorded branch), each with evidence, reason and next safe action. `pending` returns `confirmed`/`unconfirmed` counts; `resume` refuses completed work and needs `--accept-stale` for a stale claim. The hook tells the agent to list confirmed work apart from stale claims.
 - Reconcile results now carry `freshness`: a recorded verification is `fresh`, or `expired` once the recorded branch has newer commits or uncommitted edits (a past PASS no longer counts), `unverified` without a recorded commit, or `none`; `worktree` reports `clean`, `dirty` with an `uncommitted` count, or `not-checked-out`. A dirty recorded branch stays `PENDING_CONFIRMED` but tells the agent to inspect the changes and rerun verification before claiming PASS.
