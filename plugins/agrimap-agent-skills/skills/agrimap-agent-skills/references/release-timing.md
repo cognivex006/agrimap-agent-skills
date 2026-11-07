@@ -42,4 +42,8 @@ Every final release answer, including --flash, local-only, failed/blocked runs, 
 
 For absent/invalid/unreliable measurements, run `node <bundle>/scripts/release-timing.mjs unavailable "<reason>"`; include UNKNOWN fields and the reason. Never guess, substitute zero or repeat release to recover timing.
 
+## Deterministic release summary (6.2.0)
+
+Every final release answer, including --flash, help-free failures, partial, blocked and resumed runs, is rendered, not composed. Write one envelope JSON beside the timing state (ignored runtime path): `schemaVersion: 1`, `operation`, `mode`, `outcome` (success|partial|blocked|failed|paused), `target {project, branch, environment}`, `versions {before, after, candidateSha}`, `steps[] {name, status: done|skipped|failed|blocked|pending|not-run, detail}`, `evidence[] {command, exitCode, path}`, `publication {pushed, refs[], tag}`, `pending[]`, `blocked[]`, `nextAction`. Use real values only; omit an unknown field so it prints UNKNOWN. Then run `node <bundle>/scripts/release-summary.mjs render <envelope.json> --timing <state.json>` and print its stdout verbatim as the answer body: sections Operation / Target / Versions / Execution steps / Evidence / Publication / Timing / Remaining / Outcome in that order, timing block included. A short narrative may follow it; never rebuild its tables by hand. `success` with failed, blocked or pending steps is rejected; fix the envelope to the real outcome.
+
 Flush lifecycle records before audit staging; finish timing after audit verification, then render without tracked writes. Check the final answer contains the block. All models comply; flash brevity cannot omit it.

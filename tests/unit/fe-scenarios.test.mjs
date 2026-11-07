@@ -12,7 +12,7 @@ test("frontend eval catalog is reachable and structurally executable", () => {
   assert.match(frontendDiscipline, /do not load the eval catalog during ordinary frontend work/i);
 
   const matches = [...evals.matchAll(/^## S(\d+) —[^\n]+\n([\s\S]*?)(?=^## S\d+ —|^## สรุป coverage)/gm)];
-  assert.deepEqual(matches.map((match) => Number(match[1])), Array.from({ length: 12 }, (_, index) => index + 1));
+  assert.deepEqual(matches.map((match) => Number(match[1])), Array.from({ length: 13 }, (_, index) => index + 1));
   for (const [scenarioId, body] of matches.map((match) => [`S${match[1]}`, match[2]])) {
     assert.match(body, /^\*\*Situation:\*\*/m, `${scenarioId}: Situation missing`);
     assert.match(body, /^\*\*Prompt:\*\*/m, `${scenarioId}: Prompt missing`);

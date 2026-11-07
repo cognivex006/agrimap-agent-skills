@@ -310,7 +310,7 @@ function workIntentContext() {
   }
   if (resolved.intent === 'pending' || (resolved.intent === 'resume' && !resolved.executionId && pendingWork.length !== 1)) {
     if (!pendingWork.length) return 'No unfinished savepoint exists in this project; say so in one line.';
-    return `Unfinished work (${pendingWork.length}): run agm-workspace.mjs pending and show a numbered list — objective, done count, remaining, next step, branch, age${resolved.intent === 'resume' ? ' — then ask which one to resume' : '; offer to resume one'}.`;
+    return `Unfinished work (${pendingWork.length}): run agm-workspace.mjs pending and show a numbered list — objective, done count, remaining, next step, branch, age and its reconciliation state; list PENDING_CONFIRMED items apart from STALE/UNVERIFIED claims and never call a stale claim pending work${resolved.intent === 'resume' ? ' — then ask which one to resume' : '; offer to resume one'}.`;
   }
   const target = pendingWork.find((item) => item.executionId === resolved.executionId) || (!resolved.executionId ? pendingWork[0] : null);
   if (!target) return `No unfinished execution ${resolved.executionId}; run agm-workspace.mjs pending.`;
