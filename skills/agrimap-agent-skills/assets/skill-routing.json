@@ -345,6 +345,19 @@
       ]
     },
     {
+      "id": "security",
+      "label": "security",
+      "single": "agm-security",
+      "cross": "agm-security",
+      "laneFree": true,
+      "projectKeywords": [
+        "\\bagm-security\\b"
+      ],
+      "keywords": [
+        "\\bagm-security\\b"
+      ]
+    },
+    {
       "id": "refactor",
       "label": "refactor",
       "single": "{lane}",
@@ -503,6 +516,7 @@
     "plan",
     "architect",
     "qa",
+    "security",
     "prompt",
     "release",
     "doctor"
