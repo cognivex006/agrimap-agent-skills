@@ -26,9 +26,10 @@ test('bootstrap preserves the complete owner-submitted canonical contract',async
   // 5.0.2: owner-requested §3 rule — agent helper files live in the scratchpad or %TEMP% and are deleted on delivery.
   // 5.0.10: owner decision 2026-11-01 — §9.1 logs/ local only (Git-ignored) and no prompt history;
   // §10.6 chore: type, scope as the first word of the description, PR/MR titles follow the same header.
+  // 6.3.0: owner decision 2026-11-10 — §0 routing gains the explicit-only agm-security row (routes on its name only).
   // Package bumps only change the generated version marker; freeze every other byte.
   const sourceBytes=Buffer.from(bytes.toString('utf8').replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->'));
-  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'7957caebfe8e4aa532bace49d3298c092d48bdd2d89c3557014f9e763f6ba8ec');
+  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'6ded721920298ce8f2fdd910c8632a4f12fbcde9a1a1b54702e4291dca34cf0b');
   const manifest=JSON.parse(await readFile(path.join(bundle,'manifest.json'),'utf8'));
   assert.ok(bytes.toString('utf8').includes(`<!-- AGRIMAP BOOTSTRAP VERSION: ${manifest.version} -->`));
   assert.equal(manifest.files.find(f=>f.source==='AGENTS.md').sha256,createHash('sha256').update(bytes).digest('hex'));

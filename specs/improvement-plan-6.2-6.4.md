@@ -9,9 +9,9 @@ Maintainer planning document. Source: external architecture review of v6.1.2 (20
 | E-01/E-02 | No `be-scenarios.md` eval or test; FE and SQL have them | Confirmed |
 | E-03 | FE/SQL eval tests ran only in `test:legacy-v2`, not `npm test`. The FE test had already drifted (expected 12 scenarios, catalog has 13 since 5.0.1) and nobody saw it | Confirmed, fixed in 6.2.0 |
 | E-10 | `listPending()` returned savepoints without checking Git, so finished or merged work showed as pending and `resume` could redo it | Confirmed, fixed in 6.2.0 |
-| E-04/E-05/E-06 | SEC-01..31 (authoring) vs SEC-01..23 (Golden Lint) not reconciled; matrix omits some classes | Not yet verified |
-| E-09 | Model IDs pinned in `model-capability-matrix.yaml` | Not yet verified |
-| E-16 | `.editorconfig` analyzer block can be overridden by later sections; effective config untested | Not yet verified |
+| E-04/E-05/E-06 | SEC-01..31 (authoring) vs SEC-01..23 (Golden Lint) not reconciled; matrix omits some classes | Confirmed (2026-11-08, Golden Lint 0.1.23 as installed): baseline defines SEC-01..31; Golden Lint 0.1.23 classes SEC-01..23, all `automated`; SEC-24..31 have no detector. `security-matrix.md` lacked SEC-03, 14 and 18, and marked 8 surface cells whose surface file had no row (C# SEC-05/16/17/19, TS SEC-04, Docker SEC-07, nginx SEC-31, Angular SEC-17). Fixed in 6.3.0 by `sec-coverage.json` and its drift test; Angular SEC-17 was dropped from the matrix (no Angular idiom). An earlier note here read the stale 0.1.12 cache and was wrong |
+| E-09 | Model IDs pinned in `model-capability-matrix.yaml` | Partly confirmed: Claude tiers use family aliases; Codex (`GPT6-Luna`, `GPT6`, `GPT6.1`) and Antigravity (`Gemini-3.8-Flash`) pin model names |
+| E-16 | `.editorconfig` analyzer block can be overridden by later sections; effective config untested | Confirmed as a test gap: override by later sections is by design; `bootstrap-contract.test.mjs` checks only block text, nothing checks the severity the build actually sees |
 
 ## 6.2.0 — reliability basics (low risk, high payoff)
 
@@ -21,6 +21,8 @@ Maintainer planning document. Source: external architecture review of v6.1.2 (20
 4. **Release result envelope + deterministic renderer.** Each `agm-release` action emits one JSON status record; one renderer prints fixed sections (Operation / Target / Versions / Steps / Evidence / Publication / Timing / Remaining / Outcome) and the Leader reproduces it verbatim. Reuse `release-timing.mjs`. Snapshot tests for success, partial, blocked, resume and `--flash`.
 
 ## 6.3.0 — one security/quality contract
+
+Status 2026-11-10 (develop, not released): items 1, 2, 4 and 5 merged (PR #67, #68, #70 and the tested-examples PR). Item 3: engine in PR #69; owner decision 2026-11-10 registers `agm-security` as an explicit-only command (routes on its name only; OWASP requests stay with Golden Lint).
 
 1. `sec-coverage.json`: canonical map of SEC-01..31 to `authoring`, `scannerStatus` (automated/heuristic/manual-review/not-implemented), languages, detector IDs and tested flag; drift test against the installed Golden Lint catalog, read-only (Golden Lint is not edited from here, decision 0001).
 2. `quality-security-index.md` generated from metadata: which file owns policy, matrix, remediation and examples. `sonarqube-matrix.md` adopts the `security-matrix.md` layout. Link/anchor and duplicate-ID checker.

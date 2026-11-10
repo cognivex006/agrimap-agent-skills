@@ -2,6 +2,8 @@
 
 Entry point for security hotspots and vulnerabilities by where they are written. Class IDs (SEC-01..31), their OWASP/CWE mapping, the response contract and the tiers are defined once in [security-baseline.md](security-baseline.md); this index and the files under [security/](security/) map each class to the Sonar keys and the idiom of one language or configuration surface. Code smells are in [sonarqube-matrix.md](sonarqube-matrix.md).
 
+
+Owner of each quality/security concern: [quality-security-index.md](../quality-security-index.md).
 ## Contents
 
 - [Surface files](#surface-files)
@@ -26,12 +28,13 @@ Entry point for security hotspots and vulnerabilities by where they are written.
 
 ## Class map across surfaces
 
-`●` the class applies on that surface and the file has its rows; blank: not applicable.
+`●` the class applies on that surface and the file has its rows; blank: not applicable. [sec-coverage.json](../../assets/sec-coverage.json) records the same map with Golden Lint scanner status and detector IDs per class; `examplesTested` marks classes whose BAD/GOOD shapes run in `tests/unit/security-examples.test.mjs` (C# and TypeScript first; other surfaces are catalog-only). `tests/unit/sec-coverage.test.mjs` fails when this table, the baseline, a surface file or the installed Golden Lint drift apart.
 
 | Class | C# | TS | Angular | JS | HTML | SQL | nginx | Docker/CI |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | SEC-01 SQL injection | ● | | | | | ● | | |
 | SEC-02 command injection | ● | | | ● | | | | |
+| SEC-03 LDAP injection | ● | | | | | | | |
 | SEC-04 path traversal | ● | ● | | ● | | | ● | |
 | SEC-05 missing authorization | ● | | ● | | | | | |
 | SEC-06 error detail exposure | ● | | | | | ● | ● | |
@@ -41,8 +44,11 @@ Entry point for security hotspots and vulnerabilities by where they are written.
 | SEC-11 TLS bypass | ● | | | ● | | | | |
 | SEC-12 unsafe deserialization | ● | | | | | | | |
 | SEC-13 permissive CORS | ● | | | | | | ● | |
+| SEC-14 method override | ● | | | | | | | |
 | SEC-15 open redirect | ● | | ● | | | | | |
-| SEC-16/17 sensitive query, response field | ● | | ● | | | | | |
+| SEC-16 sensitive query value | ● | | ● | | | | | |
+| SEC-17 sensitive response field | ● | | | | | | | |
+| SEC-18 unbounded input | ● | | | | | | | |
 | SEC-19 security headers | ● | | | | | | ● | |
 | SEC-20 insecure cookie | ● | | | | | | | |
 | SEC-21 DOM XSS | | | ● | | ● | | | |

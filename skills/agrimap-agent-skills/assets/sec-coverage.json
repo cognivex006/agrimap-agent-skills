@@ -1,0 +1,746 @@
+{
+  "schemaVersion": 1,
+  "note": "Canonical SEC-01..31 coverage map (6.3.0). authoring = where agent-skills defines and indexes the class; scanner = what Golden Lint detects, recorded read-only from the version below (decision 0001: Golden Lint is never edited from here). scanner.status: automated | heuristic | manual-review | not-implemented. examplesTested = BAD/GOOD examples run by a test in this repository.",
+  "goldenLint": {
+    "version": "0.1.23",
+    "source": "assets/security-classes.json + references/COVERAGE.md"
+  },
+  "classes": [
+    {
+      "id": "SEC-01",
+      "title": "SQL injection",
+      "mapping": "A03, CWE-89",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "sql"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "sql-injection",
+        "lanes": [
+          "be-main",
+          "be-library",
+          "sql-procedure"
+        ],
+        "detectors": [
+          "be-sec-sql-injection",
+          "be-library-sec-sql-injection",
+          "sql-procedure-sec-sql-injection"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-02",
+      "title": "command/code injection",
+      "mapping": "A03, CWE-78/94/470",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "javascript"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "code-injection",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-code-injection",
+          "be-library-sec-code-injection"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-03",
+      "title": "LDAP injection",
+      "mapping": "A03, CWE-90",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "ldap-injection",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-ldap-injection",
+          "be-library-sec-ldap-injection"
+        ]
+      },
+      "examplesTested": true
+    },
+    {
+      "id": "SEC-04",
+      "title": "path traversal",
+      "mapping": "A01, CWE-22/73",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "typescript",
+          "javascript",
+          "nginx"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "path-traversal",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-path-traversal",
+          "be-library-sec-path-traversal"
+        ]
+      },
+      "examplesTested": true
+    },
+    {
+      "id": "SEC-05",
+      "title": "missing authorization",
+      "mapping": "A01, CWE-862/306/489",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "angular"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "missing-authorization",
+        "lanes": [
+          "be-main"
+        ],
+        "detectors": [
+          "be-sec-missing-authorization"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-06",
+      "title": "error detail exposure",
+      "mapping": "A04, CWE-209/497",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "sql",
+          "nginx"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "error-detail-exposure",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-error-detail-exposure",
+          "be-library-sec-error-detail-exposure"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-07",
+      "title": "sensitive logging",
+      "mapping": "A09, CWE-532",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "typescript",
+          "angular",
+          "javascript",
+          "docker"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "sensitive-logging",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-sensitive-logging",
+          "be-library-sec-sensitive-logging"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-08",
+      "title": "weak cryptography",
+      "mapping": "A02, CWE-327/326/328/338",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "typescript",
+          "javascript"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "weak-cryptography",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-weak-cryptography",
+          "be-library-sec-weak-cryptography"
+        ]
+      },
+      "examplesTested": true
+    },
+    {
+      "id": "SEC-09",
+      "title": "token validation",
+      "mapping": "A07, CWE-347/287/345",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "token-validation",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-token-validation",
+          "be-library-sec-token-validation"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-10",
+      "title": "token issuance",
+      "mapping": "A07, CWE-613/294",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "token-issuance",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-token-issuance",
+          "be-library-sec-token-issuance"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-11",
+      "title": "TLS bypass",
+      "mapping": "A02, CWE-295/326",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "javascript"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "tls-validation-bypass",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-tls-validation-bypass",
+          "be-library-sec-tls-validation-bypass"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-12",
+      "title": "unsafe deserialization",
+      "mapping": "A08, CWE-502",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "unsafe-deserialization",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-unsafe-deserialization",
+          "be-library-sec-unsafe-deserialization"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-13",
+      "title": "permissive CORS",
+      "mapping": "A05, CWE-942/346",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "nginx"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "permissive-cors",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-permissive-cors",
+          "be-library-sec-permissive-cors"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-14",
+      "title": "method override",
+      "mapping": "A05, CWE-650",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "method-override",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-method-override",
+          "be-library-sec-method-override"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-15",
+      "title": "open redirect",
+      "mapping": "A01, CWE-601",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "angular"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "open-redirect",
+        "lanes": [
+          "be-main",
+          "be-library",
+          "fe-main",
+          "fe-library"
+        ],
+        "detectors": [
+          "be-sec-open-redirect",
+          "be-library-sec-open-redirect",
+          "fe-sec-open-redirect",
+          "fe-library-sec-open-redirect"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-16",
+      "title": "sensitive query value",
+      "mapping": "A04, CWE-598",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "angular"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "sensitive-query-value",
+        "lanes": [
+          "be-main",
+          "be-library",
+          "fe-main",
+          "fe-library"
+        ],
+        "detectors": [
+          "be-sec-sensitive-query-value",
+          "be-library-sec-sensitive-query-value",
+          "fe-sec-sensitive-query-value",
+          "fe-library-sec-sensitive-query-value"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-17",
+      "title": "sensitive response field",
+      "mapping": "A01, CWE-200/359",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "sensitive-response-field",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-sensitive-response-field",
+          "be-library-sec-sensitive-response-field"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-18",
+      "title": "unbounded input",
+      "mapping": "A04, CWE-770/1284",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "unbounded-input",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-unbounded-input",
+          "be-library-sec-unbounded-input"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-19",
+      "title": "security headers",
+      "mapping": "A05, CWE-319/693/525",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "nginx"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "security-headers",
+        "lanes": [
+          "be-main"
+        ],
+        "detectors": [
+          "be-sec-security-headers"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-20",
+      "title": "insecure cookie",
+      "mapping": "A05, CWE-614/1004/1275",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "insecure-cookie",
+        "lanes": [
+          "be-main",
+          "be-library"
+        ],
+        "detectors": [
+          "be-sec-insecure-cookie",
+          "be-library-sec-insecure-cookie"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-21",
+      "title": "DOM XSS",
+      "mapping": "A03, CWE-79/95, S6268",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "angular",
+          "html"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "dom-xss-sink",
+        "lanes": [
+          "fe-main",
+          "fe-library"
+        ],
+        "detectors": [
+          "fe-sec-dom-xss-sink",
+          "fe-library-sec-dom-xss-sink"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-22",
+      "title": "token in Web Storage",
+      "mapping": "A07, CWE-922",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "angular"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "token-web-storage",
+        "lanes": [
+          "fe-main",
+          "fe-library"
+        ],
+        "detectors": [
+          "fe-sec-token-web-storage",
+          "fe-library-sec-token-web-storage"
+        ]
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-23",
+      "title": "regex backtracking",
+      "mapping": "A04, CWE-1333, S5852",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "typescript",
+          "javascript"
+        ]
+      },
+      "scanner": {
+        "status": "automated",
+        "slug": "regex-backtracking",
+        "lanes": [
+          "be-main",
+          "be-library",
+          "fe-main",
+          "fe-library"
+        ],
+        "detectors": [
+          "be-sec-regex-backtracking",
+          "be-library-sec-regex-backtracking",
+          "fe-sec-regex-backtracking",
+          "fe-library-sec-regex-backtracking"
+        ]
+      },
+      "examplesTested": true
+    },
+    {
+      "id": "SEC-24",
+      "title": "Docker build context",
+      "mapping": "A05, CWE-538, S6470",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "docker"
+        ]
+      },
+      "scanner": {
+        "status": "not-implemented",
+        "slug": null,
+        "lanes": [],
+        "detectors": []
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-25",
+      "title": "archive expansion",
+      "mapping": "A04/A01, CWE-22/409, S5042",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "typescript",
+          "javascript"
+        ]
+      },
+      "scanner": {
+        "status": "not-implemented",
+        "slug": null,
+        "lanes": [],
+        "detectors": []
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-26",
+      "title": "container user",
+      "mapping": "A05, CWE-250, S6471",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "docker"
+        ]
+      },
+      "scanner": {
+        "status": "not-implemented",
+        "slug": null,
+        "lanes": [],
+        "detectors": []
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-27",
+      "title": "build secrets and scripts",
+      "mapping": "A05/A08, CWE-214/829, S6472, S6505",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "docker"
+        ]
+      },
+      "scanner": {
+        "status": "not-implemented",
+        "slug": null,
+        "lanes": [],
+        "detectors": []
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-28",
+      "title": "committed secrets",
+      "mapping": "A07, CWE-798, S6418, S2068",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "typescript",
+          "angular",
+          "javascript",
+          "docker"
+        ]
+      },
+      "scanner": {
+        "status": "not-implemented",
+        "slug": null,
+        "lanes": [],
+        "detectors": []
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-29",
+      "title": "reverse tabnabbing",
+      "mapping": "A01, CWE-1022, S5148",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "angular",
+          "html"
+        ]
+      },
+      "scanner": {
+        "status": "not-implemented",
+        "slug": null,
+        "lanes": [],
+        "detectors": []
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-30",
+      "title": "web server hardening",
+      "mapping": "A05, CWE-200/693",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "nginx"
+        ]
+      },
+      "scanner": {
+        "status": "not-implemented",
+        "slug": null,
+        "lanes": [],
+        "detectors": []
+      },
+      "examplesTested": false
+    },
+    {
+      "id": "SEC-31",
+      "title": "forwarded-header trust",
+      "mapping": "A01/A05, CWE-348",
+      "authoring": {
+        "baseline": "references/patterns/security-baseline.md",
+        "surfaces": [
+          "csharp",
+          "nginx"
+        ]
+      },
+      "scanner": {
+        "status": "not-implemented",
+        "slug": null,
+        "lanes": [],
+        "detectors": []
+      },
+      "examplesTested": false
+    }
+  ]
+}

@@ -40,7 +40,7 @@ Do not relocate existing repository interfaces or models across layers during a 
 
 ## Error-code contract
 
-BE can originate a code in Domain/Application, translate it at the response boundary, or forward it from Infrastructure/SQL. For every affected vertical slice, apply [Error/message reconciliation](../backend-engineer.md#error-message-reconciliation) and the SQL [Message collection gate](sql.md#message-collection-gate) when a procedure participates. Do not create a second entry for a code whose meaning is already identical, and do not remap a conflicting meaning silently. An AgriMap-deployed message is written to the canonical domain `messages.sql` with duplicate/idempotency evidence; otherwise report `no message changes` or the proven separately owned external-registry boundary.
+BE can originate a code in Domain/Application, translate it at the response boundary, or forward it from Infrastructure/SQL. For every affected vertical slice, apply [Error/message reconciliation](../backend-engineer.md#errormessage-reconciliation) and the SQL [Message collection gate](sql.md#message-collection-gate) when a procedure participates. Do not create a second entry for a code whose meaning is already identical, and do not remap a conflicting meaning silently. An AgriMap-deployed message is written to the canonical domain `messages.sql` with duplicate/idempotency evidence; otherwise report `no message changes` or the proven separately owned external-registry boundary.
 
 ## HTTP request values
 

@@ -11,6 +11,7 @@ Sonar keys and TypeScript idioms for SEC classes in any `.ts` code (browser or s
 
 | Class | Key | Do not write | Write it this way | Seen |
 | --- | --- | --- | --- | --- |
+| SEC-04 | S2083 | `path.join(root, name)` or `fs.readFile(userPath)` with a request or archive name | `path.resolve(root, name)` then check it starts with `root + path.sep`; or map an ID to a stored path | baseline |
 | SEC-23 | S5852 | `/\/+$/`, `/=+$/`, `/^_+/`, `/<[^>]*>/g` on user-sized input; `\s*` under `m` | A linear helper (`trimTrailingSlashes`), `DOMParser` for tag stripping, bounded classes | platform-ng `4ab68dc6`, `fc1dad85`; pro-ng `58b1479`; suite-ng `a23277e` |
 | SEC-25 | S5042 | `JSZip.loadAsync(file)` and using every entry | `assertSafeArchive(zip)`: entry count, total uncompressed size, ratio, no `..`/absolute names, then `// NOSONAR(S5042)` with the guard named | platform-ng `fc1dad85`, `4eb3aefc`, `e9173f70`, `4ab68dc6` |
 | SEC-08 | S2245 | `Math.random()` for ids, keys, nonces, PKCE values | `crypto.randomUUID()`, `crypto.getRandomValues()` | platform-ng `4ab68dc6` (role-detail key) |
@@ -62,3 +63,5 @@ const text = value.replace(/<[^>]*>/g, '')
 // after (platform-ng 4ab68dc6): the browser parses, nothing executes
 const text = new DOMParser().parseFromString(value, 'text/html').body.textContent ?? ''
 ```
+
+Tested examples: [examples/typescript/sec-examples.ts](examples/typescript/sec-examples.ts) runs the BAD and GOOD shapes of SEC-04, SEC-08 and SEC-23 in `npm test`.

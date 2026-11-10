@@ -1167,6 +1167,53 @@
       ]
     },
     {
+      "name": "agm-security",
+      "operation": "security",
+      "depth": {
+        "default": "light",
+        "allowed": [
+          "light",
+          "standard",
+          "regulated"
+        ]
+      },
+      "description": "Run a read-only security scan of an AgriMap product root over Golden Lint with stable fingerprints, manual-review and blocked lists",
+      "triggers": "agm-security scan only when named explicitly; OWASP or vulnerability requests without the name stay with Golden Lint agm-lint",
+      "mode": "product-read-only",
+      "deliverable": "security report (agm-security-report/1) printed, or written under .agrimap-agent/reports/security only with --write; never a fix",
+      "requiredInputs": [
+        "product root (default: the current project)"
+      ],
+      "conditionalInputs": [
+        "--write when the requester asks to keep the report; --format json for automation"
+      ],
+      "example": "-security root=services/agmws-orders",
+      "entrypointPolicy": "Runs only when the requester names agm-security. scan is read-only: no product edits, fixes, suppressions, lifecycle or identity question. Golden Lint is the only detector and is never edited. Use security-scan-workflow.md.",
+      "instructions": [
+        "Resolve the product root from the request or the current project. Run scripts/security-scan.mjs scan --root <root> --format markdown; add --write only when the requester asks to keep the report.",
+        "Report outcome, findings by class and severity with fingerprints, manual-review classes and blocked items exactly as printed. No findings never means the manual-review classes passed; blocked is never a pass.",
+        "Do not edit product files or start a fix; name the lane skill for a fix the requester selects."
+      ],
+      "references": [
+        {
+          "path": "security-scan-workflow.md",
+          "why": "command, options, report reading and answer contract"
+        },
+        {
+          "path": "patterns/security-baseline.md",
+          "why": "SEC class definitions for manual review"
+        },
+        {
+          "path": "goal-rules.md",
+          "why": "bounded, read-only scope"
+        },
+        {
+          "path": "recommendations.md",
+          "why": "evidence-calibrated advice when naming a fix"
+        }
+      ]
+    },
+    {
       "name": "agm-prompt",
       "operation": "prompt",
       "depth": {

@@ -1,4 +1,4 @@
-schema_version: 3
+schema_version: 4
 # 6.1.1: current frontier and economy models follow outcome-style instructions
 # (constraints + acceptance). The outcome/guided/bounded profiles and requester
 # model-label lists were removed; model choice never changes authority, acceptance,
@@ -7,20 +7,34 @@ model_identity_policy:
   execution_field: model
   execution_field_semantics: actual_host_reported_model_or_unknown
 
+# 6.3.0: capability is observed at runtime, not pinned. Model names change faster
+# than this package ships, so the matrix names tiers; the host's own model list
+# (or the Agent tool's model parameter) resolves a tier to a concrete model when
+# the work is delegated, and the actual reported model is recorded.
+runtime_capability:
+  source: host-reported model list or the delegation tool's model parameter, read at delegation time
+  unknown_is_not_false: true   # an unobserved capability is "unknown": try the tier, do not assume it is missing
+  tier_never_changes_authority: true   # tier affects assignment only, never depth, QA mode, tools or SQL permissions
+  record: actual model as reported by the host, else unknown
+
 # Owner decision 2026-10-14 (5.0.1): models for delegated execution, lightest first.
-# The Leader keeps the session model. First entry: mechanical units with a fixed contract
-# and golden pattern; second: normal units; third: units that need design judgement.
+# The Leader keeps the session model. Tier 1: mechanical units with a fixed contract
+# and golden pattern; tier 2: normal units; tier 3: units that need design judgement.
 # A host without model choice (for example an API key) uses its default. Never ask the
 # requester how many agents to use: at most five, sized to the ready units.
+# Claude entries are the Agent tool's family aliases (stable across releases).
+# Other hosts name a tier; resolve it from the host's current model list:
+# economy = its smallest/fastest listed model, standard = its default model,
+# frontier = its most capable listed model.
 subagent_execution:
   claude:   # Agent tool model + effort
-    - { model: haiku, effort: medium }
-    - { model: sonnet, effort: low }
-    - { model: opus, effort: low }
+    - { tier: 1, model: haiku, effort: medium }
+    - { tier: 2, model: sonnet, effort: low }
+    - { tier: 3, model: opus, effort: low }
   codex:
-    - { model: GPT6-Luna, effort: low }
-    - { model: GPT6, effort: low }
-    - { model: GPT6.1, effort: medium }
+    - { tier: 1, model: economy, effort: low }
+    - { tier: 2, model: standard, effort: low }
+    - { tier: 3, model: frontier, effort: medium }
   antigravity:
-    - { model: Gemini-3.8-Flash, effort: default }
+    - { tier: 1, model: economy, effort: default }
   no_model_choice: host-default

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "note": "Source for references/quality-security-index.md (rendered by npm run sync). One owner file per concern; paths are relative to references/.",
+  "concerns": [
+    { "concern": "Security classes SEC-01..31: definition, OWASP/CWE, response contract, tiers", "owner": "patterns/security-baseline.md", "kind": "policy" },
+    { "concern": "Security classes by language and surface (Sonar keys, idioms)", "owner": "patterns/security-matrix.md", "kind": "matrix" },
+    { "concern": "Security coverage: authoring surfaces and Golden Lint scanner status per class", "owner": "../assets/sec-coverage.json", "kind": "metadata" },
+    { "concern": "Read-only security scan over Golden Lint: stable fingerprints, manual-review and blocked lists (report schema agm-security-report/1)", "owner": "../scripts/security-scan.mjs", "kind": "tool" },
+    { "concern": "Code smells, bugs and hotspots by language; concept map across languages", "owner": "patterns/sonarqube-matrix.md", "kind": "matrix" },
+    { "concern": "Remediation policy: notice before editing, recommend-first, safe tier, suppression (QUALITY-*), ADV-* definitions", "owner": "sonarqube-remediation.md", "kind": "policy" },
+    { "concern": "Worked C# fixes (S3776 scoring, refactor shapes)", "owner": "patterns/sonarqube-fix-examples.md", "kind": "examples" },
+    { "concern": "Rule status: must/should/catalog and pattern lifecycle", "owner": "patterns/pattern-status.md", "kind": "policy" }
+  ]
+}
