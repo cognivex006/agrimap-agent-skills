@@ -27,6 +27,7 @@
 | วางแผน | `agm-plan` |
 | ออกแบบระบบ / contract ข้าม service | `agm-architect` |
 | ตรวจรับ / QA | `agm-qa` |
+| security | `agm-security` |
 | กลั่นโจทย์เป็น Prompt Result | `agm-prompt` |
 | version / changelog / release / Jenkins | `agm-release` |
 | ติดตั้ง / อัปเดต skills | `agm-doctor` |

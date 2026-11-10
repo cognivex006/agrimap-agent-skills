@@ -34,6 +34,7 @@
 | `agm-be` | งาน backend | action เป็นตัวกำหนดว่าอ่านหรือเขียน |
 | `agm-sql` | อธิบาย/ออกแบบ/แก้ **ไฟล์ SQL**; `context check` ดูว่า repo ใช้ SP/ตารางอะไรและตัวไหนยังไม่มี DDL ในเครื่อง; `context migrate` ดึง DDL ที่ขาดผ่าน sql-context-pack ลงโฟลเดอร์ db-schema (5.0.1) | ไม่อนุญาต execute database writes, metadata sync หรือ deploy |
 | `agm-qa` | ตรวจตาม acceptance | หลักฐานผ่าน/ไม่ผ่าน/ติดข้อจำกัด; ไม่แก้ product |
+| `agm-security` | สแกน security แบบอ่านอย่างเดียวบน Golden Lint (เรียกด้วยชื่อเท่านั้น) | finding พร้อม fingerprint, class ที่ต้องตรวจเอง, รายการที่ตรวจไม่ได้; ไม่แก้ product |
 | `agm-prompt` | กลั่นโจทย์เป็นคำสั่งเก็บและส่งต่อ | Prompt Result เมื่อพร้อม; ไม่ implement |
 | `agm-exec` | ลงมือทำโจทย์ที่อนุมัติแล้ว หรืองานแก้ข้าม lane (BE+SQL, FE+BE) | แก้ไขใน scope และตรวจผล; ไม่บังคับมี prompt file |
 | `agm-doctor` | ตรวจรุ่น ความพร้อม และอัปเดต AGM ตาม host | status/version/check อ่านอย่างเดียว; update เปลี่ยนเฉพาะแพ็กเกจ ดู [ตารางคำสั่ง](DOCTOR.md) |
