@@ -38,10 +38,10 @@ export function commandPath(command) {
   let candidates = [];
   if (process.platform === 'win32') {
     candidates = command === 'git'
-      ? [process.env.ProgramW6432, process.env.ProgramFiles, process.env['ProgramFiles(x86)'], 'C:\\Program Files',
+      ? [process.env.ProgramW6432, process.env.ProgramFiles, process.env['ProgramFiles(x86)'], String.raw`C:\Program Files`,
         process.env.LOCALAPPDATA && path.join(process.env.LOCALAPPDATA, 'Programs')]
         .filter(Boolean).map(root => path.join(root, 'Git', 'cmd', 'git.exe'))
-      : [path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', `${command}.exe`)];
+      : [path.join(process.env.SystemRoot || String.raw`C:\Windows`, 'System32', `${command}.exe`)];
   } else if (command === 'git') {
     candidates = ['/usr/bin/git', '/usr/local/bin/git', '/opt/homebrew/bin/git'];
   }
@@ -147,8 +147,8 @@ function validUrl(value) {
 function persistedUrl() {
   if (process.platform === 'win32') {
     try {
-      const text = execFileSync(commandPath('reg'), ['query', 'HKCU\\Environment', '/v', ENV], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-      const match = new RegExp(`${ENV}[ \\t]+REG_\\w+[ \\t]+(\\S.*)`).exec(text);
+      const text = execFileSync(commandPath('reg'), ['query', String.raw`HKCU\Environment`, '/v', ENV], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+      const match = new RegExp(String.raw`${ENV}[ \t]+REG_\w+[ \t]+(\S.*)`).exec(text);
       if (match) return { url: match[1].trim(), source: 'windows-user-env' };
     } catch { /* not set */ }
     return null;
@@ -157,7 +157,7 @@ function persistedUrl() {
     const file = path.join(os.homedir(), name);
     if (!existsSync(file)) continue;
     // [ \t] instead of \s keeps the multiline anchor from spanning lines (S5852).
-    const match = new RegExp(`^[ \\t]*export[ \\t]+${ENV}=["']?([^"'\\s]+)`, 'm').exec(readFileSync(file, 'utf8'));
+    const match = new RegExp(String.raw`^[ \t]*export[ \t]+${ENV}=["']?([^"'\s]+)`, 'm').exec(readFileSync(file, 'utf8'));
     if (match) return { url: match[1], source: `~/${name}` };
   }
   return null;
@@ -218,7 +218,7 @@ function setUrl(value) {
   const file = path.join(os.homedir(), '.profile');
   const line = `export ${ENV}="${url.toString()}"`;
   const text = existsSync(file) ? readFileSync(file, 'utf8') : '';
-  const pattern = new RegExp(`^[ \\t]*export[ \\t]+${ENV}=.*$`, 'm');
+  const pattern = new RegExp(String.raw`^[ \t]*export[ \t]+${ENV}=.*$`, 'm');
   writeFileSync(file, pattern.test(text) ? text.replace(pattern, line) : text.replace(/\n?$/, '\n') + line + '\n');
   print({ ok: true, saved: '~/.profile', url: url.toString() });
 }
