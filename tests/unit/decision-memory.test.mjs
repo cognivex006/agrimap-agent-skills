@@ -192,3 +192,24 @@ test('decide promote requires --topic and --value',async t=>{
   assert.equal(cli(['decide','promote','--session','s1']).code,'PROMOTION_INVALID');
   assert.equal(cli(['decide','promote','--session','s1','--topic','sql/x']).code,'PROMOTION_INVALID');
 });
+
+test('not-now defers a topic until it expires; blocking cards still ask (6.4.0)',async t=>{
+  const {repo:root,state}=await repo(t);
+  const {activeDeferral,loadPreferences}=await import('../../skills/agrimap-agent-skills/scripts/decision-memory.mjs');
+  const open=card({topic:'api/paging-default',blocking:false,default:'1',confidence:'low',paths:[]});
+  const first=await storeCard(state,'s1',open,{executionId:'e1',memory:true,now});
+  assert.ok(first.cardId,'asked the first time');
+  const answered=await recordChoice(state,{session:'s1',cardId:first.cardId,choice:'not-now:7',requestedBy:'owner',now});
+  assert.equal(answered.choice,'not-now');
+  assert.equal(answered.deferredUntil,new Date(now+7*86400000).toISOString());
+  const again=await storeCard(state,'s1',open,{executionId:'e1',memory:true,now:now+86400000});
+  assert.equal(again.cardId,undefined,'not asked again while deferred');
+  assert.equal(again.deferred.topic,'api/paging-default');
+  const session=JSON.parse(await readFile(path.join(state,'runtime','sessions','s1.json'),'utf8'));
+  assert.ok(session.questionsAvoided.some(q=>q.deferredUntil),'counted as a question avoided');
+  const blocking=await storeCard(state,'s1',{...open,blocking:true,default:null},{executionId:'e1',memory:true,now:now+86400000});
+  assert.ok(blocking.cardId,'a blocking card still asks');
+  const later=await storeCard(state,'s1',open,{executionId:'e1',memory:true,now:now+8*86400000});
+  assert.ok(later.cardId,'asked again after the deferral expires');
+  assert.equal(activeDeferral(await loadPreferences(root),'api/paging-default',now+8*86400000),null);
+});

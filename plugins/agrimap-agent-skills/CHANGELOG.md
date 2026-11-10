@@ -4,6 +4,7 @@ Release history, not current operating instructions. Start with [Getting Started
 
 ## Unreleased (6.4.0)
 
+- Decision cards remember "not now": `decide record --choice not-now` (or `not-now:<days>`, default 30, at most 365) stores a per-user deferral for the card's topic; while it lasts `decide card` returns `deferred` instead of asking again and counts the question as avoided. A blocking card still asks, and the topic is asked again once the deferral expires. Approved precedents are still searched first, as before. `autonomy.md` documents the choice.
 - `agm-security patch` (explicit, product-write) fixes only the findings the requester selected from a scan report. `scripts/security-patch.mjs plan` refuses an empty selection, unknown fingerprints and a blocked scan, and tiers each item from the new `sec-coverage.json` `patchTier`: `AUTO_SAFE` (SEC-07, SEC-29, SEC-30) is applied in place, `GUARDED` needs a regression test for a valid request, `MANUAL` (SEC-05, SEC-13, SEC-16, SEC-17, SEC-22, SEC-28: contract change, consumer migration or a human step) is reported, never edited. `verify` compares a completed rescan: `verified` only when the fingerprint is gone; a claim without a completed rescan stays `fixed-unverified`, and new findings in patched files are listed as `introduced`. The script never edits product code; fixes go through the lane skill. `scan` stays the read-only default and the command still routes only by name.
 
 ## 6.3.0 — 2026-11-10

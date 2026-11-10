@@ -32,7 +32,7 @@ Investigate before asking: search the repository, `policy show`, `recall --topic
 - Every card states impact, what you checked, options with different effects, the recommendation with reason and confidence, and its default or that it blocks.
 - Never ask for granted permission, between equivalent options, for an open-ended preference, or approval after acting.
 - Record the answer with `decide record`; its `recordAs` prevents asking again.
-- `decide card` may return `suppressed` (use the precedent; cite it via `--precedent`) or `autoDecided` (R0/R1 at high or medium confidence, or R2 with `"reversible": true`; report as decided for you). A kind the requester keeps overriding (calibration `ask`) or marked always-ask still produces the card. A `promotable` recall → `decide promote`. "Always ask about X" → `decide always-ask --kind X`; a requester correction → `decide correction`.
+- `decide card` may return `suppressed` (use the precedent; cite it via `--precedent`) or `autoDecided` (R0/R1 at high or medium confidence, or R2 with `"reversible": true`; report as decided for you). A kind the requester keeps overriding (calibration `ask`) or marked always-ask still produces the card. When the requester says "not now" (ไว้ก่อน, ยังไม่ต้อง), record `--choice not-now` (or `not-now:<days>`, default 30): the topic is not asked again until then, and `decide card` returns `deferred`; continue with the card's default and say it is deferred. A blocking card still asks. A `promotable` recall → `decide promote`. "Always ask about X" → `decide always-ask --kind X`; a requester correction → `decide correction`.
 
 ## Report
 

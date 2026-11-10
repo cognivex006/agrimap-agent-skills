@@ -9,7 +9,7 @@ import { initPolicy, loadPolicy, profilePolicy, setPolicyValue } from "./workflo
 import { applyProjectPatch, initProject, loadProject, projectDefaults, setProjectValue, verifySpecPath } from "./project-profile.mjs";
 import { setLocalPath } from "./local-memory.mjs";
 import { bangkokParts, writeDecision } from "./decision-records.mjs";
-import { preflightCard, recordSignal, savePreferences, loadPreferences } from "./decision-memory.mjs";
+import { deferTopic, preflightCard, recordSignal, savePreferences, loadPreferences } from "./decision-memory.mjs";
 
 export const CARD_KINDS = Object.freeze(["workflow", "scope", "contract", "root", "integration", "convention", "preference", "project"]);
 const RISKS = new Set(["R0", "R1", "R2", "R3"]);
@@ -100,6 +100,11 @@ export async function storeCard(state, session, card, { executionId = null, now 
       return { ok: true, suppressed: preflight.suppressed, render: null };
     }
     if (preflight.autoDecided) return { ok: true, autoDecided: preflight.autoDecided, render: null };
+    if (preflight.deferred) {
+      const current = (await readSessionState(state, id)).questionsAvoided || [];
+      await updateSessionState(state, id, { questionsAvoided: [...current, { executionId, topic: card.topic, deferredUntil: preflight.deferred.until, at: new Date(now).toISOString() }] });
+      return { ok: true, deferred: preflight.deferred, render: null };
+    }
     calibrationMode = preflight.calibrationMode;
   }
   const options = normalizeOptions(card);
@@ -180,10 +185,20 @@ export async function recordChoice(state, { session, cardId, choice, note = null
   if (card.status === "closed") return { ok: true, cardId, alreadyRecorded: true, choice: card.closed };
   if (!(Date.parse(card.expiresAt) > now)) return { ok: false, code: "CARD_EXPIRED", message: "Create a new card; the stored one expired." };
   const raw = String(choice ?? "").trim();
+  const root = path.dirname(state);
+  // 6.4.0: "not-now" or "not-now:<days>" defers the topic instead of answering.
+  const notNow = raw.match(/^not-now(?::(\d{1,3}))?$/);
+  if (notNow) {
+    const deferral = await deferTopic(root, card.topic, { days: notNow[1], now, cardId: card.cardId });
+    const closed = { choice: "not-now", label: "not now", deferredUntil: deferral.until, note, requestedBy, at: new Date(now).toISOString() };
+    await writeJsonFile(file, { ...card, status: "closed", closed });
+    const deferState = await readSessionState(state, session || card.session);
+    if (deferState.lastCard?.cardId === card.cardId) await updateSessionState(state, session || card.session, { lastCard: undefined });
+    return { ok: true, cardId, choice: "not-now", deferredUntil: deferral.until, applied: "preference", written: [], log: { kind: card.kind, topic: card.topic, risk: card.risk, executionId: card.executionId } };
+  }
   const freeText = raw.startsWith("free:") ? raw.slice(5).trim() : null;
   const option = freeText === null ? card.options.find(item => item.id === raw) : null;
-  if (!option && !freeText) return { ok: false, code: "CARD_CHOICE_INVALID", message: `--choice must be one of ${card.options.map(item => item.id).join("|")} or free:<text>.` };
-  const root = path.dirname(state);
+  if (!option && !freeText) return { ok: false, code: "CARD_CHOICE_INVALID", message: `--choice must be one of ${card.options.map(item => item.id).join("|")}, free:<text> or not-now[:<days>].` };
   const effect = await applyRecordAs(root, card, option, freeText, { requestedBy, now: new Date(now) });
   if (effect.error) return { ...effect.error, ok: false, cardId };
   const closed = { choice: option ? option.id : `free:${freeText}`, label: option?.label || freeText, recommendedChosen: option?.id === "1", note, requestedBy, at: new Date(now).toISOString() };
