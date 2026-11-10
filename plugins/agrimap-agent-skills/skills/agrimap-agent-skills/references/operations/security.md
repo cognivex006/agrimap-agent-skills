@@ -4,23 +4,32 @@
 
 - Operation: `security`
 - Workflow depth: default `light`; allowed `light`, `standard`, `regulated`
-- Mode: `product-read-only`
-- Purpose: Run a read-only security scan of an AgriMap product root over Golden Lint with stable fingerprints, manual-review and blocked lists.
-- Deliverable: security report (agm-security-report/1) printed, or written under .agrimap-agent/reports/security only with --write; never a fix
+- Mode: `action-routed`
+- Purpose: Scan an AgriMap product root for security findings over Golden Lint (read-only), or patch only the findings the requester selected with tiered fixes and a rescan gate.
+- Deliverable: scan: security report (agm-security-report/1); patch: selected fixes through the lane skill plus a verify result where only a completed rescan marks a fix verified
 
-Runs only when the requester names agm-security. scan is read-only: no product edits, fixes, suppressions, lifecycle or identity question. Golden Lint is the only detector and is never edited. Use security-scan-workflow.md.
+Runs only when the requester names agm-security. No action means scan, which is read-only. patch is explicit, edits only the selected findings that are not MANUAL, and never treats a fix as verified without a completed rescan. Golden Lint is the only detector and is never edited. Use security-scan-workflow.md.
+
+## Action gate
+
+Resolve exactly one action before target inspection or product writes. Safe defaults are read-only; fallback is action routing, not a passive capability. Capabilities support the chosen read or authorized write but cannot choose it or create write intent.
+
+| Action | Mode | Activation | Allowed depth | Purpose |
+| --- | --- | --- | --- | --- |
+| `scan` | `product-read-only` | `explicit-or-safe-default` | `light`, `standard`, `regulated` | Report Golden Lint security findings with stable fingerprints, plus manual-review classes and blocked checks |
+| `patch` | `product-write` | `explicit` | `light`, `standard`, `regulated` | Fix only requester-selected findings by tier (AUTO_SAFE, GUARDED with a regression test, MANUAL reported only) and verify by rescan |
 
 ## Inputs and help
 
 - Required: product root (default: the current project).
-- Conditional: --write when the requester asks to keep the report; --format json for automation.
-- Minimal example: `-security root=services/agmws-orders`
+- Conditional: --write to keep a scan report; patch needs the scan report and the fingerprints the requester selected.
+- Minimal example: `-security scan`
 
 ## Execute this contract
 
-1. Resolve the product root from the request or the current project. Run scripts/security-scan.mjs scan --root <root> --format markdown; add --write only when the requester asks to keep the report.
-2. Report outcome, findings by class and severity with fingerprints, manual-review classes and blocked items exactly as printed. No findings never means the manual-review classes passed; blocked is never a pass.
-3. Do not edit product files or start a fix; name the lane skill for a fix the requester selects.
+1. Resolve scan (default) or explicit patch and the product root. Run scripts/security-scan.mjs scan --root <root> --format markdown; add --write only when the requester asks to keep the report.
+2. For patch, require the scan report and the fingerprints the requester selected; run scripts/security-patch.mjs plan, apply each AUTO_SAFE or GUARDED item through the lane skill (GUARDED with a regression test), report MANUAL items as decisions, then rescan and run security-patch.mjs verify.
+3. Report exactly what verify printed: verified, still-present, fixed-unverified, manual-decision and any finding introduced in a patched file. Never call a claimed fix verified without a completed rescan.
 
 ## Load now
 

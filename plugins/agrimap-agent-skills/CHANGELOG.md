@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased (6.4.0)
+
+- `agm-security patch` (explicit, product-write) fixes only the findings the requester selected from a scan report. `scripts/security-patch.mjs plan` refuses an empty selection, unknown fingerprints and a blocked scan, and tiers each item from the new `sec-coverage.json` `patchTier`: `AUTO_SAFE` (SEC-07, SEC-29, SEC-30) is applied in place, `GUARDED` needs a regression test for a valid request, `MANUAL` (SEC-05, SEC-13, SEC-16, SEC-17, SEC-22, SEC-28: contract change, consumer migration or a human step) is reported, never edited. `verify` compares a completed rescan: `verified` only when the fingerprint is gone; a claim without a completed rescan stays `fixed-unverified`, and new findings in patched files are listed as `introduced`. The script never edits product code; fixes go through the lane skill. `scan` stays the read-only default and the command still routes only by name.
+
 ## 6.3.0 — 2026-11-10
 
 - Tested BAD/GOOD security examples: `references/patterns/security/examples/typescript/sec-examples.ts` (SEC-04 path containment, SEC-08 `crypto.randomUUID`, SEC-23 linear trailing-slash trim) runs through Node type stripping, and `examples/csharp/SecExamples.cs` (SEC-03 RFC 4515 filter escaping, SEC-04 `GetFullPath` containment) runs with `dotnet run` on a temp copy, skipped without an SDK. `tests/unit/security-examples.test.mjs` checks that each GOOD shape keeps valid input and blocks the attack, and that `sec-coverage.json` `examplesTested` matches. Other surfaces stay catalog-only.
