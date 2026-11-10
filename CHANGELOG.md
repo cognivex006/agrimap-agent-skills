@@ -2,7 +2,7 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased (6.3.0)
+## 6.3.0 — 2026-11-10
 
 - Tested BAD/GOOD security examples: `references/patterns/security/examples/typescript/sec-examples.ts` (SEC-04 path containment, SEC-08 `crypto.randomUUID`, SEC-23 linear trailing-slash trim) runs through Node type stripping, and `examples/csharp/SecExamples.cs` (SEC-03 RFC 4515 filter escaping, SEC-04 `GetFullPath` containment) runs with `dotnet run` on a temp copy, skipped without an SDK. `tests/unit/security-examples.test.mjs` checks that each GOOD shape keeps valid input and blocks the attack, and that `sec-coverage.json` `examplesTested` matches. Other surfaces stay catalog-only.
 - `model-capability-matrix.yaml` (schema 4) no longer pins model releases: Codex and Antigravity tiers are `economy`/`standard`/`frontier`, resolved from the host's current model list when work is delegated (Claude keeps the Agent tool family aliases). New `runtime_capability` policy: capability is observed at delegation time, an unobserved capability is unknown rather than missing, and a tier never changes authority. `tests/unit/model-capability.test.mjs` rejects versioned model IDs in the tiers.
