@@ -69,3 +69,5 @@ var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
 // after: also ADV-18; when the old hash is stored, verify old and issue new
 var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
 ```
+
+Tested examples: [examples/csharp/SecExamples.cs](examples/csharp/SecExamples.cs) runs the BAD and GOOD shapes of SEC-03 and SEC-04 with `dotnet run` in `npm test` (skipped without an SDK).

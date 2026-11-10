@@ -22,6 +22,8 @@ Maintainer planning document. Source: external architecture review of v6.1.2 (20
 
 ## 6.3.0 — one security/quality contract
 
+Status 2026-11-10 (develop, not released): items 1, 2, 4 and 5 merged (PR #67, #68, #70 and the tested-examples PR). Item 3 is merged as an engine only (PR #69, `scripts/security-scan.mjs`); the routed `agm-security` command is open because its routing overlaps Golden Lint's OWASP trigger and needs an owner decision. Release waits for that decision.
+
 1. `sec-coverage.json`: canonical map of SEC-01..31 to `authoring`, `scannerStatus` (automated/heuristic/manual-review/not-implemented), languages, detector IDs and tested flag; drift test against the installed Golden Lint catalog, read-only (Golden Lint is not edited from here, decision 0001).
 2. `quality-security-index.md` generated from metadata: which file owns policy, matrix, remediation and examples. `sonarqube-matrix.md` adopts the `security-matrix.md` layout. Link/anchor and duplicate-ID checker.
 3. `agm-security scan`: read-only, Golden Lint first, stable fingerprints (rule + file + symbol, never line alone), JSON + Markdown report from a versioned schema, blocked checks listed.

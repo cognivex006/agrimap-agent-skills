@@ -63,3 +63,5 @@ const text = value.replace(/<[^>]*>/g, '')
 // after (platform-ng 4ab68dc6): the browser parses, nothing executes
 const text = new DOMParser().parseFromString(value, 'text/html').body.textContent ?? ''
 ```
+
+Tested examples: [examples/typescript/sec-examples.ts](examples/typescript/sec-examples.ts) runs the BAD and GOOD shapes of SEC-04, SEC-08 and SEC-23 in `npm test`.
