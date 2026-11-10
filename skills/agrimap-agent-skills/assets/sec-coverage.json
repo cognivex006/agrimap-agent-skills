@@ -80,7 +80,7 @@
           "be-library-sec-ldap-injection"
         ]
       },
-      "examplesTested": false
+      "examplesTested": true
     },
     {
       "id": "SEC-04",
@@ -107,7 +107,7 @@
           "be-library-sec-path-traversal"
         ]
       },
-      "examplesTested": false
+      "examplesTested": true
     },
     {
       "id": "SEC-05",
@@ -210,7 +210,7 @@
           "be-library-sec-weak-cryptography"
         ]
       },
-      "examplesTested": false
+      "examplesTested": true
     },
     {
       "id": "SEC-09",
@@ -588,7 +588,7 @@
           "fe-library-sec-regex-backtracking"
         ]
       },
-      "examplesTested": false
+      "examplesTested": true
     },
     {
       "id": "SEC-24",

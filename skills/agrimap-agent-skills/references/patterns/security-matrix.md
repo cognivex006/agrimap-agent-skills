@@ -28,7 +28,7 @@ Owner of each quality/security concern: [quality-security-index.md](../quality-s
 
 ## Class map across surfaces
 
-`●` the class applies on that surface and the file has its rows; blank: not applicable. [sec-coverage.json](../../assets/sec-coverage.json) records the same map with Golden Lint scanner status and detector IDs per class; `tests/unit/sec-coverage.test.mjs` fails when this table, the baseline, a surface file or the installed Golden Lint drift apart.
+`●` the class applies on that surface and the file has its rows; blank: not applicable. [sec-coverage.json](../../assets/sec-coverage.json) records the same map with Golden Lint scanner status and detector IDs per class; `examplesTested` marks classes whose BAD/GOOD shapes run in `tests/unit/security-examples.test.mjs` (C# and TypeScript first; other surfaces are catalog-only). `tests/unit/sec-coverage.test.mjs` fails when this table, the baseline, a surface file or the installed Golden Lint drift apart.
 
 | Class | C# | TS | Angular | JS | HTML | SQL | nginx | Docker/CI |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
