@@ -502,7 +502,7 @@
       "source": "release-notify.mjs",
       "target": "tools/agrimap/release-notify.mjs",
       "mode": "managed",
-      "sha256": "1155f4ec7f82853b866d12277d49e560a7db0ab746c3b281461d9de69d435003",
+      "sha256": "a5b8bf0f4b9aadfed59d30b2b6459820d00e89662ae04e94748fdbac3695518d",
       "previous": [
         {
           "version": "4.9.3",
@@ -523,6 +523,10 @@
         {
           "version": "4.10.2",
           "sha256": "2be2a48499722733cc930e2a3709cac22bf5e710929dd273a448bb6cfd454454"
+        },
+        {
+          "version": "5.0.14",
+          "sha256": "1155f4ec7f82853b866d12277d49e560a7db0ab746c3b281461d9de69d435003"
         }
       ]
     },
