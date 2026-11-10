@@ -14,7 +14,7 @@ Owner decision 2026-10-14: decide this for every plan or execution with two or m
 2. Contract first: the Leader fixes every shared contract before any consumer starts.
 3. Parallel when files or repositories are disjoint and no unit consumes a contract another unit is still producing; otherwise sequence. Work smaller than a few minutes per unit stays with the Leader.
 4. Agents: never ask how many; use up to five, sized to the ready units.
-5. Models: `model-capability-matrix.yaml` `subagent_execution` for the host — entries are tiers, not pinned picks: tier 1 for mechanical units with a fixed contract and golden pattern, tier 2 for normal units, tier 3 for units that need design judgement. A model the user or session selected wins; a tier the host lacks or does not offer falls back to the nearest higher available tier, then the host default. Record the actual model.
+5. Models: `model-capability-matrix.yaml` `subagent_execution` for the host — entries are tiers, not pinned picks (Claude family aliases; other hosts name economy/standard/frontier, resolved from the host's current model list at delegation time; an unobserved capability is unknown, not missing): tier 1 for mechanical units with a fixed contract and golden pattern, tier 2 for normal units, tier 3 for units that need design judgement. A model the user or session selected wins; a tier the host lacks or does not offer falls back to the nearest higher available tier, then the host default. Record the actual model.
 
 ## Roles and depth (6.0)
 
