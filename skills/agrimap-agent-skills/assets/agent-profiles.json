@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "note": "Light agent profile registry (6.4.0). A profile names a role from subagents-and-branches.md, the lanes it serves and the rule packs it loads. It never grants permission: writes, tools, depth, QA mode and publication come from the role table and the Leader's packet, not from here. versionHash covers the profile and its rule-pack files, so a packet can record exactly which rules a subagent ran with.",
+  "profiles": [
+    { "id": "explorer", "role": "Explorer", "lanes": ["*"], "rulePacks": ["goal-rules.md"] },
+    { "id": "analyst-be", "role": "Analyst", "lanes": ["be-main", "be-library"], "rulePacks": ["goal-rules.md", "analysis-discipline.md", "backend-engineer.md"] },
+    { "id": "analyst-fe", "role": "Analyst", "lanes": ["fe-main", "fe-library"], "rulePacks": ["goal-rules.md", "analysis-discipline.md", "patterns/frontend.md"] },
+    { "id": "analyst-sql", "role": "Analyst", "lanes": ["sql"], "rulePacks": ["goal-rules.md", "analysis-discipline.md", "patterns/sql.md"] },
+    { "id": "worker-be", "role": "Worker", "lanes": ["be-main", "be-library"], "rulePacks": ["goal-rules.md", "backend-engineer.md", "patterns/backend.md", "patterns/security-baseline.md"] },
+    { "id": "worker-fe", "role": "Worker", "lanes": ["fe-main", "fe-library"], "rulePacks": ["goal-rules.md", "patterns/frontend.md", "patterns/security-baseline.md"] },
+    { "id": "worker-sql", "role": "Worker", "lanes": ["sql"], "rulePacks": ["goal-rules.md", "patterns/sql.md", "patterns/security-baseline.md"] },
+    { "id": "verifier", "role": "Verifier", "lanes": ["*"], "rulePacks": ["goal-rules.md", "qa-and-done.md"] },
+    { "id": "verifier-security", "role": "Verifier", "lanes": ["*"], "rulePacks": ["goal-rules.md", "patterns/security-baseline.md", "security-scan-workflow.md"] }
+  ]
+}
