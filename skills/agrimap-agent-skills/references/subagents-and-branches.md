@@ -82,7 +82,8 @@ Include only task-local data:
 - display label, actual model identity, bounded output, and provider-native inspection path;
 - exact files/symbols, ownership, forbidden files, required reference excerpts, constraints, verification, and handoff format;
 - workspace contract and integration artifact;
-- ordered steps only when the executor needs them.
+- ordered steps only when the executor needs them;
+- profile (6.4.0): `agent-profiles.mjs resolve --role <Role> --lane <lane>` gives the profile id, its rule packs and `versionHash`; load only those rule packs and record the id and hash with the job. A profile only selects rules: it never grants writes, tools, depth or publication, which stay with the role table above and this packet.
 
 Do not tell a subagent to load the umbrella or an entire reference tree.
 

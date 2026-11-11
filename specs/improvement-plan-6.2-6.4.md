@@ -32,6 +32,8 @@ Status 2026-11-10 (develop, not released): items 1, 2, 4 and 5 merged (PR #67, #
 
 ## 6.4.0 / 7.0 — orchestration
 
+Status 2026-11-11 (develop): all four items merged (PR #77, #78, #79 and the agent-profile PR).
+
 1. `agm-security patch`: AUTO_SAFE / GUARDED / MANUAL tiers, rescan as gate, `fixed` ≠ `verified`. Patches only findings the requester selected or confirmed, not every safe finding in the repo, to keep diffs reviewable.
 2. Decision candidates: reuse decision-memory; search existing decisions first; persist "not-now" so the owner is not asked again.
 3. Delegation by DAG: 3+ independent units delegate when the host supports it, otherwise record a measurable `delegationSkippedReason`.
