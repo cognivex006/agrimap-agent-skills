@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased (6.4.1)
+
+- `test:legacy-v2` is retired (owner decision 2026-11-11). It failed 30 of 45 tests, all on v2 contracts removed on purpose (`tasks/**`, prompt history, `simulate`, `taskId`, old router wording), and ran nowhere. Tests that still describe current behavior moved into `npm test`: SQL output ownership, refactor aliases, SQL writer install, unified SQL refactor, SQL actor/target users, URL matrix, prompt versioning, frontend reuse index and published input fixtures. Three prompt-version tests were updated to the current rule that a new version needs changed content plus requester change evidence. The SQL safety rules that only this suite checked (no execute/edit in analyze/design/explain with FACT/INFERENCE/UNKNOWN, `CREATE OR ALTER PROCEDURE`, no inferred schema semantics) are in `tests/unit/sql-operation-contract.test.mjs`. The removed tests stay in Git history.
+
 ## 6.4.0 — 2026-11-11
 
 - Light agent profile registry: `assets/agent-profiles.json` (Explorer, Analyst and Worker per BE/FE/SQL lane, Verifier and a security Verifier) with `scripts/agent-profiles.mjs` to list, validate and `resolve --role --lane`. Each profile names a role, lanes and rule packs, and gets a `versionHash` over the profile and its rule-pack files, which the delegation packet records with the job. Profiles cannot grant permission: the validator rejects fields such as permissions, tools, writes, depth, publish, merge or model, and the Leader is not a profile. No personality layer.

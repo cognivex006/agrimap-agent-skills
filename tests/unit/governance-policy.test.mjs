@@ -11,25 +11,6 @@ const passiveCapabilities = await read("skills/agrimap-agent-skills/references/p
 const urlMatrix = await read("skills/agrimap-agent-skills/references/application-url-matrix.md");
 const hook = await read("skills/agrimap-agent-skills/scripts/hook-context.mjs");
 
-test("Goal Rules are mandatory across the approved operation matrix", () => {
-  const expected = ["analyze", "architect", "be", "design", "diagnose", "fe", "sql", "review", "simulate", "execute", "plan", "qa", "prompt"];
-  const goalRules = passiveMap.capabilities.find((item) => item.id === "goal-rules");
-  assert.deepEqual(goalRules.operations, expected);
-  for (const operation of expected) {
-    const item = operations.find((candidate) => candidate.operation === operation);
-    assert.ok(item.references.some((reference) => reference.path === "goal-rules.md"), `${operation} must load Goal Rules`);
-  }
-});
-
-test("passive capabilities are embedded support and independently non-authorizing", () => {
-  assert.deepEqual(passiveMap.capabilities.map((item) => item.id), ["goal-rules", "refactor-guard", "test-decision", "design-discipline", "sql-explain"]);
-  for (const capability of passiveMap.capabilities) assert.equal(capability.grantsProductWrite, false, capability.id);
-  assert.match(passiveCapabilities, /embedded supporting skill/i);
-  assert.match(passiveCapabilities, /both product-read-only and already-authorized product-write work/);
-  assert.match(passiveCapabilities, /cannot choose\/replace context/);
-  assert.match(passiveMap.capabilities.find((item) => item.id === "test-decision").authorityEffect, /supports the selected action/);
-});
-
 test("domain refactor replaces every standalone refactor alias", () => {
   const names = operations.map((item) => item.name);
   for (const removed of ["agm-refactor", "agm-refactor-fe", "agm-refactor-be", "agm-refactor-sql"]) assert.equal(names.includes(removed), false);
@@ -43,14 +24,6 @@ test("domain refactor replaces every standalone refactor alias", () => {
       purpose: action.purpose,
     });
   }
-});
-
-test("agm-prompt is the only prompt alias and remains artifactless light", () => {
-  assert.equal(operations.some((item) => item.name === "agm-create-prompt"), false);
-  const prompt = operations.find((item) => item.name === "agm-prompt");
-  assert.deepEqual(prompt.depth, { default: "light", allowed: ["light"] });
-  assert.equal(prompt.mode, "workflow-write-only");
-  assert.match(prompt.deliverable, /never tasks\/\*\*/);
 });
 
 test("URL matrix preserves exact environment and callback invariants", () => {
@@ -68,10 +41,4 @@ test("URL matrix preserves exact environment and callback invariants", () => {
   assert.equal(exCallback.length, 4);
   assert.match(urlMatrix, /Never synthesize a URL by generic string concatenation/);
   assert.match(urlMatrix, /Unsupported combinations return an explicit unsupported result/);
-});
-
-test("raw hook stores requester submits only in the conversation history file", () => {
-  assert.match(hook, /prompts", local\.period, conversationId, "history\.md"/);
-  assert.match(hook, /### \[\$\{local\.date\} \$\{local\.time\}\]/);
-  assert.doesNotMatch(hook, /Command: \$\{prompt\}/);
 });

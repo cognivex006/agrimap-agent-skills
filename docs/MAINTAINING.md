@@ -45,7 +45,7 @@ sync สร้าง operation entrypoints, aliases, Antigravity flat skills/roo
 - ก่อนส่ง package ที่เปลี่ยนหลาย contract: `npm test` เป็น release gate ของ package
 - Routes/budgets เปลี่ยน: `npm run audit:tokens:strict`
 - อย่ารัน test:workspace, test:usage, test:integration ต่อกันโดยอัตโนมัติ ทั้งสามเป็นชื่อ compatibility ที่เรียก v3 fixture suite เดียวกัน
-- test:legacy-v2 เก็บ expectations รุ่นเก่าไว้ ไม่ใช่ v3 acceptance gate
+- test:legacy-v2 ถูกยกเลิกใน 6.4.1 (owner decision 2026-11-11) test ที่ยังตรงกับพฤติกรรมปัจจุบันย้ายเข้า npm test แล้ว ที่เหลือตรวจ contract ของ v2 ที่ถูกยกเลิกและอยู่ในประวัติ Git
 
 Token estimates ไม่ใช่ผล benchmark model จริง และ npm test ไม่ใช่การ test against database หรือ Jenkins
 

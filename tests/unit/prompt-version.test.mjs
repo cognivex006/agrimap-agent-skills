@@ -33,6 +33,11 @@ async function tempWorkspace(t) {
   return directory;
 }
 
+// A further version needs a substantive revision (unchanged retries create none).
+const revised = (n) => body.replace("measurable.", `measurable (revision ${n}).`);
+// ...and requester-backed change evidence.
+const evidence = { changeSummary: "Requester tightened acceptance.", sourceEvidence: "requester message in session-a" };
+
 function create(cwd, overrides = {}) {
   return createPromptVersion({
     cwd,
@@ -64,7 +69,7 @@ test("V0 creates no file while first finalized result is immutable V1", async (t
 test("implicit continuation creates VN in the original month", async (t) => {
   const cwd = await tempWorkspace(t);
   const first = await create(cwd);
-  const second = await create(cwd, { now: new Date("2026-08-02T06:00:00.000Z") });
+  const second = await create(cwd, { ...evidence, body: revised(1), now: new Date("2026-08-02T06:00:00.000Z") });
   assert.equal(second.version, 2);
   assert.equal(second.period, "2026-07");
   assert.equal(second.sourceSelectionMethod, "implicit-single-family");
@@ -75,10 +80,10 @@ test("implicit continuation creates VN in the original month", async (t) => {
 test("explicit source must be the latest matching family file", async (t) => {
   const cwd = await tempWorkspace(t);
   const first = await create(cwd);
-  const second = await create(cwd, { sourcePath: first.path });
+  const second = await create(cwd, { ...evidence, body: revised(1), sourcePath: first.path });
   assert.equal(second.sourceSelectionMethod, "explicit");
   await assert.rejects(
-    create(cwd, { sourcePath: first.path }),
+    create(cwd, { ...evidence, body: revised(2), sourcePath: first.path }),
     (error) => error instanceof PromptVersionError && error.code === "PROMPT_SOURCE_CONFIRM_REQUIRED",
   );
   const resolved = await resolvePromptSource({ cwd, conversationId: "session-a", context: "Order Flow", sourcePath: second.path });
@@ -100,7 +105,7 @@ test("ambiguous cross-period families stop for source confirmation", async (t) =
 
 test("concurrent allocation serializes versions without overwrite", async (t) => {
   const cwd = await tempWorkspace(t);
-  const results = await Promise.all([create(cwd), create(cwd)]);
+  const results = await Promise.all([create(cwd, evidence), create(cwd, { ...evidence, body: revised(1) })]);
   assert.deepEqual(results.map((item) => item.version).sort(), [1, 2]);
   assert.equal(new Set(results.map((item) => item.path)).size, 2);
 });
