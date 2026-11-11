@@ -2,7 +2,7 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased (6.4.0)
+## 6.4.0 — 2026-11-11
 
 - Light agent profile registry: `assets/agent-profiles.json` (Explorer, Analyst and Worker per BE/FE/SQL lane, Verifier and a security Verifier) with `scripts/agent-profiles.mjs` to list, validate and `resolve --role --lane`. Each profile names a role, lanes and rule packs, and gets a `versionHash` over the profile and its rule-pack files, which the delegation packet records with the job. Profiles cannot grant permission: the validator rejects fields such as permissions, tools, writes, depth, publish, merge or model, and the Leader is not a profile. No personality layer.
 - Delegation by DAG: `goal-graph.mjs` gains `delegationPlan()` and `--host-delegation yes|no|unknown`. From the ready tasks it keeps units with disjoint `files` and no `consumes` contract that another ready unit still `produces` (held units are listed as `FILE_OVERLAP` or `CONTRACT_PENDING`). Three or more such units delegate to at most five agents unless the host is observed not to support delegation (unknown is not no); otherwise the plan is sequential with a measurable `delegationSkippedReason` (`HOST_NO_DELEGATION`, `FEWER_THAN_THREE_INDEPENDENT`, `UNITS_TOO_SMALL`) and the counts. `subagents-and-branches.md` step 4 says to put it in the Orchestration line.
