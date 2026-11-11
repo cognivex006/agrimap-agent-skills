@@ -83,3 +83,26 @@ test('a single goal is A with an empty B group and sizing is warned only above 3
   const ok=analyzeGoals({goals:[{id:'G001',tasks:['T1']},{id:'G002',tasks:['T2']}],tasks:[{id:'T1',hours:3.2},{id:'T2',hours:0.5}]});
   assert.deepEqual(ok.warnings,[]);
 });
+
+test('delegation by DAG: three independent ready units delegate; otherwise a measured reason (6.4.0)',async()=>{
+  const {delegationPlan,DELEGATION_SKIP_REASONS}=await import('../../skills/agrimap-agent-skills/scripts/goal-graph.mjs');
+  const task=(id,extra={})=>({id,hours:1,files:[`${id}.cs`],...extra});
+  const run=(tasks,opts)=>delegationPlan(analyzeGoals({goals:[{id:'G1',tasks:tasks.map(t=>t.id)}],tasks}),tasks,opts);
+  const three=[task('T1'),task('T2'),task('T3')];
+  const go=run(three,{hostDelegation:'yes'});
+  assert.equal(go.mode,'delegate');assert.equal(go.agents,3);assert.deepEqual(go.units,['T1','T2','T3']);
+  assert.equal(run(three,{hostDelegation:'unknown'}).mode,'delegate','unknown is not false');
+  const noHost=run(three,{hostDelegation:'no'});
+  assert.equal(noHost.delegationSkippedReason,'HOST_NO_DELEGATION');assert.equal(noHost.independent,3);
+  const overlap=run([task('T1'),task('T2',{files:['T1.cs']}),task('T3')],{hostDelegation:'yes'});
+  assert.equal(overlap.delegationSkippedReason,'FEWER_THAN_THREE_INDEPENDENT');
+  assert.deepEqual(overlap.held,[{task:'T2',reason:'FILE_OVERLAP',files:['T1.cs']}]);
+  const contract=run([task('T1',{produces:['sp:ORDER_Q']}),task('T2',{consumes:['sp:ORDER_Q']}),task('T3'),task('T4')],{hostDelegation:'yes'});
+  assert.equal(contract.mode,'delegate');assert.deepEqual(contract.units,['T1','T3','T4']);
+  assert.equal(contract.held[0].reason,'CONTRACT_PENDING');
+  const tiny=run(three.map(t=>({...t,hours:0.05})),{hostDelegation:'yes'});
+  assert.equal(tiny.delegationSkippedReason,'UNITS_TOO_SMALL');
+  const six=run(['T1','T2','T3','T4','T5','T6'].map(id=>task(id)),{hostDelegation:'yes'});
+  assert.equal(six.agents,5,'at most five agents');
+  for(const r of [noHost,overlap,tiny]) assert.ok(DELEGATION_SKIP_REASONS.includes(r.delegationSkippedReason));
+});
