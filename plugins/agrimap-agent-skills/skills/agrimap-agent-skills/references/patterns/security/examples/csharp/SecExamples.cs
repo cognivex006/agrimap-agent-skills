@@ -1,4 +1,4 @@
-// Tested BAD/GOOD security examples for C# (6.3.0).
+// Tested BAD/GOOD security examples for C# (6.3.0; SEC-01/15 6.4.2).
 // Run by tests/unit/security-examples.test.mjs (dotnet run on a copy); exits 1 on
 // the first failed check. BAD shapes are the surface file's "Do not write",
 // GOOD shapes its "Write it this way".
@@ -46,6 +46,35 @@ static class Sec03LdapFilter
     }
 }
 
+static class Sec01SqlInjection
+{
+    public sealed record Command(string Text, IReadOnlyDictionary<string, object> Parameters);
+
+    public static Command Bad(string name) =>
+        new($"SELECT Id FROM dbo.Farm WHERE Name = '{name}'", new Dictionary<string, object>());
+
+    // Constant command text (stored procedure through Infrastructure); the value is a parameter.
+    public static Command Good(string name) =>
+        new("dbo.Farm_Q", new Dictionary<string, object> { ["@Name"] = name });
+}
+
+static class Sec15OpenRedirect
+{
+    public static string Bad(string returnUrl) => returnUrl;
+
+    // Same rule as Url.IsLocalUrl: "/path" or "~/path", never "//host" or "/\host".
+    public static string Good(string returnUrl, IReadOnlySet<string> allowedHosts)
+    {
+        if (IsLocalUrl(returnUrl)) return returnUrl;
+        if (Uri.TryCreate(returnUrl, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps && allowedHosts.Contains(uri.Host)) return uri.ToString();
+        return "/";
+    }
+
+    private static bool IsLocalUrl(string url) =>
+        (url.Length > 0 && url[0] == '/' && (url.Length == 1 || (url[1] != '/' && url[1] != '\\')))
+        || (url.Length > 1 && url[0] == '~' && url[1] == '/');
+}
+
 static class Program
 {
     private static int failures;
@@ -70,6 +99,16 @@ static class Program
         Check(Sec03LdapFilter.Bad(attack) == "(uid=*)(uid=*)", "SEC-03 bad lets the value change the filter");
         Check(Sec03LdapFilter.Good(attack) == @"(uid=\2a\29\28uid=\2a)", "SEC-03 good escapes filter metacharacters");
         Check(Sec03LdapFilter.Good("o'brien") == "(uid=o'brien)", "SEC-03 good keeps a valid name unchanged");
+
+        const string sqlAttack = "x' OR '1'='1";
+        Check(Sec01SqlInjection.Bad(sqlAttack).Text.Contains("OR '1'='1'"), "SEC-01 bad puts the value into the SQL text");
+        var cmd = Sec01SqlInjection.Good(sqlAttack);
+        Check(cmd.Text == "dbo.Farm_Q" && (string)cmd.Parameters["@Name"] == sqlAttack, "SEC-01 good keeps constant text and passes the value as a parameter");
+
+        var hosts = new HashSet<string> { "login.agrimap.example" };
+        Check(Sec15OpenRedirect.Bad("//evil.example") == "//evil.example", "SEC-15 bad returns an external target");
+        Check(Sec15OpenRedirect.Good("//evil.example", hosts) == "/" && Sec15OpenRedirect.Good("/\\evil.example", hosts) == "/" && Sec15OpenRedirect.Good("https://evil.example/", hosts) == "/", "SEC-15 good rejects external targets");
+        Check(Sec15OpenRedirect.Good("/farms/1?tab=a", hosts) == "/farms/1?tab=a" && Sec15OpenRedirect.Good("https://login.agrimap.example/cb", hosts) == "https://login.agrimap.example/cb", "SEC-15 good keeps local paths and allow-listed hosts");
 
         return failures == 0 ? 0 : 1;
     }

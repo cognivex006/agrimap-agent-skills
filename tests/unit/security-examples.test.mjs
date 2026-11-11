@@ -11,7 +11,7 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 
 const examples=path.resolve('skills/agrimap-agent-skills/references/patterns/security/examples');
-const TESTED={typescript:['SEC-04','SEC-08','SEC-23'],csharp:['SEC-03','SEC-04']};
+const TESTED={typescript:['SEC-04','SEC-08','SEC-15','SEC-21','SEC-23'],csharp:['SEC-01','SEC-03','SEC-04','SEC-15']};
 
 test('TypeScript SEC-04/08/23: BAD fails the guard, GOOD keeps valid input',async()=>{
   const ex=await import(pathToFileURL(path.join(examples,'typescript/sec-examples.ts')).href);
@@ -28,9 +28,21 @@ test('TypeScript SEC-04/08/23: BAD fails the guard, GOOD keeps valid input',asyn
   assert.equal('a/b///'.replace(ex.BAD_TRAILING_SLASHES,''),ex.goodTrimTrailingSlashes('a/b///'),'same result as the regex it replaces');
 });
 
+test('TypeScript SEC-15/21: BAD lets input escape, GOOD keeps valid input',async()=>{
+  const ex=await import(pathToFileURL(path.join(examples,'typescript/sec-examples.ts')).href);
+  assert.equal(ex.badRedirectTarget('//evil.example'),'//evil.example');
+  for(const bad of ['//evil.example','/\\evil.example','https://evil.example/x','javascript:alert(1)']) assert.equal(ex.goodRedirectTarget(bad),'/',bad);
+  assert.equal(ex.goodRedirectTarget('/farms/1?tab=a'),'/farms/1?tab=a');
+  assert.equal(ex.goodRedirectTarget('https://login.agrimap.example/cb',['https://login.agrimap.example']),'https://login.agrimap.example/cb');
+  const attack='<img src=x onerror=alert(1)>';
+  assert.match(ex.badCardHtml(attack),/<img /);
+  assert.equal(ex.goodCardHtml(attack),'<b>&#60;img src=x onerror=alert(1)&#62;</b>');
+  assert.equal(ex.goodCardHtml('Farm A'),'<b>Farm A</b>');
+});
+
 function hasDotnet(){try{execFileSync('dotnet',['--version'],{stdio:'ignore'});return true;}catch{return false;}}
 
-test('C# SEC-03/04: dotnet run of the examples passes every check',async t=>{
+test('C# SEC-01/03/04/15: dotnet run of the examples passes every check',async t=>{
   if(!hasDotnet()){t.skip('dotnet SDK not installed');return;}
   const dir=await mkdtemp(path.join(os.tmpdir(),'agm-cs-examples-'));
   t.after(()=>rm(dir,{recursive:true,force:true}));
@@ -40,7 +52,7 @@ test('C# SEC-03/04: dotnet run of the examples passes every check',async t=>{
   try{out=execFileSync('dotnet',['run','--nologo','-v','q'],{cwd:dir,encoding:'utf8',timeout:240_000,env:{...process.env,DOTNET_CLI_TELEMETRY_OPTOUT:'1',DOTNET_NOLOGO:'1'}});}
   catch(error){assert.fail(`dotnet run failed:\n${error.stdout||''}${error.stderr||''}`);}
   assert.doesNotMatch(out,/FAIL/);
-  assert.equal((out.match(/^ok /gm)||[]).length,6);
+  assert.equal((out.match(/^ok /gm)||[]).length,11);
 });
 
 test('sec-coverage examplesTested matches the tested examples',()=>{
