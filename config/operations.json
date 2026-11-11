@@ -1177,22 +1177,22 @@
           "regulated"
         ]
       },
-      "description": "Run a read-only security scan of an AgriMap product root over Golden Lint with stable fingerprints, manual-review and blocked lists",
+      "description": "Scan an AgriMap product root for security findings over Golden Lint (read-only), or patch only the findings the requester selected with tiered fixes and a rescan gate",
       "triggers": "agm-security scan only when named explicitly; OWASP or vulnerability requests without the name stay with Golden Lint agm-lint",
-      "mode": "product-read-only",
-      "deliverable": "security report (agm-security-report/1) printed, or written under .agrimap-agent/reports/security only with --write; never a fix",
+      "mode": "action-routed",
+      "deliverable": "scan: security report (agm-security-report/1); patch: selected fixes through the lane skill plus a verify result where only a completed rescan marks a fix verified",
       "requiredInputs": [
         "product root (default: the current project)"
       ],
       "conditionalInputs": [
-        "--write when the requester asks to keep the report; --format json for automation"
+        "--write to keep a scan report; patch needs the scan report and the fingerprints the requester selected"
       ],
-      "example": "-security root=services/agmws-orders",
-      "entrypointPolicy": "Runs only when the requester names agm-security. scan is read-only: no product edits, fixes, suppressions, lifecycle or identity question. Golden Lint is the only detector and is never edited. Use security-scan-workflow.md.",
+      "example": "-security scan",
+      "entrypointPolicy": "Runs only when the requester names agm-security. No action means scan, which is read-only. patch is explicit, edits only the selected findings that are not MANUAL, and never treats a fix as verified without a completed rescan. Golden Lint is the only detector and is never edited. Use security-scan-workflow.md.",
       "instructions": [
-        "Resolve the product root from the request or the current project. Run scripts/security-scan.mjs scan --root <root> --format markdown; add --write only when the requester asks to keep the report.",
-        "Report outcome, findings by class and severity with fingerprints, manual-review classes and blocked items exactly as printed. No findings never means the manual-review classes passed; blocked is never a pass.",
-        "Do not edit product files or start a fix; name the lane skill for a fix the requester selects."
+        "Resolve scan (default) or explicit patch and the product root. Run scripts/security-scan.mjs scan --root <root> --format markdown; add --write only when the requester asks to keep the report.",
+        "For patch, require the scan report and the fingerprints the requester selected; run scripts/security-patch.mjs plan, apply each AUTO_SAFE or GUARDED item through the lane skill (GUARDED with a regression test), report MANUAL items as decisions, then rescan and run security-patch.mjs verify.",
+        "Report exactly what verify printed: verified, still-present, fixed-unverified, manual-decision and any finding introduced in a patched file. Never call a claimed fix verified without a completed rescan."
       ],
       "references": [
         {
@@ -1210,6 +1210,30 @@
         {
           "path": "recommendations.md",
           "why": "evidence-calibrated advice when naming a fix"
+        }
+      ],
+      "actions": [
+        {
+          "name": "scan",
+          "mode": "product-read-only",
+          "activation": "explicit-or-safe-default",
+          "depths": [
+            "light",
+            "standard",
+            "regulated"
+          ],
+          "purpose": "Report Golden Lint security findings with stable fingerprints, plus manual-review classes and blocked checks"
+        },
+        {
+          "name": "patch",
+          "mode": "product-write",
+          "activation": "explicit",
+          "depths": [
+            "light",
+            "standard",
+            "regulated"
+          ],
+          "purpose": "Fix only requester-selected findings by tier (AUTO_SAFE, GUARDED with a regression test, MANUAL reported only) and verify by rescan"
         }
       ]
     },

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "note": "Canonical SEC-01..31 coverage map (6.3.0). authoring = where agent-skills defines and indexes the class; scanner = what Golden Lint detects, recorded read-only from the version below (decision 0001: Golden Lint is never edited from here). scanner.status: automated | heuristic | manual-review | not-implemented. examplesTested = BAD/GOOD examples run by a test in this repository.",
+  "note": "Canonical SEC-01..31 coverage map (6.3.0). authoring = where agent-skills defines and indexes the class; scanner = what Golden Lint detects, recorded read-only from the version below (decision 0001: Golden Lint is never edited from here). scanner.status: automated | heuristic | manual-review | not-implemented. examplesTested = BAD/GOOD examples run by a test in this repository. patchTier (6.4.0): AUTO_SAFE contract-free mechanical fix; GUARDED needs a regression test; MANUAL changes a contract or needs a human step and is never edited by agm-security patch.",
   "goldenLint": {
     "version": "0.1.23",
     "source": "assets/security-classes.json + references/COVERAGE.md"
@@ -31,7 +31,8 @@
           "sql-procedure-sec-sql-injection"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-02",
@@ -56,7 +57,8 @@
           "be-library-sec-code-injection"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-03",
@@ -80,7 +82,8 @@
           "be-library-sec-ldap-injection"
         ]
       },
-      "examplesTested": true
+      "examplesTested": true,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-04",
@@ -107,7 +110,8 @@
           "be-library-sec-path-traversal"
         ]
       },
-      "examplesTested": true
+      "examplesTested": true,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-05",
@@ -130,7 +134,8 @@
           "be-sec-missing-authorization"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "MANUAL"
     },
     {
       "id": "SEC-06",
@@ -156,7 +161,8 @@
           "be-library-sec-error-detail-exposure"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-07",
@@ -184,7 +190,8 @@
           "be-library-sec-sensitive-logging"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "AUTO_SAFE"
     },
     {
       "id": "SEC-08",
@@ -210,7 +217,8 @@
           "be-library-sec-weak-cryptography"
         ]
       },
-      "examplesTested": true
+      "examplesTested": true,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-09",
@@ -234,7 +242,8 @@
           "be-library-sec-token-validation"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-10",
@@ -258,7 +267,8 @@
           "be-library-sec-token-issuance"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-11",
@@ -283,7 +293,8 @@
           "be-library-sec-tls-validation-bypass"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-12",
@@ -307,7 +318,8 @@
           "be-library-sec-unsafe-deserialization"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-13",
@@ -332,7 +344,8 @@
           "be-library-sec-permissive-cors"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "MANUAL"
     },
     {
       "id": "SEC-14",
@@ -356,7 +369,8 @@
           "be-library-sec-method-override"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-15",
@@ -385,7 +399,8 @@
           "fe-library-sec-open-redirect"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-16",
@@ -414,7 +429,8 @@
           "fe-library-sec-sensitive-query-value"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "MANUAL"
     },
     {
       "id": "SEC-17",
@@ -438,7 +454,8 @@
           "be-library-sec-sensitive-response-field"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "MANUAL"
     },
     {
       "id": "SEC-18",
@@ -462,7 +479,8 @@
           "be-library-sec-unbounded-input"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-19",
@@ -485,7 +503,8 @@
           "be-sec-security-headers"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-20",
@@ -509,7 +528,8 @@
           "be-library-sec-insecure-cookie"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-21",
@@ -534,7 +554,8 @@
           "fe-library-sec-dom-xss-sink"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-22",
@@ -558,7 +579,8 @@
           "fe-library-sec-token-web-storage"
         ]
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "MANUAL"
     },
     {
       "id": "SEC-23",
@@ -588,7 +610,8 @@
           "fe-library-sec-regex-backtracking"
         ]
       },
-      "examplesTested": true
+      "examplesTested": true,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-24",
@@ -606,7 +629,8 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-25",
@@ -626,7 +650,8 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-26",
@@ -644,7 +669,8 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-27",
@@ -662,7 +688,8 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     },
     {
       "id": "SEC-28",
@@ -684,7 +711,8 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "MANUAL"
     },
     {
       "id": "SEC-29",
@@ -703,7 +731,8 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "AUTO_SAFE"
     },
     {
       "id": "SEC-30",
@@ -721,7 +750,8 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "AUTO_SAFE"
     },
     {
       "id": "SEC-31",
@@ -740,7 +770,8 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false
+      "examplesTested": false,
+      "patchTier": "GUARDED"
     }
   ]
 }

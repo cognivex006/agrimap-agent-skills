@@ -147,7 +147,22 @@ export async function recordSignal(root, signal, key = userKey()) {
 
 export async function loadPreferences(root, key = userKey()) {
   const value = JSON.parse(await readFile(preferenceFile(root, key), "utf8").catch(() => "null")) || {};
-  return { alwaysAsk: [], declinedPromotion: [], values: {}, ...value };
+  return { alwaysAsk: [], declinedPromotion: [], values: {}, notNow: [], ...value };
+}
+
+// "Not now" (6.4.0): the requester deferred a topic; preflight does not ask it
+// again until `until` passes. Stored per user like other preferences.
+export const NOT_NOW_DEFAULT_DAYS = 30;
+export function activeDeferral(preferences, topic, now = Date.now()) {
+  return (preferences.notNow || []).find(item => item.topic === topic && Date.parse(item.until) > now) || null;
+}
+export async function deferTopic(root, topic, { days = NOT_NOW_DEFAULT_DAYS, now = Date.now(), cardId = null, key = userKey() } = {}) {
+  const span = Math.min(Math.max(Number(days) || NOT_NOW_DEFAULT_DAYS, 1), 365);
+  const prefs = await loadPreferences(root, key);
+  const entry = { topic, until: new Date(now + span * 86_400_000).toISOString(), at: new Date(now).toISOString(), ...(cardId ? { cardId } : {}) };
+  const notNow = [...(prefs.notNow || []).filter(item => item.topic !== topic && Date.parse(item.until) > now), entry];
+  await savePreferences(root, { notNow }, key);
+  return entry;
 }
 
 export async function savePreferences(root, patch, key = userKey()) {
@@ -239,6 +254,10 @@ export async function preflightCard(root, card, { key = userKey(), now = Date.no
     if (option) return { suppressed: { precedent: match.id, file: match.file, option: { id: option.id, label: option.label, value: option.value ?? null }, score: match.score } };
   }
   const preferences = await loadPreferences(root, key);
+  // A deferred topic is not asked again; a blocking card still asks, since the
+  // work cannot continue without the answer.
+  const deferral = card.blocking ? null : activeDeferral(preferences, card.topic, now);
+  if (deferral) return { deferred: { topic: card.topic, until: deferral.until } };
   const mode = found.calibration[card.kind]?.mode || "default";
   const alwaysAsk = preferences.alwaysAsk.includes(card.kind);
   if (autonomyWeighted(card) && mode !== "ask" && !alwaysAsk) {

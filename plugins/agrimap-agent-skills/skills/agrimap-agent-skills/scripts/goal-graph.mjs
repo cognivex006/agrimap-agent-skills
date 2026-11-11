@@ -126,16 +126,51 @@ export function analyzeGoals({ goals = [], tasks = [] } = {}, { accepted = [] } 
   };
 }
 
+// Delegation by DAG (6.4.0): from the ready tasks, take the units that can run
+// at once — disjoint files and no consumed contract that another ready unit is
+// still producing. Three or more such units delegate when the host can;
+// otherwise the plan stays sequential with a measurable reason, never a vague one.
+export const DELEGATION = Object.freeze({ minUnits: 3, maxAgents: 5, minHours: 0.1 });
+export const DELEGATION_SKIP_REASONS = ["HOST_NO_DELEGATION", "FEWER_THAN_THREE_INDEPENDENT", "UNITS_TOO_SMALL"];
+
+export function delegationPlan(analysis, tasks = [], { hostDelegation = "unknown", maxAgents = DELEGATION.maxAgents } = {}) {
+  const taskMap = byId(tasks);
+  const ready = (analysis?.ready || []).map((item) => taskMap.get(String(item.task))).filter(Boolean);
+  const producing = new Set(ready.flatMap((task) => list(task.produces)));
+  const claimed = new Set();
+  const independent = [];
+  const held = [];
+  for (const task of ready) {
+    const files = list(task.files);
+    const waitsOn = list(task.consumes).filter((contract) => producing.has(contract) && !list(task.produces).includes(contract));
+    const overlap = files.filter((file) => claimed.has(file));
+    if (waitsOn.length) held.push({ task: String(task.id), reason: "CONTRACT_PENDING", contracts: waitsOn });
+    else if (overlap.length) held.push({ task: String(task.id), reason: "FILE_OVERLAP", files: overlap });
+    else { for (const file of files) claimed.add(file); independent.push(task); }
+  }
+  const sized = independent.filter((task) => !(Number(task.hours) > 0) || Number(task.hours) >= DELEGATION.minHours);
+  const measured = { ready: ready.length, independent: independent.length, sized: sized.length, held };
+  const sequential = (reason) => ({ mode: "sequential", agents: 0, units: [], delegationSkippedReason: reason, ...measured });
+  if (sized.length < DELEGATION.minUnits) {
+    return sequential(independent.length >= DELEGATION.minUnits ? "UNITS_TOO_SMALL" : "FEWER_THAN_THREE_INDEPENDENT");
+  }
+  // Unknown is not false: only an observed "no" blocks delegation.
+  if (hostDelegation === "no" || hostDelegation === false) return sequential("HOST_NO_DELEGATION");
+  const agents = Math.min(sized.length, Math.max(1, Number(maxAgents) || DELEGATION.maxAgents), DELEGATION.maxAgents);
+  return { mode: "delegate", agents, units: sized.map((task) => String(task.id)), delegationSkippedReason: null, hostDelegation: String(hostDelegation), ...measured };
+}
+
 async function main() {
   const args = parseCliArgs(process.argv.slice(2));
   if (!args.file) {
-    process.stderr.write("usage: goal-graph.mjs --file <graph.json> [--accepted T001,T002]\n");
+    process.stderr.write("usage: goal-graph.mjs --file <graph.json> [--accepted T001,T002] [--host-delegation yes|no|unknown]\n");
     process.exitCode = 2;
     return;
   }
   const graph = JSON.parse(await readFile(path.resolve(String(args.file)), "utf8"));
   const accepted = String(args.accepted || "").split(",").map((value) => value.trim()).filter(Boolean);
   const report = analyzeGoals(graph, { accepted });
+  if (report.ok) report.delegation = delegationPlan(report, graph.tasks, { hostDelegation: args["host-delegation"] ? String(args["host-delegation"]) : "unknown" });
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   process.exitCode = report.ok ? 0 : 1;
 }
