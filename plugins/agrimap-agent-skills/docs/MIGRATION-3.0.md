@@ -56,7 +56,7 @@ Plan target ก่อน ถ้า AGENTS หรือ Deployment เดิม�
 
 ## Verification และข้อจำกัด
 
-Current gates ตรวจ v3 runtime, utilities, SQL file contracts, MCP, generated mirrors และ golden integrity ส่วน test:legacy-v2 เก็บข้อคาดหวังที่ถูกยกเลิก ไม่ใช่หลักฐานว่า v3 ต้องทำแบบเดิม
+Current gates ตรวจ v3 runtime, utilities, SQL file contracts, MCP, generated mirrors และ golden integrity ส่วน test:legacy-v2 ที่เคยเก็บข้อคาดหวังที่ถูกยกเลิกไว้ ถูกยกเลิกใน 6.4.1
 
 Golden byte integrity ต้องคงไว้ข้าม Windows/Linux checkout ไม่ normalize หรือเปลี่ยน manifest hashes เพื่อกลบ content mismatch
 
