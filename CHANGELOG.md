@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## Unreleased (6.4.2)
+
+- Tested BAD/GOOD security examples now cover SEC-01 SQL injection (C#), SEC-15 open redirect (C# and TypeScript) and SEC-21 DOM XSS (TypeScript); `sec-coverage.json` marks them `examplesTested`.
+
 ## 6.4.1 — 2026-11-11
 
 - `test:legacy-v2` is retired (owner decision 2026-11-11). It failed 30 of 45 tests, all on v2 contracts removed on purpose (`tasks/**`, prompt history, `simulate`, `taskId`, old router wording), and ran nowhere. Tests that still describe current behavior moved into `npm test`: SQL output ownership, refactor aliases, SQL writer install, unified SQL refactor, SQL actor/target users, URL matrix, prompt versioning, frontend reuse index and published input fixtures. Three prompt-version tests were updated to the current rule that a new version needs changed content plus requester change evidence. The SQL safety rules that only this suite checked (no execute/edit in analyze/design/explain with FACT/INFERENCE/UNKNOWN, `CREATE OR ALTER PROCEDURE`, no inferred schema semantics) are in `tests/unit/sql-operation-contract.test.mjs`. The removed tests stay in Git history.
