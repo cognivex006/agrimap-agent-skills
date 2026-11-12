@@ -34,3 +34,29 @@ export function goodTrimTrailingSlashes(value: string): string {
   while (end > 0 && value.charCodeAt(end - 1) === 47) end -= 1;
   return value.slice(0, end);
 }
+
+// SEC-15 open redirect -------------------------------------------------------
+export function badRedirectTarget(returnUrl: string): string {
+  return returnUrl; // `https://evil.example` or `//evil.example` leaves the app
+}
+
+// In-app path only (router.navigateByUrl); external hosts come from an allow-list.
+export function goodRedirectTarget(returnUrl: string, allowedOrigins: string[] = []): string {
+  if (returnUrl.startsWith('/') && !returnUrl.startsWith('//') && !returnUrl.startsWith('/\\')) return returnUrl;
+  try {
+    const url = new URL(returnUrl);
+    if (allowedOrigins.includes(url.origin)) return url.href;
+  } catch { /* not absolute */ }
+  return '/';
+}
+
+// SEC-21 DOM XSS -------------------------------------------------------------
+export function badCardHtml(name: string): string {
+  return `<b>${name}</b>`; // assigned to innerHTML / bypassSecurityTrustHtml
+}
+
+// Text interpolation: the value is encoded, never parsed as markup.
+export function goodCardHtml(name: string): string {
+  const encoded = name.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
+  return `<b>${encoded}</b>`;
+}

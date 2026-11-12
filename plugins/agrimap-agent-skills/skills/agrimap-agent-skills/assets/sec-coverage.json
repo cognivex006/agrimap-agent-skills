@@ -31,7 +31,7 @@
           "sql-procedure-sec-sql-injection"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -399,7 +399,7 @@
           "fe-library-sec-open-redirect"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -554,7 +554,7 @@
           "fe-library-sec-dom-xss-sink"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
