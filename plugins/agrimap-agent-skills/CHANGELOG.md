@@ -2,7 +2,7 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased (6.4.2)
+## 6.4.2 — 2026-11-11
 
 - Tested BAD/GOOD security examples now cover SEC-01 SQL injection (C#), SEC-15 open redirect (C# and TypeScript) and SEC-21 DOM XSS (TypeScript); `sec-coverage.json` marks them `examplesTested`.
 
