@@ -75,6 +75,35 @@ static class Sec15OpenRedirect
         || (url.Length > 1 && url[0] == '~' && url[1] == '/');
 }
 
+static class Sec02CommandInjection
+{
+    public static System.Diagnostics.ProcessStartInfo Bad(string file) =>
+        new("cmd", "/c type " + file); // `a.txt & del *` runs a second command
+
+    // Fixed executable; each value is one argument, never parsed by a shell.
+    public static System.Diagnostics.ProcessStartInfo Good(string file)
+    {
+        var info = new System.Diagnostics.ProcessStartInfo("/usr/bin/tool") { UseShellExecute = false };
+        info.ArgumentList.Add("--input");
+        info.ArgumentList.Add(file);
+        return info;
+    }
+}
+
+static class Sec10TokenKey
+{
+    public const string BadKey = "agrimap-secret"; // in source, 112 bits
+
+    // Key from configuration, at least 32 bytes for HS256.
+    public static byte[] Good(string? configured)
+    {
+        if (string.IsNullOrEmpty(configured)) throw new InvalidOperationException("JWT_KEY_MISSING");
+        var key = Encoding.UTF8.GetBytes(configured);
+        if (key.Length < 32) throw new InvalidOperationException("JWT_KEY_TOO_SHORT");
+        return key;
+    }
+}
+
 static class Program
 {
     private static int failures;
@@ -109,6 +138,16 @@ static class Program
         Check(Sec15OpenRedirect.Bad("//evil.example") == "//evil.example", "SEC-15 bad returns an external target");
         Check(Sec15OpenRedirect.Good("//evil.example", hosts) == "/" && Sec15OpenRedirect.Good("/\\evil.example", hosts) == "/" && Sec15OpenRedirect.Good("https://evil.example/", hosts) == "/", "SEC-15 good rejects external targets");
         Check(Sec15OpenRedirect.Good("/farms/1?tab=a", hosts) == "/farms/1?tab=a" && Sec15OpenRedirect.Good("https://login.agrimap.example/cb", hosts) == "https://login.agrimap.example/cb", "SEC-15 good keeps local paths and allow-listed hosts");
+
+        const string cmdAttack = "a.txt & del *";
+        Check(Sec02CommandInjection.Bad(cmdAttack).Arguments.Contains("& del *"), "SEC-02 bad hands the value to a shell");
+        var proc = Sec02CommandInjection.Good(cmdAttack);
+        Check(proc.ArgumentList.Count == 2 && proc.ArgumentList[1] == cmdAttack && !proc.UseShellExecute, "SEC-02 good passes the value as one argument without a shell");
+
+        Check(Encoding.UTF8.GetByteCount(Sec10TokenKey.BadKey) < 32, "SEC-10 bad key is shorter than 256 bits");
+        var keyThrew = false;
+        try { Sec10TokenKey.Good(Sec10TokenKey.BadKey); } catch (InvalidOperationException) { keyThrew = true; }
+        Check(keyThrew && Sec10TokenKey.Good(new string('k', 32)).Length == 32, "SEC-10 good rejects a short key and accepts 32 bytes");
 
         return failures == 0 ? 0 : 1;
     }

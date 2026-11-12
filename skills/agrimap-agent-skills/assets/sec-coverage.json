@@ -57,7 +57,7 @@
           "be-library-sec-code-injection"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -190,7 +190,7 @@
           "be-library-sec-sensitive-logging"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "AUTO_SAFE"
     },
     {
@@ -267,7 +267,7 @@
           "be-library-sec-token-issuance"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -650,7 +650,7 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
