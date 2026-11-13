@@ -104,6 +104,51 @@ static class Sec10TokenKey
     }
 }
 
+static class Sec12Deserialization
+{
+    public sealed record FarmDto(int Id, string Name);
+
+    // Type chosen by the payload (the TypeNameHandling.All / BinaryFormatter shape).
+    public static object? Bad(string typeName, string json) =>
+        Type.GetType(typeName) is { } type ? System.Text.Json.JsonSerializer.Deserialize(json, type) : null;
+
+    // Declared type: a "$type" field in the payload is ignored.
+    public static FarmDto? Good(string json) => System.Text.Json.JsonSerializer.Deserialize<FarmDto>(json);
+}
+
+static class Sec13Cors
+{
+    public static bool Bad(string origin) => true; // SetIsOriginAllowed(_ => true)
+
+    // Exact origins per environment from configuration.
+    public static bool Good(string origin, IReadOnlySet<string> configuredOrigins) => configuredOrigins.Contains(origin);
+}
+
+static class Sec18UnboundedInput
+{
+    public const int MaxPageSize = 100;
+
+    public static int Bad(int pageSize) => pageSize; // 1_000_000 rows in one request
+
+    // [Range(1, MaxPageSize)] equivalent: reject outside the largest legitimate use.
+    public static int Good(int pageSize) =>
+        pageSize is >= 1 and <= MaxPageSize ? pageSize : throw new ArgumentOutOfRangeException(nameof(pageSize), "PAGE_SIZE_OUT_OF_RANGE");
+
+    // [RequestSizeLimit] equivalent for a body read.
+    public static byte[] ReadBounded(Stream body, int maxBytes)
+    {
+        using var buffer = new MemoryStream();
+        var chunk = new byte[8192];
+        int read;
+        while ((read = body.Read(chunk, 0, chunk.Length)) > 0)
+        {
+            if (buffer.Length + read > maxBytes) throw new InvalidOperationException("BODY_TOO_LARGE");
+            buffer.Write(chunk, 0, read);
+        }
+        return buffer.ToArray();
+    }
+}
+
 static class Program
 {
     private static int failures;
@@ -148,6 +193,23 @@ static class Program
         var keyThrew = false;
         try { Sec10TokenKey.Good(Sec10TokenKey.BadKey); } catch (InvalidOperationException) { keyThrew = true; }
         Check(keyThrew && Sec10TokenKey.Good(new string('k', 32)).Length == 32, "SEC-10 good rejects a short key and accepts 32 bytes");
+
+        var gadget = Sec12Deserialization.Bad("System.Collections.Generic.List`1[[System.String]]", "[\"x\"]");
+        Check(gadget is List<string>, "SEC-12 bad lets the payload pick the type");
+        var dto = Sec12Deserialization.Good("{\"$type\":\"System.IO.FileInfo\",\"Id\":7,\"Name\":\"A\"}");
+        Check(dto == new Sec12Deserialization.FarmDto(7, "A"), "SEC-12 good binds only the declared type");
+
+        var origins = new HashSet<string> { "https://app.agrimap.example" };
+        Check(Sec13Cors.Bad("https://evil.example"), "SEC-13 bad allows any origin");
+        Check(Sec13Cors.Good("https://app.agrimap.example", origins) && !Sec13Cors.Good("https://evil.example", origins) && !Sec13Cors.Good("https://app.agrimap.example.evil.example", origins), "SEC-13 good allows only configured origins");
+
+        Check(Sec18UnboundedInput.Bad(1_000_000) == 1_000_000, "SEC-18 bad accepts any page size");
+        var sizeThrew = false;
+        try { Sec18UnboundedInput.Good(1_000_000); } catch (ArgumentOutOfRangeException) { sizeThrew = true; }
+        Check(sizeThrew && Sec18UnboundedInput.Good(50) == 50, "SEC-18 good rejects oversized pages and keeps valid ones");
+        var bodyThrew = false;
+        try { Sec18UnboundedInput.ReadBounded(new MemoryStream(new byte[20_000]), 10_000); } catch (InvalidOperationException) { bodyThrew = true; }
+        Check(bodyThrew && Sec18UnboundedInput.ReadBounded(new MemoryStream(new byte[5_000]), 10_000).Length == 5_000, "SEC-18 good bounds the body read");
 
         return failures == 0 ? 0 : 1;
     }

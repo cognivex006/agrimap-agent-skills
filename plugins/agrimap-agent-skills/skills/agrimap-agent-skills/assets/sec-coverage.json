@@ -318,7 +318,7 @@
           "be-library-sec-unsafe-deserialization"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -344,7 +344,7 @@
           "be-library-sec-permissive-cors"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "MANUAL"
     },
     {
@@ -429,7 +429,7 @@
           "fe-library-sec-sensitive-query-value"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "MANUAL"
     },
     {
@@ -479,7 +479,7 @@
           "be-library-sec-unbounded-input"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
