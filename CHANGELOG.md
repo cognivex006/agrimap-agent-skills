@@ -2,7 +2,7 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased (6.4.3)
+## 6.4.3 — 2026-11-13
 
 - Tested BAD/GOOD security examples now also cover SEC-02 command injection and SEC-10 token key length (C#), SEC-07 sensitive logging and SEC-25 archive expansion (TypeScript), SEC-12 declared-type deserialization, SEC-13 CORS origin allow-list and SEC-18 bounded page size and body (C#), and SEC-16 secrets out of the URL (TypeScript); SEC-06 error codes instead of exception detail, SEC-17 response DTO projection, SEC-28 secrets from the environment and SEC-31 forwarded headers only from known proxies (C#); SEC-09 full token validation, SEC-11 default TLS validation and SEC-20 Secure/HttpOnly cookies (C#). 23 of 31 classes now have run examples; the rest need nginx, Docker or a framework runtime and stay catalog-only.
 
