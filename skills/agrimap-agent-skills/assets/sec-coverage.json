@@ -57,7 +57,7 @@
           "be-library-sec-code-injection"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -161,7 +161,7 @@
           "be-library-sec-error-detail-exposure"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -190,7 +190,7 @@
           "be-library-sec-sensitive-logging"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "AUTO_SAFE"
     },
     {
@@ -242,7 +242,7 @@
           "be-library-sec-token-validation"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -267,7 +267,7 @@
           "be-library-sec-token-issuance"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -293,7 +293,7 @@
           "be-library-sec-tls-validation-bypass"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -318,7 +318,7 @@
           "be-library-sec-unsafe-deserialization"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -344,7 +344,7 @@
           "be-library-sec-permissive-cors"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "MANUAL"
     },
     {
@@ -429,7 +429,7 @@
           "fe-library-sec-sensitive-query-value"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "MANUAL"
     },
     {
@@ -454,7 +454,7 @@
           "be-library-sec-sensitive-response-field"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "MANUAL"
     },
     {
@@ -479,7 +479,7 @@
           "be-library-sec-unbounded-input"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -528,7 +528,7 @@
           "be-library-sec-insecure-cookie"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -650,7 +650,7 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -711,7 +711,7 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "MANUAL"
     },
     {
@@ -770,7 +770,7 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     }
   ]

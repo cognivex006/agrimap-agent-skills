@@ -75,6 +75,166 @@ static class Sec15OpenRedirect
         || (url.Length > 1 && url[0] == '~' && url[1] == '/');
 }
 
+static class Sec02CommandInjection
+{
+    public static System.Diagnostics.ProcessStartInfo Bad(string file) =>
+        new("cmd", "/c type " + file); // `a.txt & del *` runs a second command
+
+    // Fixed executable; each value is one argument, never parsed by a shell.
+    public static System.Diagnostics.ProcessStartInfo Good(string file)
+    {
+        var info = new System.Diagnostics.ProcessStartInfo("/usr/bin/tool") { UseShellExecute = false };
+        info.ArgumentList.Add("--input");
+        info.ArgumentList.Add(file);
+        return info;
+    }
+}
+
+static class Sec10TokenKey
+{
+    public const string BadKey = "agrimap-secret"; // in source, 112 bits
+
+    // Key from configuration, at least 32 bytes for HS256.
+    public static byte[] Good(string? configured)
+    {
+        if (string.IsNullOrEmpty(configured)) throw new InvalidOperationException("JWT_KEY_MISSING");
+        var key = Encoding.UTF8.GetBytes(configured);
+        if (key.Length < 32) throw new InvalidOperationException("JWT_KEY_TOO_SHORT");
+        return key;
+    }
+}
+
+static class Sec12Deserialization
+{
+    public sealed record FarmDto(int Id, string Name);
+
+    // Type chosen by the payload (the TypeNameHandling.All / BinaryFormatter shape).
+    public static object? Bad(string typeName, string json) =>
+        Type.GetType(typeName) is { } type ? System.Text.Json.JsonSerializer.Deserialize(json, type) : null;
+
+    // Declared type: a "$type" field in the payload is ignored.
+    public static FarmDto? Good(string json) => System.Text.Json.JsonSerializer.Deserialize<FarmDto>(json);
+}
+
+static class Sec13Cors
+{
+    public static bool Bad(string origin) => true; // SetIsOriginAllowed(_ => true)
+
+    // Exact origins per environment from configuration.
+    public static bool Good(string origin, IReadOnlySet<string> configuredOrigins) => configuredOrigins.Contains(origin);
+}
+
+static class Sec18UnboundedInput
+{
+    public const int MaxPageSize = 100;
+
+    public static int Bad(int pageSize) => pageSize; // 1_000_000 rows in one request
+
+    // [Range(1, MaxPageSize)] equivalent: reject outside the largest legitimate use.
+    public static int Good(int pageSize) =>
+        pageSize is >= 1 and <= MaxPageSize ? pageSize : throw new ArgumentOutOfRangeException(nameof(pageSize), "PAGE_SIZE_OUT_OF_RANGE");
+
+    // [RequestSizeLimit] equivalent for a body read.
+    public static byte[] ReadBounded(Stream body, int maxBytes)
+    {
+        using var buffer = new MemoryStream();
+        var chunk = new byte[8192];
+        int read;
+        while ((read = body.Read(chunk, 0, chunk.Length)) > 0)
+        {
+            if (buffer.Length + read > maxBytes) throw new InvalidOperationException("BODY_TOO_LARGE");
+            buffer.Write(chunk, 0, read);
+        }
+        return buffer.ToArray();
+    }
+}
+
+static class Sec06ErrorDetail
+{
+    public sealed class AppException(string code) : Exception(code) { public string Code { get; } = code; }
+    public sealed record ErrorBody(string Code, string Message);
+
+    public static ErrorBody Bad(Exception ex) => new("ERROR", ex.Message + " " + ex.StackTrace); // internals to the caller
+
+    // AppException code with the configured message; anything else is a generic code.
+    public static ErrorBody Good(Exception ex, IReadOnlyDictionary<string, string> messages) =>
+        ex is AppException app && messages.TryGetValue(app.Code, out var text)
+            ? new(app.Code, text)
+            : new("SYSTEM_ERROR", messages["SYSTEM_ERROR"]);
+}
+
+static class Sec17ResponseField
+{
+    public sealed record UserEntity(int Id, string Name, string Email, string PasswordHash, string Salt);
+    public sealed record UserListItem(int Id, string Name);
+
+    public static UserEntity Bad(UserEntity user) => user; // PasswordHash and Salt serialized
+
+    // Response DTO with only what the list needs.
+    public static UserListItem Good(UserEntity user) => new(user.Id, user.Name);
+}
+
+static class Sec28CommittedSecret
+{
+    public const string BadConnectionString = "Server=db;User Id=sa;Password=P@ssw0rd!"; // in source and history
+
+    // From the environment or a secret store; fail fast when missing.
+    public static string Good(Func<string, string?> env) =>
+        env("ConnectionStrings__Main") is { Length: > 0 } value ? value : throw new InvalidOperationException("CONNECTION_STRING_MISSING");
+}
+
+static class Sec31ForwardedHeaders
+{
+    // Empty KnownProxies/KnownNetworks: every peer may set X-Forwarded-For.
+    public static string Bad(string peerIp, string? forwardedFor) => forwardedFor ?? peerIp;
+
+    // Client IP from the header only when the peer is a configured proxy.
+    public static string Good(string peerIp, string? forwardedFor, IReadOnlySet<string> knownProxies) =>
+        knownProxies.Contains(peerIp) && !string.IsNullOrWhiteSpace(forwardedFor)
+            ? forwardedFor.Split(',')[^1].Trim()
+            : peerIp;
+}
+
+static class Sec09TokenValidation
+{
+    // Shape of TokenValidationParameters without the package.
+    public sealed record Options(bool ValidateIssuer, bool ValidateAudience, bool ValidateLifetime, bool RequireSignedTokens, string? Issuer, string? Audience);
+
+    public static Options Bad() => new(false, false, false, false, null, null);
+
+    // All four validated; issuer and audience from configuration.
+    public static Options Good(string issuer, string audience) =>
+        string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience)
+            ? throw new InvalidOperationException("JWT_CONFIG_MISSING")
+            : new(true, true, true, true, issuer, audience);
+
+    public static bool Accepts(Options o, string iss, string aud, DateTimeOffset expires, bool signed, DateTimeOffset now) =>
+        (!o.RequireSignedTokens || signed) && (!o.ValidateIssuer || iss == o.Issuer)
+        && (!o.ValidateAudience || aud == o.Audience) && (!o.ValidateLifetime || expires > now);
+}
+
+static class Sec11TlsBypass
+{
+    public static HttpClientHandler Bad() => new() { ServerCertificateCustomValidationCallback = (_, _, _, _) => true };
+
+    // Default validation; an internal CA belongs in the machine trust store.
+    public static HttpClientHandler Good() => new();
+}
+
+static class Sec20Cookie
+{
+    // Shape of CookieOptions; Secure toggled by configuration is the bad case.
+    public sealed record Options(bool Secure, bool HttpOnly, string SameSite);
+
+    public static Options Bad(bool secureFromConfig) => new(secureFromConfig, false, "None");
+
+    // Literal Secure and HttpOnly, used for both append and delete.
+    public static Options Good() => new(true, true, "Strict");
+
+    public static string SetCookie(string name, string value, Options o) =>
+        $"{name}={value}; Path=/" + (o.Secure ? "; Secure" : "") + (o.HttpOnly ? "; HttpOnly" : "") + $"; SameSite={o.SameSite}";
+}
+
 static class Program
 {
     private static int failures;
@@ -109,6 +269,67 @@ static class Program
         Check(Sec15OpenRedirect.Bad("//evil.example") == "//evil.example", "SEC-15 bad returns an external target");
         Check(Sec15OpenRedirect.Good("//evil.example", hosts) == "/" && Sec15OpenRedirect.Good("/\\evil.example", hosts) == "/" && Sec15OpenRedirect.Good("https://evil.example/", hosts) == "/", "SEC-15 good rejects external targets");
         Check(Sec15OpenRedirect.Good("/farms/1?tab=a", hosts) == "/farms/1?tab=a" && Sec15OpenRedirect.Good("https://login.agrimap.example/cb", hosts) == "https://login.agrimap.example/cb", "SEC-15 good keeps local paths and allow-listed hosts");
+
+        const string cmdAttack = "a.txt & del *";
+        Check(Sec02CommandInjection.Bad(cmdAttack).Arguments.Contains("& del *"), "SEC-02 bad hands the value to a shell");
+        var proc = Sec02CommandInjection.Good(cmdAttack);
+        Check(proc.ArgumentList.Count == 2 && proc.ArgumentList[1] == cmdAttack && !proc.UseShellExecute, "SEC-02 good passes the value as one argument without a shell");
+
+        Check(Encoding.UTF8.GetByteCount(Sec10TokenKey.BadKey) < 32, "SEC-10 bad key is shorter than 256 bits");
+        var keyThrew = false;
+        try { Sec10TokenKey.Good(Sec10TokenKey.BadKey); } catch (InvalidOperationException) { keyThrew = true; }
+        Check(keyThrew && Sec10TokenKey.Good(new string('k', 32)).Length == 32, "SEC-10 good rejects a short key and accepts 32 bytes");
+
+        var gadget = Sec12Deserialization.Bad("System.Collections.Generic.List`1[[System.String]]", "[\"x\"]");
+        Check(gadget is List<string>, "SEC-12 bad lets the payload pick the type");
+        var dto = Sec12Deserialization.Good("{\"$type\":\"System.IO.FileInfo\",\"Id\":7,\"Name\":\"A\"}");
+        Check(dto == new Sec12Deserialization.FarmDto(7, "A"), "SEC-12 good binds only the declared type");
+
+        var origins = new HashSet<string> { "https://app.agrimap.example" };
+        Check(Sec13Cors.Bad("https://evil.example"), "SEC-13 bad allows any origin");
+        Check(Sec13Cors.Good("https://app.agrimap.example", origins) && !Sec13Cors.Good("https://evil.example", origins) && !Sec13Cors.Good("https://app.agrimap.example.evil.example", origins), "SEC-13 good allows only configured origins");
+
+        Check(Sec18UnboundedInput.Bad(1_000_000) == 1_000_000, "SEC-18 bad accepts any page size");
+        var sizeThrew = false;
+        try { Sec18UnboundedInput.Good(1_000_000); } catch (ArgumentOutOfRangeException) { sizeThrew = true; }
+        Check(sizeThrew && Sec18UnboundedInput.Good(50) == 50, "SEC-18 good rejects oversized pages and keeps valid ones");
+        var bodyThrew = false;
+        try { Sec18UnboundedInput.ReadBounded(new MemoryStream(new byte[20_000]), 10_000); } catch (InvalidOperationException) { bodyThrew = true; }
+        Check(bodyThrew && Sec18UnboundedInput.ReadBounded(new MemoryStream(new byte[5_000]), 10_000).Length == 5_000, "SEC-18 good bounds the body read");
+
+        var messages = new Dictionary<string, string> { ["FARM_NOT_FOUND"] = "ไม่พบข้อมูลแปลง", ["SYSTEM_ERROR"] = "ระบบขัดข้อง" };
+        var dbError = new InvalidOperationException("Login failed for user 'sa' on server db01");
+        Check(Sec06ErrorDetail.Bad(dbError).Message.Contains("db01"), "SEC-06 bad returns exception detail");
+        Check(Sec06ErrorDetail.Good(dbError, messages) == new Sec06ErrorDetail.ErrorBody("SYSTEM_ERROR", "ระบบขัดข้อง") && Sec06ErrorDetail.Good(new Sec06ErrorDetail.AppException("FARM_NOT_FOUND"), messages).Message == "ไม่พบข้อมูลแปลง", "SEC-06 good returns only the code and configured message");
+
+        var user = new Sec17ResponseField.UserEntity(1, "Somchai", "s@example.th", "hash", "salt");
+        Check(System.Text.Json.JsonSerializer.Serialize(Sec17ResponseField.Bad(user)).Contains("PasswordHash"), "SEC-17 bad serializes the password hash");
+        var item = System.Text.Json.JsonSerializer.Serialize(Sec17ResponseField.Good(user));
+        Check(!item.Contains("PasswordHash") && !item.Contains("Salt") && !item.Contains("s@example.th") && item.Contains("Somchai"), "SEC-17 good returns only the listed fields");
+
+        Check(Sec28CommittedSecret.BadConnectionString.Contains("Password="), "SEC-28 bad keeps the password in source");
+        var missing = false;
+        try { Sec28CommittedSecret.Good(_ => null); } catch (InvalidOperationException) { missing = true; }
+        Check(missing && Sec28CommittedSecret.Good(k => k == "ConnectionStrings__Main" ? "from-env" : null) == "from-env", "SEC-28 good reads the environment and fails when missing");
+
+        var proxies = new HashSet<string> { "10.0.0.5" };
+        Check(Sec31ForwardedHeaders.Bad("203.0.113.9", "127.0.0.1") == "127.0.0.1", "SEC-31 bad trusts a spoofed header from any peer");
+        Check(Sec31ForwardedHeaders.Good("203.0.113.9", "127.0.0.1", proxies) == "203.0.113.9" && Sec31ForwardedHeaders.Good("10.0.0.5", "1.2.3.4, 198.51.100.7", proxies) == "198.51.100.7", "SEC-31 good uses the header only from a known proxy");
+
+        var now = DateTimeOffset.UtcNow;
+        Check(Sec09TokenValidation.Accepts(Sec09TokenValidation.Bad(), "evil", "other", now.AddHours(-1), false, now), "SEC-09 bad accepts an unsigned, expired, foreign token");
+        var jwt = Sec09TokenValidation.Good("https://id.agrimap.example", "agmws-orders");
+        Check(!Sec09TokenValidation.Accepts(jwt, "evil", "agmws-orders", now.AddHours(1), true, now)
+            && !Sec09TokenValidation.Accepts(jwt, "https://id.agrimap.example", "agmws-orders", now.AddHours(-1), true, now)
+            && !Sec09TokenValidation.Accepts(jwt, "https://id.agrimap.example", "agmws-orders", now.AddHours(1), false, now)
+            && Sec09TokenValidation.Accepts(jwt, "https://id.agrimap.example", "agmws-orders", now.AddHours(1), true, now), "SEC-09 good rejects wrong issuer, expiry and unsigned, keeps a valid token");
+
+        using (var bad = Sec11TlsBypass.Bad()) Check(bad.ServerCertificateCustomValidationCallback is not null, "SEC-11 bad overrides certificate validation");
+        using (var good = Sec11TlsBypass.Good()) Check(good.ServerCertificateCustomValidationCallback is null, "SEC-11 good keeps default validation");
+
+        Check(!Sec20Cookie.SetCookie("agm_session", "v", Sec20Cookie.Bad(false)).Contains("Secure"), "SEC-20 bad loses Secure when configuration turns it off");
+        var cookie = Sec20Cookie.SetCookie("agm_session", "v", Sec20Cookie.Good());
+        Check(cookie.Contains("; Secure") && cookie.Contains("; HttpOnly") && cookie.Contains("SameSite=Strict"), "SEC-20 good always sets Secure and HttpOnly");
 
         return failures == 0 ? 0 : 1;
     }

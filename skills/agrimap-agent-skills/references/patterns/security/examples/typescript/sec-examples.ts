@@ -60,3 +60,52 @@ export function goodCardHtml(name: string): string {
   const encoded = name.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
   return `<b>${encoded}</b>`;
 }
+
+// SEC-07 sensitive logging -----------------------------------------------------
+export interface SessionInfo { userId: string; accessToken?: string; email?: string }
+
+export function badLogLine(session: SessionInfo): string {
+  return `session ${JSON.stringify(session)}`; // token and personal data in the log
+}
+
+// Log the id and presence flags only.
+export function goodLogLine(session: SessionInfo): string {
+  return `session user=${session.userId} token=${session.accessToken ? 'present' : 'none'}`;
+}
+
+// SEC-16 sensitive query value ---------------------------------------------------
+export function badVerifyRequest(baseUrl: string, citizenId: string, token: string): { url: string } {
+  return { url: `${baseUrl}/verify?citizenId=${citizenId}&token=${token}` }; // lands in access logs and history
+}
+
+// Identifiers safe in logs stay in the URL; secrets go in a header or the body.
+export function goodVerifyRequest(baseUrl: string, citizenId: string, token: string): { url: string; headers: Record<string, string>; body: string } {
+  return { url: `${baseUrl}/verify`, headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify({ citizenId }) };
+}
+
+// SEC-25 archive expansion ----------------------------------------------------
+export interface ArchiveEntry { name: string; size: number }
+
+export function badEntriesAllowed(entries: ArchiveEntry[]): boolean {
+  return !entries.some((e) => e.name.includes('../')); // misses `..\`, `/abs`, `C:` and size limits
+}
+
+export const ARCHIVE_LIMITS = { maxEntries: 100, maxTotalBytes: 500 * 1024 * 1024, maxRatio: 10 };
+
+export function isUnsafeEntryName(name: string): boolean {
+  const n = name.replaceAll('\\', '/');
+  return n.startsWith('/') || /^[a-zA-Z]:/.test(n) || n.split('/').includes('..');
+}
+
+// Returns the rejection code, or null when every entry is within the limits.
+export function checkArchive(entries: ArchiveEntry[], compressedBytes: number, limits = ARCHIVE_LIMITS): string | null {
+  if (entries.length > limits.maxEntries) return 'too_many_entries';
+  let total = 0;
+  for (const entry of entries) {
+    if (isUnsafeEntryName(entry.name)) return 'unsafe_entry_name';
+    total += entry.size;
+    if (total > limits.maxTotalBytes) return 'archive_too_large';
+  }
+  if (total > compressedBytes * limits.maxRatio) return 'compression_ratio';
+  return null;
+}
