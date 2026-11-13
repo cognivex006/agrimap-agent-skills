@@ -161,7 +161,7 @@
           "be-library-sec-error-detail-exposure"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -454,7 +454,7 @@
           "be-library-sec-sensitive-response-field"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "MANUAL"
     },
     {
@@ -711,7 +711,7 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "MANUAL"
     },
     {
@@ -770,7 +770,7 @@
         "lanes": [],
         "detectors": []
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     }
   ]

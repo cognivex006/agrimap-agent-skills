@@ -149,6 +149,52 @@ static class Sec18UnboundedInput
     }
 }
 
+static class Sec06ErrorDetail
+{
+    public sealed class AppException(string code) : Exception(code) { public string Code { get; } = code; }
+    public sealed record ErrorBody(string Code, string Message);
+
+    public static ErrorBody Bad(Exception ex) => new("ERROR", ex.Message + " " + ex.StackTrace); // internals to the caller
+
+    // AppException code with the configured message; anything else is a generic code.
+    public static ErrorBody Good(Exception ex, IReadOnlyDictionary<string, string> messages) =>
+        ex is AppException app && messages.TryGetValue(app.Code, out var text)
+            ? new(app.Code, text)
+            : new("SYSTEM_ERROR", messages["SYSTEM_ERROR"]);
+}
+
+static class Sec17ResponseField
+{
+    public sealed record UserEntity(int Id, string Name, string Email, string PasswordHash, string Salt);
+    public sealed record UserListItem(int Id, string Name);
+
+    public static UserEntity Bad(UserEntity user) => user; // PasswordHash and Salt serialized
+
+    // Response DTO with only what the list needs.
+    public static UserListItem Good(UserEntity user) => new(user.Id, user.Name);
+}
+
+static class Sec28CommittedSecret
+{
+    public const string BadConnectionString = "Server=db;User Id=sa;Password=P@ssw0rd!"; // in source and history
+
+    // From the environment or a secret store; fail fast when missing.
+    public static string Good(Func<string, string?> env) =>
+        env("ConnectionStrings__Main") is { Length: > 0 } value ? value : throw new InvalidOperationException("CONNECTION_STRING_MISSING");
+}
+
+static class Sec31ForwardedHeaders
+{
+    // Empty KnownProxies/KnownNetworks: every peer may set X-Forwarded-For.
+    public static string Bad(string peerIp, string? forwardedFor) => forwardedFor ?? peerIp;
+
+    // Client IP from the header only when the peer is a configured proxy.
+    public static string Good(string peerIp, string? forwardedFor, IReadOnlySet<string> knownProxies) =>
+        knownProxies.Contains(peerIp) && !string.IsNullOrWhiteSpace(forwardedFor)
+            ? forwardedFor.Split(',')[^1].Trim()
+            : peerIp;
+}
+
 static class Program
 {
     private static int failures;
@@ -210,6 +256,25 @@ static class Program
         var bodyThrew = false;
         try { Sec18UnboundedInput.ReadBounded(new MemoryStream(new byte[20_000]), 10_000); } catch (InvalidOperationException) { bodyThrew = true; }
         Check(bodyThrew && Sec18UnboundedInput.ReadBounded(new MemoryStream(new byte[5_000]), 10_000).Length == 5_000, "SEC-18 good bounds the body read");
+
+        var messages = new Dictionary<string, string> { ["FARM_NOT_FOUND"] = "ไม่พบข้อมูลแปลง", ["SYSTEM_ERROR"] = "ระบบขัดข้อง" };
+        var dbError = new InvalidOperationException("Login failed for user 'sa' on server db01");
+        Check(Sec06ErrorDetail.Bad(dbError).Message.Contains("db01"), "SEC-06 bad returns exception detail");
+        Check(Sec06ErrorDetail.Good(dbError, messages) == new Sec06ErrorDetail.ErrorBody("SYSTEM_ERROR", "ระบบขัดข้อง") && Sec06ErrorDetail.Good(new Sec06ErrorDetail.AppException("FARM_NOT_FOUND"), messages).Message == "ไม่พบข้อมูลแปลง", "SEC-06 good returns only the code and configured message");
+
+        var user = new Sec17ResponseField.UserEntity(1, "Somchai", "s@example.th", "hash", "salt");
+        Check(System.Text.Json.JsonSerializer.Serialize(Sec17ResponseField.Bad(user)).Contains("PasswordHash"), "SEC-17 bad serializes the password hash");
+        var item = System.Text.Json.JsonSerializer.Serialize(Sec17ResponseField.Good(user));
+        Check(!item.Contains("PasswordHash") && !item.Contains("Salt") && !item.Contains("s@example.th") && item.Contains("Somchai"), "SEC-17 good returns only the listed fields");
+
+        Check(Sec28CommittedSecret.BadConnectionString.Contains("Password="), "SEC-28 bad keeps the password in source");
+        var missing = false;
+        try { Sec28CommittedSecret.Good(_ => null); } catch (InvalidOperationException) { missing = true; }
+        Check(missing && Sec28CommittedSecret.Good(k => k == "ConnectionStrings__Main" ? "from-env" : null) == "from-env", "SEC-28 good reads the environment and fails when missing");
+
+        var proxies = new HashSet<string> { "10.0.0.5" };
+        Check(Sec31ForwardedHeaders.Bad("203.0.113.9", "127.0.0.1") == "127.0.0.1", "SEC-31 bad trusts a spoofed header from any peer");
+        Check(Sec31ForwardedHeaders.Good("203.0.113.9", "127.0.0.1", proxies) == "203.0.113.9" && Sec31ForwardedHeaders.Good("10.0.0.5", "1.2.3.4, 198.51.100.7", proxies) == "198.51.100.7", "SEC-31 good uses the header only from a known proxy");
 
         return failures == 0 ? 0 : 1;
     }
