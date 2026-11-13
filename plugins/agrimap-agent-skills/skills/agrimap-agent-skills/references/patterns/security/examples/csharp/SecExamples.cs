@@ -195,6 +195,46 @@ static class Sec31ForwardedHeaders
             : peerIp;
 }
 
+static class Sec09TokenValidation
+{
+    // Shape of TokenValidationParameters without the package.
+    public sealed record Options(bool ValidateIssuer, bool ValidateAudience, bool ValidateLifetime, bool RequireSignedTokens, string? Issuer, string? Audience);
+
+    public static Options Bad() => new(false, false, false, false, null, null);
+
+    // All four validated; issuer and audience from configuration.
+    public static Options Good(string issuer, string audience) =>
+        string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience)
+            ? throw new InvalidOperationException("JWT_CONFIG_MISSING")
+            : new(true, true, true, true, issuer, audience);
+
+    public static bool Accepts(Options o, string iss, string aud, DateTimeOffset expires, bool signed, DateTimeOffset now) =>
+        (!o.RequireSignedTokens || signed) && (!o.ValidateIssuer || iss == o.Issuer)
+        && (!o.ValidateAudience || aud == o.Audience) && (!o.ValidateLifetime || expires > now);
+}
+
+static class Sec11TlsBypass
+{
+    public static HttpClientHandler Bad() => new() { ServerCertificateCustomValidationCallback = (_, _, _, _) => true };
+
+    // Default validation; an internal CA belongs in the machine trust store.
+    public static HttpClientHandler Good() => new();
+}
+
+static class Sec20Cookie
+{
+    // Shape of CookieOptions; Secure toggled by configuration is the bad case.
+    public sealed record Options(bool Secure, bool HttpOnly, string SameSite);
+
+    public static Options Bad(bool secureFromConfig) => new(secureFromConfig, false, "None");
+
+    // Literal Secure and HttpOnly, used for both append and delete.
+    public static Options Good() => new(true, true, "Strict");
+
+    public static string SetCookie(string name, string value, Options o) =>
+        $"{name}={value}; Path=/" + (o.Secure ? "; Secure" : "") + (o.HttpOnly ? "; HttpOnly" : "") + $"; SameSite={o.SameSite}";
+}
+
 static class Program
 {
     private static int failures;
@@ -275,6 +315,21 @@ static class Program
         var proxies = new HashSet<string> { "10.0.0.5" };
         Check(Sec31ForwardedHeaders.Bad("203.0.113.9", "127.0.0.1") == "127.0.0.1", "SEC-31 bad trusts a spoofed header from any peer");
         Check(Sec31ForwardedHeaders.Good("203.0.113.9", "127.0.0.1", proxies) == "203.0.113.9" && Sec31ForwardedHeaders.Good("10.0.0.5", "1.2.3.4, 198.51.100.7", proxies) == "198.51.100.7", "SEC-31 good uses the header only from a known proxy");
+
+        var now = DateTimeOffset.UtcNow;
+        Check(Sec09TokenValidation.Accepts(Sec09TokenValidation.Bad(), "evil", "other", now.AddHours(-1), false, now), "SEC-09 bad accepts an unsigned, expired, foreign token");
+        var jwt = Sec09TokenValidation.Good("https://id.agrimap.example", "agmws-orders");
+        Check(!Sec09TokenValidation.Accepts(jwt, "evil", "agmws-orders", now.AddHours(1), true, now)
+            && !Sec09TokenValidation.Accepts(jwt, "https://id.agrimap.example", "agmws-orders", now.AddHours(-1), true, now)
+            && !Sec09TokenValidation.Accepts(jwt, "https://id.agrimap.example", "agmws-orders", now.AddHours(1), false, now)
+            && Sec09TokenValidation.Accepts(jwt, "https://id.agrimap.example", "agmws-orders", now.AddHours(1), true, now), "SEC-09 good rejects wrong issuer, expiry and unsigned, keeps a valid token");
+
+        using (var bad = Sec11TlsBypass.Bad()) Check(bad.ServerCertificateCustomValidationCallback is not null, "SEC-11 bad overrides certificate validation");
+        using (var good = Sec11TlsBypass.Good()) Check(good.ServerCertificateCustomValidationCallback is null, "SEC-11 good keeps default validation");
+
+        Check(!Sec20Cookie.SetCookie("agm_session", "v", Sec20Cookie.Bad(false)).Contains("Secure"), "SEC-20 bad loses Secure when configuration turns it off");
+        var cookie = Sec20Cookie.SetCookie("agm_session", "v", Sec20Cookie.Good());
+        Check(cookie.Contains("; Secure") && cookie.Contains("; HttpOnly") && cookie.Contains("SameSite=Strict"), "SEC-20 good always sets Secure and HttpOnly");
 
         return failures == 0 ? 0 : 1;
     }
