@@ -242,7 +242,7 @@
           "be-library-sec-token-validation"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -293,7 +293,7 @@
           "be-library-sec-tls-validation-bypass"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
@@ -528,7 +528,7 @@
           "be-library-sec-insecure-cookie"
         ]
       },
-      "examplesTested": false,
+      "examplesTested": true,
       "patchTier": "GUARDED"
     },
     {
