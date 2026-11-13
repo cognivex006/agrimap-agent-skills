@@ -73,6 +73,16 @@ export function goodLogLine(session: SessionInfo): string {
   return `session user=${session.userId} token=${session.accessToken ? 'present' : 'none'}`;
 }
 
+// SEC-16 sensitive query value ---------------------------------------------------
+export function badVerifyRequest(baseUrl: string, citizenId: string, token: string): { url: string } {
+  return { url: `${baseUrl}/verify?citizenId=${citizenId}&token=${token}` }; // lands in access logs and history
+}
+
+// Identifiers safe in logs stay in the URL; secrets go in a header or the body.
+export function goodVerifyRequest(baseUrl: string, citizenId: string, token: string): { url: string; headers: Record<string, string>; body: string } {
+  return { url: `${baseUrl}/verify`, headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify({ citizenId }) };
+}
+
 // SEC-25 archive expansion ----------------------------------------------------
 export interface ArchiveEntry { name: string; size: number }
 

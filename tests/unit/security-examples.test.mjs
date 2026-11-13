@@ -11,7 +11,16 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 
 const examples=path.resolve('skills/agrimap-agent-skills/references/patterns/security/examples');
-const TESTED={typescript:['SEC-04','SEC-08','SEC-15','SEC-21','SEC-23','SEC-07','SEC-25'],csharp:['SEC-01','SEC-02','SEC-03','SEC-04','SEC-10','SEC-15']};
+const TESTED={typescript:['SEC-04','SEC-08','SEC-15','SEC-21','SEC-23','SEC-07','SEC-25','SEC-16'],csharp:['SEC-01','SEC-02','SEC-03','SEC-04','SEC-10','SEC-12','SEC-13','SEC-15','SEC-18']};
+
+test('TypeScript SEC-16: secrets leave the URL',async()=>{
+  const ex=await import(pathToFileURL(path.join(examples,'typescript/sec-examples.ts')).href);
+  assert.match(ex.badVerifyRequest('https://api.example','1101700000000','tok').url,/citizenId=1101700000000&token=tok/);
+  const good=ex.goodVerifyRequest('https://api.example','1101700000000','tok');
+  assert.equal(good.url,'https://api.example/verify');
+  assert.equal(good.headers.Authorization,'Bearer tok');
+  assert.deepEqual(JSON.parse(good.body),{citizenId:'1101700000000'});
+});
 
 test('TypeScript SEC-07/25: BAD leaks or misses, GOOD masks and enforces limits',async()=>{
   const ex=await import(pathToFileURL(path.join(examples,'typescript/sec-examples.ts')).href);
@@ -59,7 +68,7 @@ test('TypeScript SEC-15/21: BAD lets input escape, GOOD keeps valid input',async
 
 function hasDotnet(){try{execFileSync('dotnet',['--version'],{stdio:'ignore'});return true;}catch{return false;}}
 
-test('C# SEC-01/02/03/04/10/15: dotnet run of the examples passes every check',async t=>{
+test('C# SEC-01/02/03/04/10/12/13/15/18: dotnet run of the examples passes every check',async t=>{
   if(!hasDotnet()){t.skip('dotnet SDK not installed');return;}
   const dir=await mkdtemp(path.join(os.tmpdir(),'agm-cs-examples-'));
   t.after(()=>rm(dir,{recursive:true,force:true}));
@@ -69,7 +78,7 @@ test('C# SEC-01/02/03/04/10/15: dotnet run of the examples passes every check',a
   try{out=execFileSync('dotnet',['run','--nologo','-v','q'],{cwd:dir,encoding:'utf8',timeout:240_000,env:{...process.env,DOTNET_CLI_TELEMETRY_OPTOUT:'1',DOTNET_NOLOGO:'1'}});}
   catch(error){assert.fail(`dotnet run failed:\n${error.stdout||''}${error.stderr||''}`);}
   assert.doesNotMatch(out,/FAIL/);
-  assert.equal((out.match(/^ok /gm)||[]).length,15);
+  assert.equal((out.match(/^ok /gm)||[]).length,22);
 });
 
 test('sec-coverage examplesTested matches the tested examples',()=>{
