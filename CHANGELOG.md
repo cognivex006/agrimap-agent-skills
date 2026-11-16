@@ -2,7 +2,7 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased
+## 7.0.1 — 2026-11-16
 
 - Codex no longer loops on rule conflicts: bootstrap AGENTS.md §1 sets the authority order (safety invariants > the current explicit instruction > defaults), replaces "stop with evidence" with ask-once numbered options, and forbids ending a turn with only "cannot do this". `autonomy.md` adds the inline numbered-option fallback for hosts without a structured-question tool.
 - Decisions the requester states without being asked (choice, standing preference, approval, rejection) are recorded with `decide record` in the same turn.
