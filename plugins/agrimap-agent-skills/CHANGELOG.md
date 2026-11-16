@@ -2,7 +2,7 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
-## Unreleased (7.0.0)
+## 7.0.0 — 2026-11-16
 
 - **Breaking:** `engines.node` is now `>=22.18.0` (was `>=20`). Node 20 is end of life and the TypeScript examples need type stripping without flags.
 - Node runtime policy without an exact pin (`assets/node-policy.json`, `scripts/node-runtime.mjs`, `npm run node:check`): a version is acceptable at or above the minimum when its major line is supported and has no newer security release (nodejs.org release index and schedule). Offline gives `unknown` and only warns. Newer installed versions are preferred; nvm and nvm-windows installs are discovered read-only and suggested with `nvm use`. `.nvmrc` is `lts/*`.
