@@ -28,10 +28,12 @@ Investigate before asking: search the repository, `policy show`, `recall --topic
 ## Ask well
 
 - At most one blocking round before the first write, up to three independent questions. A later R2 question pauses only its slice.
-- Create each question with `agm-workspace.mjs decide card --input <file>`; render with the host's structured-question tool when available, otherwise the returned Markdown. Option 1 is the recommendation.
+- Create each question with `agm-workspace.mjs decide card --input <file>`; render with the host's structured-question tool when available, otherwise the returned Markdown. Option 1 is the recommendation. Hosts without such a tool (Codex): print numbered options in the reply; a bare number, "1"/"ข้อ 1", or "ทำเลย" answers it. If the card script fails, ask inline anyway rather than stopping.
+- A real rule conflict never ends a turn with only "cannot do this": ask once with evidence and options, keep working on unaffected slices, and act on the answer at once. A repeated or explicit current instruction that only overrides a default is the decision: act, record it, report the overridden default. Never re-ask an answered question or loop on the same refusal.
 - Every card states impact, what you checked, options with different effects, the recommendation with reason and confidence, and its default or that it blocks.
 - Never ask for granted permission, between equivalent options, for an open-ended preference, or approval after acting.
 - Record the answer with `decide record`; its `recordAs` prevents asking again.
+- Record unasked decisions too, without asking: when the requester states a choice, a standing preference ("ต่อไปให้…", "ใช้แบบ A", "ไม่ต้อง X"), an approval or a rejection, run `decide record` in the same turn and say so in one line. Ordinary questions are not decisions.
 - `decide card` may return `suppressed` (use the precedent; cite it via `--precedent`) or `autoDecided` (R0/R1 at high or medium confidence, or R2 with `"reversible": true`; report as decided for you). A kind the requester keeps overriding (calibration `ask`) or marked always-ask still produces the card. When the requester says "not now" (ไว้ก่อน, ยังไม่ต้อง), record `--choice not-now` (or `not-now:<days>`, default 30): the topic is not asked again until then, and `decide card` returns `deferred`; continue with the card's default and say it is deferred. A blocking card still asks. A `promotable` recall → `decide promote`. "Always ask about X" → `decide always-ask --kind X`; a requester correction → `decide correction`.
 
 ## Report
