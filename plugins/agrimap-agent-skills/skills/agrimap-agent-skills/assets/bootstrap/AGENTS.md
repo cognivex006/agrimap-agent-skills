@@ -41,9 +41,11 @@
 
 ## 1. ขอบเขตและ fixed ownership
 
-- ทำตาม system/developer/owner instruction ที่มี authority สูงกว่า หากขัด contract อย่างมีนัยสำคัญให้หยุดพร้อมหลักฐาน
+- ลำดับ authority: safety invariants §3 > คำสั่งเฉพาะเจาะจงของมนุษย์ในคำขอปัจจุบัน > ค่าเริ่มต้นของไฟล์นี้และ `AGENTS.release.md`; ขัดแค่ค่าเริ่มต้นให้ทำเลยไม่ขออนุมัติ แล้วรายงาน
+- ขัดกฎจริง: ห้ามจบรอบแค่ "ทำไม่ได้" ถามครั้งเดียวพร้อมหลักฐานและตัวเลือกมีเลข 2–3 ข้อ (ข้อ 1 แนะนำ) ทำส่วนอื่นต่อ ตอบแล้วทำทันทีห้ามถามซ้ำ; host ไม่มีเครื่องมือถาม (Codex) ใช้ตัวเลือกมีเลขในข้อความ
+- ผู้ใช้ตัดสินใจหรือสั่งชัด (เลือกทาง, "ต่อไปให้...", อนุมัติ) บันทึก decision เองทันทีด้วย `decide record` ไม่ต้องถาม
 - ใช้ไฟล์มาตรฐาน: `changelog.md`, `release.md`, `release-notes/<VERSION>.md` ที่ root และ `.agrimap-agent/memory/project.md` เป็น project memory/index กลาง; ห้ามสร้าง root `project.md` หรือไฟล์ต่าง case ซ้ำ
-- `CLAUDE.md`, `GEMINI.md`, `CURSOR.md` เป็น pointer บาง ๆ มาที่ `AGENTS.md` เท่านั้น ห้าม copy หรือเขียนกติกาเฉพาะ tool ที่ขัดไฟล์นี้ แก้กติกาที่ `AGENTS.md` จุดเดียว
+- `CLAUDE.md`, `GEMINI.md`, `CURSOR.md` เป็น pointer มาที่ `AGENTS.md` เท่านั้น ห้าม copy กติกา แก้ที่ `AGENTS.md` จุดเดียว
 - Mapping ห้ามเปลี่ยนหรือสลับกัน:
   - Inhouse: `Jenkinsfile` เป็น version owner และ target branch คือ `jenkins`
   - Production: `Jenkinsfile_Production` เป็น version owner และ target branch คือ `jenkins-release`
@@ -51,19 +53,17 @@
 - คำว่า version หรือ release intent อนุญาตเฉพาะ version metadata pair ใน owner file ที่ระบุ: `IMAGE_TAG` และ `PROJECT_VERSION` เท่านั้น ห้ามแก้ Jenkins pipeline `stage`, stage order, shell command, image/registry configuration, credential, trigger หรือ pipeline behavior ใดๆ
 - `Version Production` และ `Version + Tags` มี Jenkins write boundary เฉพาะสองบรรทัดข้างต้นใน `Jenkinsfile_Production`; ห้ามแก้ `Jenkinsfile`, `Jenkinsfile_Staging` หรือส่วนอื่นของ `Jenkinsfile_Production`
 - Version intent ไม่ได้ให้สิทธิ์เขียนการแก้ release-governance implementation เช่น `AGENTS.md`, `README.md`, CLI, routing หรือ workflow rules ขึ้นใหม่; กลุ่ม B ให้สิทธิ์ commit งานเดิมที่ค้างรวม governance/pipeline changes ตาม §6.3 โดยแยกจาก version metadata commit และรวมประวัตินั้นไปกับ promotion/tag
-- ใช้เลข Version/Patch ที่เจ้าของระบุชัดตาม environment ก่อน; PATCH+1 จาก `PROJECT_VERSION` เป็นค่าเริ่มต้นเมื่อไม่ได้ระบุเลขเท่านั้น รองรับการข้าม Patch และเปลี่ยน minor/major โดยไม่ขอรับผิดชอบหรือแก้ governance ซ้ำ คำสั่งตรงของผู้ใช้มีลำดับเหนือ default นี้ ตรวจรูปแบบเลขและ tag collision ตามจริง หาก CLI ไม่รองรับ ให้แก้ owner pair/artifacts ใน scope โดยตรงและตรวจรูปแบบและเลขที่ร้องขอ, pair equality, allowed diff, notes/index provenance, git diff --check และ resume evidence แทนเฉพาะ assertion PATCH+1 ที่ไม่รองรับ; รายงาน CLI incompatibility ตามจริงและไม่ยกเว้น gate อื่น; ห้ามสมมติว่ามี `--version` และ `--expected-version` เป็น assertion ไม่ใช่ตัวกำหนดเลข
+- ใช้เลข Version/Patch ที่เจ้าของระบุชัดตาม environment ก่อน; PATCH+1 จาก `PROJECT_VERSION` เป็นค่าเริ่มต้นเมื่อไม่ได้ระบุเลขเท่านั้น รองรับการข้าม Patch และเปลี่ยน minor/major ตรวจรูปแบบเลขและ tag collision ตามจริง หาก CLI ไม่รองรับ ให้แก้ owner pair/artifacts ใน scope โดยตรงและตรวจรูปแบบและเลขที่ร้องขอ, pair equality, allowed diff, notes/index provenance, git diff --check และ resume evidence แทนเฉพาะ assertion PATCH+1 ที่ไม่รองรับ; รายงาน CLI incompatibility ตามจริงและไม่ยกเว้น gate อื่น; ห้ามสมมติว่ามี `--version` และ `--expected-version` เป็น assertion ไม่ใช่ตัวกำหนดเลข
 - Both คำนวณ Inhouse/Production แยกจาก owner file ของตน เลขอาจต่างกัน Production tag ใช้ Production version เท่านั้น
 
 ## 2. Intent routing
 
 | Intent | ทำอย่างไร |
 | --- | --- |
-| changelog, diff, backfill, project memory, version, prepare, deploy, Inhouse/Production/Both, release, tag, `นำขึ้น Jenkins` ทุกคำ | อ่าน `AGENTS.release.md` ทั้งไฟล์ก่อนเริ่ม (`--flash` อ่าน §2.3, §5.2, §6, §7, §8.2) แล้วทำตาม §2 ในไฟล์นั้น (§2, §4–§8 ของ contract นี้อยู่ในไฟล์นั้น เลข § คงเดิม) |
+| changelog, diff, backfill, project memory, version, prepare, deploy, Inhouse/Production/Both, release, tag, `นำขึ้น Jenkins` ทุกคำ | อ่าน `AGENTS.release.md` §2 แล้วเฉพาะ section ของคำสั่ง (indexing §4, §5, §8; prepare §4–§6; pipeline/promote §6, §8; release หรือไม่แน่ใจ ทั้งไฟล์; `--flash` §2.3, §5.2, §6, §7, §8.2) แล้วทำตาม §2 ในไฟล์นั้น (§4–§8 อยู่ในไฟล์นั้น) |
 | `integrate`: `merge`, `รวม`, `รวมเข้า <branch>`, `pr`, `เปิด PR`, เลขตัวเลือกจาก Next-step card | ทำตาม §10.4 กับ work branch ปัจจุบัน; ห้าม promote `jenkins`/`jenkins-release`, tag, force push |
 
 งานอื่นที่ไม่ใช่ release ใช้ §0, §1, §3, §9 และ §10 ของไฟล์นี้ (งาน code/SQL เริ่มจาก §0 เสมอ); การยก keyword เป็นตัวอย่างในคำขอตรวจ/แก้เอกสารไม่ใช่คำสั่ง release
-
-ทำตาม governance ของไฟล์นี้และ `AGENTS.release.md` เป็นค่าเริ่มต้นทุกงาน; คำสั่งเฉพาะเจาะจงของมนุษย์ในคำขอปัจจุบัน (เช่น ระบุเลข version เอง ข้าม patch หรือข้ามขั้นที่เป็นค่าเริ่มต้น) มีลำดับเหนือค่าเริ่มต้นนั้นโดยไม่ต้องขออนุมัติซ้ำ แต่ไม่ยกเว้น safety invariants ใน §3 และบันทึกไว้ในรายงานว่าข้ามค่าเริ่มต้นใดตามคำสั่ง
 
 ## 3. Preflight และ safety invariants
 

@@ -27,9 +27,10 @@ test('bootstrap preserves the complete owner-submitted canonical contract',async
   // 5.0.10: owner decision 2026-11-01 — §9.1 logs/ local only (Git-ignored) and no prompt history;
   // §10.6 chore: type, scope as the first word of the description, PR/MR titles follow the same header.
   // 6.3.0: owner decision 2026-11-10 — §0 routing gains the explicit-only agm-security row (routes on its name only).
+  // 7.0.1: owner request 2026-11-16 — §1 authority order, ask-once-never-loop (numbered options on Codex), auto-record decisions; §2 release reads only the command's sections.
   // Package bumps only change the generated version marker; freeze every other byte.
   const sourceBytes=Buffer.from(bytes.toString('utf8').replace(/<!-- AGRIMAP BOOTSTRAP VERSION: [^>]+ -->/,'<!-- AGRIMAP BOOTSTRAP VERSION: 3.6.1 -->'));
-  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'6ded721920298ce8f2fdd910c8632a4f12fbcde9a1a1b54702e4291dca34cf0b');
+  assert.equal(createHash('sha256').update(sourceBytes).digest('hex'),'4b79eee4e62b37befab8a5a63b6de12fbc452e324a1611979f5d51916afdde71');
   const manifest=JSON.parse(await readFile(path.join(bundle,'manifest.json'),'utf8'));
   assert.ok(bytes.toString('utf8').includes(`<!-- AGRIMAP BOOTSTRAP VERSION: ${manifest.version} -->`));
   assert.equal(manifest.files.find(f=>f.source==='AGENTS.md').sha256,createHash('sha256').update(bytes).digest('hex'));
@@ -203,7 +204,9 @@ test('instruction diet: core AGENTS.md at most 24,000 chars; core + release keep
   const headings=['## 0.','## 1.','## 2.','### 2.1','### 2.2','### 2.3','## 3.','## 4.','## 5.','### 5.1','### 5.2','## 6.','### 6.1','### 6.2','### 6.3','## 7.','## 8.','### 8.1','## 9.','### 9.1','### 9.5','## 10.','### 10.5','## Bootstrap contract freshness'];
   const all=(core+'\n'+release).split('\n');
   for(const h of headings)assert.ok(all.some(line=>line.startsWith(h)),h);
-  assert.match(core,/อ่าน `AGENTS\.release\.md` ทั้งไฟล์ก่อนเริ่ม/);
+  assert.match(core,/อ่าน `AGENTS\.release\.md` §2 แล้วเฉพาะ section ของคำสั่ง/);
+  assert.match(core,/ห้ามจบรอบแค่ "ทำไม่ได้"/);
+  assert.match(core,/บันทึก decision เองทันที/);
   for(const moved of ['## 4.','## 5.','## 6.','## 7.','## 8.'])assert.ok(!core.split('\n').some(line=>line.startsWith(moved)),moved);
 });
 

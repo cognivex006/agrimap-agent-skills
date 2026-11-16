@@ -33,6 +33,7 @@ Resolve exactly one action before target inspection or product writes. Safe defa
 2. For analyze/design, never edit product files. For authorized create/edit/test, choose depth from tracking and boundary needs; no extra prompt ceremony.
 3. For action=refactor, require exactly one mode before editing, preserve the declared logic boundary, and ask only about unresolved material behavior choices.
 4. Apply the embedded test-decision capability during analyze, design, create, edit, and refactor. Classify required, recommended, or not_applicable; write tests only for action=test, a clear test request, or required coverage inside authorized implementation.
+5. Before writing, open the relevant patterns/sonarqube/ file and checklist Sonar self-check; draft to pass, re-check written files.
 
 ## Load now
 
