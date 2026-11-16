@@ -7,6 +7,7 @@ Release history, not current operating instructions. Start with [Getting Started
 - **Breaking:** `engines.node` is now `>=22.18.0` (was `>=20`). Node 20 is end of life and the TypeScript examples need type stripping without flags.
 - Node runtime policy without an exact pin (`assets/node-policy.json`, `scripts/node-runtime.mjs`, `npm run node:check`): a version is acceptable at or above the minimum when its major line is supported and has no newer security release (nodejs.org release index and schedule). Offline gives `unknown` and only warns. Newer installed versions are preferred; nvm and nvm-windows installs are discovered read-only and suggested with `nvm use`. `.nvmrc` is `lts/*`.
 - `package:verify` (and so `package:publish`) runs the Node check first and stops on `below-minimum`, `end-of-life` or `vulnerable`; `agm-doctor check` reports it in the AGM runtime row.
+- `package:verify` no longer fails with EISDIR when an untracked nested Git repository sits in the checkout.
 
 ## 6.4.3 — 2026-11-13
 
