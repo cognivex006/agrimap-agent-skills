@@ -56,7 +56,7 @@ npm run audit:tokens:strict
 npm run package:build
 ```
 
-package:build creates a fresh directory beneath ignored dist/ with one .tgz per host, catalog and checksums. It never deletes an earlier build, installs a plugin, creates a tag or publishes. Dirty builds are labelled local-preview with sourceDirty=true and are not releasable artifacts. tar and Node >=20 are required. The artifacts contain generated runtime data, not the source package's npm scripts.
+package:build creates a fresh directory beneath ignored dist/ with one .tgz per host, catalog and checksums. It never deletes an earlier build, installs a plugin, creates a tag or publishes. Dirty builds are labelled local-preview with sourceDirty=true and are not releasable artifacts. tar and Node >=22.18.0 (assets/node-policy.json minimum; `npm run node:check`) are required. The artifacts contain generated runtime data, not the source package's npm scripts.
 
 config/distribution.json is the user-document allowlist shared by sync and packaging. tools/package-release.mjs excludes maintainer files, rejects symlinks and unexpected instruction files, preserves the exact product bootstrap AGENTS template, verifies host versions and keeps provider hooks separate. GitHub's automatic source archives and full Git clones are source distributions, NOT sanitized runtime artifacts: root AGENTS scope protection still matters there. Do not claim .gitignore or export-ignore controls Git clones.
 

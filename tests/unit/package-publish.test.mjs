@@ -173,10 +173,16 @@ test('local verify runs route/commit checks and all gates without remote writes;
   const run = (root,exe,args)=>{ calls.push({exe,args}); return ''; };
   assert.equal(verifyPackage('.', {base:'develop',head:'feature/test',run,npmCli:'/npm-cli.js'}).ok,true);
   assert.ok(calls.some(c=>c.args[0]==='tools/check-commit-style.mjs'));
+  assert.deepEqual(calls[0].args,['skills/agrimap-agent-skills/scripts/node-runtime.mjs','check'],'node runtime policy runs first');
   for (const task of ['sync','test:release','audit:tokens:strict','package:build']) assert.ok(calls.some(c=>c.args.includes(task)));
   assert.ok(calls.every(c=>c.exe!=='gh' && !c.args.includes('push')));
   let count=0;
   assert.throws(()=>verifyPackage('.', {npmCli:'/npm-cli.js',run:(root,exe,args)=>args[0]==='diff' ? String(count++) : ''}),/GENERATED_DRIFT/);
+});
+
+test('local verify tolerates an untracked nested Git repository (listed as dir/)',()=>{
+  const run = (root,exe,args)=>args[0]==='ls-files' ? 'tests/\0' : '';
+  assert.equal(verifyPackage('.', {run,npmCli:'/npm-cli.js'}).ok,true);
 });
 
 test('source has no Actions workflows and only the explicit publish script can publish',async()=>{
