@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "note": "Node.js runtime policy (7.0.0). No exact pin: any version at or above minimum whose major line is supported and has no newer security release is acceptable; newer installed versions are preferred. See scripts/node-runtime.mjs.",
+  "minimum": "22.18.0",
+  "minimumReason": "TypeScript type stripping without flags (security examples) and Node 20 end of life",
+  "sources": {
+    "releases": "https://nodejs.org/dist/index.json",
+    "schedule": "https://raw.githubusercontent.com/nodejs/Release/main/schedule.json"
+  },
+  "fetchTimeoutMs": 5000
+}

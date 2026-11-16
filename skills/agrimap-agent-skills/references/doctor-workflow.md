@@ -14,7 +14,7 @@ Status gives a short local overview; check inspects applicable workflows. Use a 
 
 | Capability | Evidence and applicability | Repair advice, never executed by check |
 | --- | --- | --- |
-| AGM runtime | Node.js >=20 and readable bundled entrypoints/scripts | Install a supported Node runtime or repair the package |
+| AGM runtime | `node scripts/node-runtime.mjs check --json` (7.0, read-only): at/above `assets/node-policy.json` minimum, major line not end-of-life, no newer security release in the line; `unknown` when release data is unreachable (minimum still checked). Lists nvm/nvm-windows installed versions, never runs nvm. Plus readable bundled entrypoints/scripts | The check's `repair`: `nvm use <newest acceptable installed>` or install a newer patch/LTS; newer installed versions are preferred, no exact pin. Repair the package when scripts are unreadable |
 | Installation management | Selected host plugin help, registry/path and source; Git for Git-based updates | Use that host's supported manager; fix PATH only when proven |
 | SQL formatting | `sqlfluff --version` versus exact `assets/tool-versions.json` pin; Python/pip availability when repair is needed | Run bundled install-sqlfluff.mjs only in separately authorized SQL formatting/tool repair |
 | Managed SQL context | Availability of sql-context-pack and its connected read-only profile | Connect the missing service/profile; never expose credentials or probe database writes |
