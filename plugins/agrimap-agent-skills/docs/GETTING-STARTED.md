@@ -6,7 +6,7 @@
 
 ## 1. เตรียมเครื่อง
 
-ต้องมี Git, Node.js 20 ขึ้นไป และ host อย่างใดอย่างหนึ่งที่ติดตั้ง/ลงชื่อเข้าใช้แล้ว: Codex, Claude Code หรือ Antigravity CLI
+ต้องมี Git, Node.js 22.18 ขึ้นไปที่ไม่มีช่องโหว่ค้าง (ตรวจด้วย `node skills/agrimap-agent-skills/scripts/node-runtime.mjs check`; ใช้รุ่นที่ใหม่กว่าได้ ถ้ามี nvm จะแนะนำรุ่นที่ติดตั้งไว้) และ host อย่างใดอย่างหนึ่งที่ติดตั้ง/ลงชื่อเข้าใช้แล้ว: Codex, Claude Code หรือ Antigravity CLI
 
 **รันใน Terminal / PowerShell:**
 

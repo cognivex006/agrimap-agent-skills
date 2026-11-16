@@ -23,7 +23,7 @@ Publishing stays on the existing flow; this phase does not change release steps 
 
 ## Prerequisites on the Mac
 
-- Node.js **22.18+ or 23.6+** (the TypeScript examples load `.ts` through Node type stripping without flags). `package.json` says `node >=20`; if Node 20 fails here, the fix is to raise `engines` or gate the test, decided in this phase.
+- Node.js **22.18+ or 23.6+** (the TypeScript examples load `.ts` through Node type stripping without flags). Since 7.0 `engines` is `>=22.18.0` and `npm run node:check` must not report `vulnerable` or `end-of-life` ([plan-7.0.md](plan-7.0.md)).
 - Git, GitHub CLI (`gh auth status` ok) for `package:verify` against `develop`.
 - .NET SDK 8+ (optional: without it the C# examples test skips; with it, it must pass 36 checks).
 - AgriMap Golden Lint installed (optional: `sec-coverage` drift and `security-scan` tests skip without it; set `AGM_GOLDEN_LINT_DIR` if it is not found).

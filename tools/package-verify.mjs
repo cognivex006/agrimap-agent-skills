@@ -19,6 +19,10 @@ export function verifyPackage(root, {base, head, run = command, npmCli = process
   if (Boolean(base) !== Boolean(head)) throw new Error('Supply both --base and --head for PR route/commit checks');
   const node = (...args) => run(root, process.execPath, args);
   const git = (...args) => run(root, 'git', args);
+  // 7.0: refuse a Node runtime below the policy minimum, past end of life, or
+  // missing a newer security release (unknown release data only warns).
+  process.stderr.write('Local verification: node runtime policy\n');
+  node('skills/agrimap-agent-skills/scripts/node-runtime.mjs', 'check');
   if (base) {
     node('tools/check-package-pr.mjs', base, head, 'true');
     node('tools/check-commit-style.mjs', `origin/${base}..HEAD`);
