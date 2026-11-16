@@ -180,6 +180,11 @@ test('local verify runs route/commit checks and all gates without remote writes;
   assert.throws(()=>verifyPackage('.', {npmCli:'/npm-cli.js',run:(root,exe,args)=>args[0]==='diff' ? String(count++) : ''}),/GENERATED_DRIFT/);
 });
 
+test('local verify tolerates an untracked nested Git repository (listed as dir/)',()=>{
+  const run = (root,exe,args)=>args[0]==='ls-files' ? 'tests/\0' : '';
+  assert.equal(verifyPackage('.', {run,npmCli:'/npm-cli.js'}).ok,true);
+});
+
 test('source has no Actions workflows and only the explicit publish script can publish',async()=>{
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
   const workflows = await readdir(path.join(root,'.github/workflows'),{recursive:true}).catch(error=>{

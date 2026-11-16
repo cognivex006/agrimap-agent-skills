@@ -31,8 +31,9 @@ export function verifyPackage(root, {base, head, run = command, npmCli = process
   // generated drift is rejected. Commit generated output before rerunning.
   const snapshot = () => JSON.stringify([
     git('diff', '--binary', 'HEAD'), git('status', '--porcelain', '--untracked-files=all'),
+    // A nested untracked Git repository is listed as "dir/"; record it, do not read it.
     git('ls-files','--others','--exclude-standard','-z').split('\0').filter(Boolean).sort().map(file=>[
-      file, createHash('sha256').update(readFileSync(path.join(root,file))).digest('hex'),
+      file, file.endsWith('/') ? 'nested-directory' : createHash('sha256').update(readFileSync(path.join(root,file))).digest('hex'),
     ]),
   ]);
   const before = snapshot();
