@@ -39,7 +39,7 @@ Rules Sonar's JS/TS analyzer raises on every `.ts` file (`typescript:` keys; the
 | ADV-47 | S1874 | Deprecated API (`event.returnValue`, `substr`, `toPromise()`, `KeyboardEvent.keyCode`) | must | recommend | platform-ng `app.component` `onBeforeUnload` (`event.returnValue = ''`) |
 | ADV-49 | S1301 | `switch` with one `case` plus `default` | must | safe | platform-ng `publish-datasource.component` `getLayerFetchStepLabel` |
 | ADV-53 | S3516 | Function whose every path returns the same value (`Promise<false>`, always `return true`) | must | recommend (callers may read the value) | license-management auth facade `handleLoginFailure(...): Promise<false>` |
-| ADV-23 | S125 | Commented-out code | must | safe | pro-ng `9607869`; platform-ng `d552a541`, `e7190db2`, `df97a0d9`, `d7c7429e`, `1a80c14c`, `efddd92b`; suite-ng `6a70e74` (a whole commented component) |
+| ADV-23 | S125 | Commented-out code | must | safe | pro-ng `9607869`; platform-ng `d552a541`, `e7190db2`, `df97a0d9`, `d7c7429e`, `1a80c14c`, `efddd92b`; suite-ng `6a70e74` (a whole commented component); license-management map store (`// ? new Basemap({...})` above `updateMapCoreMainConfig`) |
 | ADV-33 | S1186 | Empty function or handler | must | recommend | platform-ng `d7c7429e` (`onMoveToTarget(event) { // console.log }`, removed with its template binding) |
 | ADV-34 | S2486, S108 | Empty `catch {}` | must | recommend | platform-ng `catch {}` |
 | ADV-38 | S1192 | Same string literal 3+ times | should | recommend | catalog |
@@ -67,6 +67,9 @@ Rules Sonar's JS/TS analyzer raises on every `.ts` file (`typescript:` keys; the
 | --- | --- | --- | --- | --- | --- |
 | ADV-31 | S7773 | Global `isNaN`, `parseInt`, `parseFloat`, `isFinite` | must (`Number.isNaN`, `Number.parseInt(x, 10)`) | safe (check: global `isNaN` coerces strings, `Number.isNaN` does not) | suite-ng `b68a9d9` |
 | ADV-42 | S7781 | `replace(/x/g, ...)` with a literal pattern | must (`replaceAll('x', ...)`) | safe | release-notify.mjs |
+| ADV-42 | S7765 | `indexOf(x) !== -1` / `=== -1` for an existence check | must (`includes(x)`) | safe | license-management `index.html` inline script (`path.indexOf('/executive') !== -1`) |
+| ADV-42 | S7761 | `setAttribute('data-x', v)` / `getAttribute('data-x')` | must (`el.dataset.x = v`; `data-foo-bar` is `dataset.fooBar`) | safe | license-management `index.html` (`setAttribute('data-system', system)`) |
+| — | S6325 | `new RegExp('^...$')` with a constant pattern | must (literal `/^...$/`) | safe (keep `new RegExp` when the pattern is built at runtime) | license-management generated API client `content_id` check: fix the generator template, not the output |
 | ADV-42 | S7755 | `arr[arr.length - 1]` | should (`arr.at(-1)`) | safe | catalog |
 | ADV-42 | S7764 | `window`/`self`/`global` for the global object | should (`globalThis`) | safe (not for `window.location` in browser-only code) | catalog |
 | — | S4138 | `for (let i = 0; i < a.length; i++)` that only reads `a[i]`, or `forEach` with an early exit | should (`for...of`) | safe | platform-ng, pro-ng `47acb57` |

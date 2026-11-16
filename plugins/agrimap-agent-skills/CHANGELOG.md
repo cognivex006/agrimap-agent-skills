@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## 7.0.2 — 2026-11-16
+
+- SonarQube rows from license-management: TypeScript S7765 (`includes` over `indexOf`), S7761 (`dataset` over `setAttribute('data-*')`), S6325 (regex literal over constant `new RegExp`, fix generated clients in the template), S125 evidence; SEC-19 now covers IIS `web.config` `X-Content-Type-Options: nosniff` (`xml:S5734`).
+
 ## 7.0.1 — 2026-11-16
 
 - Codex no longer loops on rule conflicts: bootstrap AGENTS.md §1 sets the authority order (safety invariants > the current explicit instruction > defaults), replaces "stop with evidence" with ask-once numbered options, and forbids ending a turn with only "cannot do this". `autonomy.md` adds the inline numbered-option fallback for hosts without a structured-question tool.
