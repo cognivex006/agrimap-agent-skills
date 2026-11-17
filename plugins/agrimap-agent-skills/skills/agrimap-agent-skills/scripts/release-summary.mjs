@@ -10,7 +10,10 @@ import { redactText } from './sensitive-recording.mjs';
 import { timingOutput } from './release-timing.mjs';
 
 export const SCHEMA_VERSION = 1;
-export const OUTCOMES = ['success', 'partial', 'blocked', 'failed', 'paused'];
+export const OUTCOMES = ['success', 'partial', 'question', 'blocked', 'failed', 'paused'];
+// 7.0.6: `blocked` only for causes the owner cannot answer in one reply; anything
+// else is a `question` with numbered options and the run continues on the answer.
+export const BLOCK_REASONS = ['permission', 'access', 'environment'];
 export const STEP_STATUSES = ['done', 'skipped', 'failed', 'blocked', 'pending', 'not-run'];
 export const SECTIONS = ['Operation', 'Target', 'Versions', 'Execution steps', 'Evidence', 'Publication', 'Timing', 'Remaining', 'Outcome'];
 
@@ -30,6 +33,12 @@ export function validateEnvelope(env) {
     if (!step?.name) errors.push(`steps[${index}].name is required`);
     if (!STEP_STATUSES.includes(step?.status)) errors.push(`steps[${index}].status must be one of ${STEP_STATUSES.join('|')}`);
   }
+  if (env.outcome === 'question') {
+    const q = env.question;
+    if (!q?.text) errors.push('question outcome needs question.text');
+    if (!Array.isArray(q?.options) || q.options.length < 2 || q.options.length > 4) errors.push('question outcome needs 2-4 question.options (option 1 is the recommendation)');
+  }
+  if (env.outcome === 'blocked' && !BLOCK_REASONS.includes(env.blockReason)) errors.push(`blocked needs blockReason ${BLOCK_REASONS.join('|')}; a gate the owner can decide is outcome question`);
   if (env.outcome === 'success') {
     if ((env.steps || []).some(step => ['failed', 'blocked', 'pending'].includes(step.status))) errors.push('success cannot have failed, blocked or pending steps');
     if ((env.blocked || []).length) errors.push('success cannot list blocked items');
@@ -64,7 +73,8 @@ export function renderEnvelope(env, timingBlock) {
   ]);
   section('Timing', String(timingBlock || '').trim().split('\n'));
   section('Remaining', [...list(env.pending), ...((env.blocked || []).length ? ['', 'Blocked:', ...list(env.blocked)] : [])]);
-  section('Outcome', [`- ${env.outcome.toUpperCase()}`, `- Next action: ${env.nextAction ? clean(env.nextAction) : 'none'}`]);
+  if (env.outcome === 'question') section('Decision needed', [clean(env.question.text), '', ...env.question.options.map((option, i) => `${i + 1}. ${clean(option)}${i === 0 ? ' (แนะนำ)' : ''}`), '', 'ตอบเลขตัวเลือก แล้ว run ทำต่อจากขั้นนี้โดยไม่ bump ซ้ำ']);
+  section('Outcome', [`- ${env.outcome.toUpperCase()}${env.outcome === 'blocked' ? ` (${env.blockReason})` : ''}`, `- Next action: ${env.nextAction ? clean(env.nextAction) : 'none'}`]);
   return `${out.join('\n').trimEnd()}\n`;
 }
 

@@ -17,7 +17,7 @@ node tools/agrimap/release-notify.mjs generate --version <Production version> --
 1. Items are the `feature:`/`fix:` commit headers (team style, Thai) since the previous `v*` tag (`--from`/`--to` override), without the `(x.y.z)` suffix, duplicates merged, in commit order; `comment:`/`bump:`/`audit:`/`ci:` are left out.
 2. Header `# <repository name> / <version>` (`--project-name` only when the repository name is wrong).
 3. `(เกี่ยวข้อง: …)` is added automatically from a `เกี่ยวข้อง:`/`Related:` line in the commit body and from changed `AgriMap.*` NuGet (named by its first two segments, e.g. `AgriMap.Platform`) or `@agrimap/*` package references.
-4. A wrong or unclear item is fixed at its source (commit header wording for the next release), not by editing the generated file. Exit 1 `RELEASE_DESCRIPTION_EMPTY` means no `feature:`/`fix:` commit in range: report it, do not invent items.
+4. A wrong or unclear item is fixed at its source (commit header wording for the next release), not by editing the generated file. No `feature:`/`fix:` commit in range (7.0.6) generates the single bullet `ปรับปรุงภายใน (maintenance only)` with `maintenance: true` and the release continues; never invent other items.
 5. The file is carried by the F `audit:` commit.
 6. The final answer always has a `description-released` heading followed by the full text in a `markdown` code block, whether notify is sent, pending or skipped (`--silent`). Missing it means the release is not `completed`.
 
