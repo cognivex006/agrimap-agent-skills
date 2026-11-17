@@ -3,6 +3,13 @@
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
 
+
+## 7.0.7 — 2026-11-17
+
+- Proactive improvement (owner request): inside authorized write work, no-impact improvements (Sonar safe tier, stale wording, config/docs that disagree with code, missing tests for touched code, unsatisfiable gates) are done and reported; impactful ones end the turn as numbered options instead of waiting to be asked again. Bootstrap AGENTS.md §1 and `recommendations.md`.
+- Bootstrap §9.5: a needed path outside the allowlist is one numbered question (include or keep local) while other steps continue, not a stop.
+- Guard G2 follows `cd <dir>` and `git -C <dir>`, so a release push in another repository reads that repository's active release run instead of the session's start folder.
+- A stray task id on a light run is the warning `light-task-id-ignored`, not a failed completion.
 ## 7.0.6 — 2026-11-17
 
 - Gates no longer end owner-commanded runs as BLOCKED when the owner can decide in one reply. The release envelope gains outcome `question` (numbered options, option 1 recommended, rendered as `Decision needed`); `blocked` now requires `blockReason` permission|access|environment. Diverged jenkins/jenkins-release becomes a question whose option 1 is the history-preserving merge after a conflict-free `git merge-tree`. Bootstrap AGENTS.md states the same rule for every operation.
