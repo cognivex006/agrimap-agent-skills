@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFile, writeFile, mkdir, lstat } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, lstat, realpath } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -86,14 +86,15 @@ async function safeTarget(root, relative) {
   while (true) {
     const info = await lstat(current).catch(e => { if (e.code !== 'ENOENT') throw e; return null; });
     if (info?.isSymbolicLink()) throw new Error('BOOTSTRAP_LINK_FORBIDDEN');
-    if (current === path.parse(current).root) break;
+    if (current === root) break;
     current = path.dirname(current);
   }
   return dest;
 }
 export async function planBootstrap({ target, kind, upgrade = false, reviewedMerges = [] }) {
   if (!target || !kinds.includes(kind)) throw new Error('BOOTSTRAP_TARGET_KIND_REQUIRED');
-  const root = path.resolve(target);
+  // Links above the project root (macOS /var -> /private/var) are host layout; links inside it stay forbidden.
+  const root = await realpath(path.resolve(target)).catch(() => path.resolve(target));
   const pkg = await readMaybe(path.join(root, 'package.json'));
   if (pkg && JSON.parse(pkg).name === 'agrimap-agent-skills') throw new Error('PACKAGE_PRODUCT_BOOTSTRAP_FORBIDDEN');
   const manifest = JSON.parse(await readFile(path.join(bundle, 'manifest.json'), 'utf8'));

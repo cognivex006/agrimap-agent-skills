@@ -75,7 +75,7 @@ test('C# SEC-01..31 examples: dotnet run of the examples passes every check',asy
   await copyFile(path.join(examples,'csharp/SecExamples.cs'),path.join(dir,'SecExamples.cs'));
   await writeFile(path.join(dir,'SecExamples.csproj'),'<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><NuGetAudit>false</NuGetAudit></PropertyGroup></Project>');
   let out;
-  try{out=execFileSync('dotnet',['run','--nologo','-v','q'],{cwd:dir,encoding:'utf8',timeout:240_000,env:{...process.env,DOTNET_CLI_TELEMETRY_OPTOUT:'1',DOTNET_NOLOGO:'1'}});}
+  try{out=execFileSync('dotnet',['run','--nologo','-v','q'],{cwd:dir,encoding:'utf8',timeout:240_000,env:{DOTNET_ROLL_FORWARD:'Major',...process.env,DOTNET_CLI_TELEMETRY_OPTOUT:'1',DOTNET_NOLOGO:'1'}});}
   catch(error){assert.fail(`dotnet run failed:\n${error.stdout||''}${error.stderr||''}`);}
   assert.doesNotMatch(out,/FAIL/);
   assert.equal((out.match(/^ok /gm)||[]).length,36);
