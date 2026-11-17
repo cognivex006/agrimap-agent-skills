@@ -91,7 +91,7 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 
 | Golden | Key | Smell | New code | Existing code | Seen |
 | --- | --- | --- | --- | --- | --- |
-| ADV-06 | xUnit2032 | `Assert.IsAssignableFrom<T>` | must | recommend | identity tests |
+| ADV-06 | xUnit2032 | `Assert.IsAssignableFrom<T>` | must (`Assert.IsType<T>(x, exactMatch: false)`) | safe (needs the `exactMatch` overload) | identity tests; license-management `LicenseStatusStep` test `Assert.IsAssignableFrom<IReadOnlyList<...>>(context.Result).Count` (new code, written minutes before the scan) |
 | ADV-07 | CA1816 | `Dispose()` without `GC.SuppressFinalize` | should | recommend | identity tests |
 | — | S2699 | Test without an assertion | must | recommend | catalog |
 | — | S3415 | `Assert.Equal(actual, expected)` argument order | must | safe | catalog |
