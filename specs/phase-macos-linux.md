@@ -78,11 +78,18 @@ node --test --test-reporter=spec tests/unit/<file>.test.mjs
 
 | Check | macOS | Linux |
 |---|---|---|
-| Node / .NET / Golden Lint versions | | |
-| `npm test` (tests / pass / fail / skipped) | | |
-| C# examples (36 checks) | | |
-| `package:verify` | | |
+| Node / .NET / Golden Lint versions | Node 24.22.3 / .NET SDK 10.0.301 (net8.0 via roll-forward) / not installed | Node 24.22.3 / .NET SDK 8.0.428 / not installed (container `mcr.microsoft.com/dotnet/sdk:8.0`, non-root) |
+| `npm test` (tests / pass / fail / skipped) | 309 / 306 / 0 / 3 | 309 / 306 / 0 / 3 |
+| C# examples (36 checks) | pass | pass |
+| `package:verify` | `ok: true, platform: darwin` | `ok: true, platform: linux` |
+
+Run 2026-11-17 on branch `feature/macos-linux-parity`. Skips: `skill-gate` 8.3 (Windows only) and two Golden Lint tests (not installed). Fixes found:
+
+- `project-bootstrap` `safeTarget` rejected every target on macOS because it checked ancestors above the project (`/var` -> `/private/var`). The root is now resolved with `realpath`; links inside the project stay forbidden. Windows needs a rerun of `v3-governance` and `bootstrap-contract`.
+- `security-examples` C# test sets `DOTNET_ROLL_FORWARD=Major` (unless already set) so a host with only a newer .NET runtime still runs all 36 checks.
+- `package:verify` correctly refuses a vulnerable Node (24.18.1); use the current security release.
 
 Intended platform differences:
 
 - `skill-gate` 8.3 short-path test runs on Windows only.
+- macOS temp dirs sit behind the `/var` -> `/private/var` link; bootstrap treats links above the project root as host layout.
