@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## 7.0.4 — 2026-11-17
+
+- SonarQube rows: TypeScript S4782 (`?` plus `undefined`); xUnit2032 is now safe tier with the `IsType(..., exactMatch: false)` fix; recurring license-management/platform-ng evidence for S1135 (TODO above commented imports), S3863, S1301 and S7761.
+
 ## 7.0.3 — 2026-11-17
 
 - Safe-tier Sonar smells (unused import/local, commented code, regex literal and similar) no longer survive months: in a touched file the agent fixes them in the whole file, not only the changed lines; a pasted safe-tier finding list or "clean Sonar" request authorizes a sweep of the named scope as `strict-preserve-logic`; generated clients are fixed in the template.
