@@ -298,6 +298,7 @@ export async function guardCommand(command, { cwd, session = null } = {}) {
     readMessageFile: (file, gitCwd) => readFileSync(path.resolve(cwd, gitCwd || ".", file), "utf8"),
   };
   let result = null;
+  let segmentCwd = cwd;
   for (const segment of splitCommands(command)) {
     if (sqlctxRevealInvocation(segment)) return { decision: DENY, rule: "G8", reason: "sqlctx query --reveal shows real sensitive values; give the user reveal_handoff to run it themselves" };
     const title = context.commitConvention ? reviewTitleOf(segment) : null;
@@ -305,9 +306,22 @@ export async function guardCommand(command, { cwd, session = null } = {}) {
       const check = checkCommitHeader(title.trim(), context.commitConvention, context.commitLanguage || "th");
       if (!check.ok) return { decision: DENY, rule: "G7", reason: `PR/MR title "${title.trim().slice(0, 80)}" is not the team style "<feature|fix|comment|chore|bump|audit|ci>: <plain description>" of AGENTS.md §10.6${check.suggestion ? `; use "${check.suggestion}"` : ""}` };
     }
+    // 7.0.6+: follow `cd <dir>` and `git -C <dir>` so a release run in another repository
+    // is read from that repository's active state, not from the session's start folder (G2).
+    const cdMatch = /^\s*cd\s+(?:\/d\s+)?["']?([^"'&;|]+?)["']?\s*$/i.exec(segment);
+    if (cdMatch) { segmentCwd = path.resolve(segmentCwd, cdMatch[1]); continue; }
     const invocation = gitInvocation(segment);
     if (!invocation) continue;
-    const verdict = evaluate(invocation, context);
+    const runDir = invocation.cwd ? path.resolve(segmentCwd, invocation.cwd) : segmentCwd;
+    let segmentContext = context;
+    if (runDir !== cwd && safeSession(session)) {
+      const otherRoot = git(runDir, ["rev-parse", "--show-toplevel"]) || null;
+      if (otherRoot && otherRoot !== root) {
+        const otherActive = await readJson(path.join(otherRoot, ".agrimap-agent", "runtime", "active", `${safeSession(session)}.json`));
+        segmentContext = { ...context, release: otherActive?.operation === "release", currentBranch: git(otherRoot, ["branch", "--show-current"]) };
+      }
+    }
+    const verdict = evaluate(invocation, segmentContext);
     if (verdict?.decision === DENY) return verdict;
     result ||= verdict;
   }

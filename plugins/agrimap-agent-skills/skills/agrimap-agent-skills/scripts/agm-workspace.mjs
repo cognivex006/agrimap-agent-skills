@@ -1439,7 +1439,8 @@ async function validate(root, args) {
   if (workflowDepth === "light") {
     const leakedTaskPath = await findTaskPath(state, executionId, active);
     const contentFailures = [];
-    if (taskId !== null) contentFailures.push({ field: "task_id", reason: "light-must-not-have-task-id" });
+    // 7.0.7: a stray task id on a light run is a warning, never a failed completion.
+    const lightWarnings = taskId !== null ? ["light-task-id-ignored"] : [];
     if (leakedTaskPath) contentFailures.push({ field: "task-directory", reason: "light-must-not-create-task-artifacts" });
     return {
       ok: contentFailures.length === 0 && evidence.failures.length === 0 && Boolean(created) && memoryRecorded,
@@ -1453,6 +1454,7 @@ async function validate(root, args) {
       createdRequestRecorded: Boolean(created),
       requesterRecorded: Boolean(created?.requestedBy || active.requestedBy),
       memoryRecorded,
+      warnings: lightWarnings,
     };
   }
   if (!taskPath) return { ok: false, executionId, taskId, workflowDepth, missing: ["task-directory"], contentFailures: [] };
