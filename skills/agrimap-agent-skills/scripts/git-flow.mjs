@@ -421,7 +421,7 @@ function findChangelog(entries, target) {
 }
 
 export async function planDelivery({
-  root, policy, active, ackRequired = [], explicit = null, input = null, changelogNa = null, mixed = null,
+  root, policy, active, ackRequired = [], explicit = null, input = null, changelogNa = null, mixed = null, foreign = null,
   allowSecretPaths = [], excludePaths = [], localPaths = [], bodyFallback = [], governance = {}, run = defaultRun, pushOnly = false, spec = null,
 }) {
   if (!active) return stop("NO_ACTIVE_EXECUTION", "Start the execution first (start --objective <same objective>).", { next: { action: "run", command: "start" } });
@@ -442,6 +442,12 @@ export async function planDelivery({
   const excluded = new Set(excludePaths.map(toSlash));
   groups.excluded.push(...groups.own.filter(entry => excluded.has(entry.path)).map(entry => ({ ...entry, reason: "excluded-by-request" })));
   groups.own = groups.own.filter(entry => !excluded.has(entry.path));
+  // 7.0.8: the owner's own uncommitted edits are not someone else's work. A release run
+  // (or --foreign include) adopts them into the commit; otherwise they stay out and the
+  // plan offers a numbered choice instead of silently skipping them.
+  const adoptForeign = foreign === "include" || (foreign !== "exclude" && active?.operation === "release");
+  if (adoptForeign) { groups.own.push(...groups.foreign.splice(0)); if (mixed !== "exclude") groups.own.push(...groups.mixed.splice(0)); }
+  else if (groups.foreign.length && foreign !== "exclude") warnings.push({ code: "OWNER_PENDING_EDITS", message: `${groups.foreign.length} file(s) were already modified before this run (the owner's pending edits); ask once: (1) include them as a separate commit with a team header from their diff, (2) leave them local`, paths: groups.foreign.map(entry => entry.path), next: { action: "ask", command: "deliver plan --foreign include|exclude" } });
   if (groups.mixed.length && mixed === "include") groups.own.push(...groups.mixed.splice(0));
   else if (groups.mixed.length && mixed === "exclude") groups.foreign.push(...groups.mixed.splice(0));
   const paths = Object.fromEntries(Object.entries(groups).map(([key, value]) => [key, value.map(entry => entry.path)]));

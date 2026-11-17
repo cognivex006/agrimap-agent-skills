@@ -89,6 +89,8 @@ test('dirty base carries files, pre-existing dirt is never delivered, mixed asks
   // 5.0.10: run logs are local only (Git-ignored), never delivered.
   assert.ok(!committed.some(f=>f.startsWith('.agrimap-agent/logs/')));
   assert.ok(dplan.paths.foreign.includes('notes.md'));
+  // 7.0.8: owner edits made before the run are offered, never skipped silently.
+  assert.ok((dplan.warnings||[]).some(w=>w.code==='OWNER_PENDING_EDITS'&&w.paths.includes('notes.md')),JSON.stringify(dplan.warnings));
 });
 
 test('host branches push under the team name or rename; collisions get a suffix; stale plans refuse (git-flow 3/4/5)',async t=>{
