@@ -2,6 +2,10 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+## 7.0.5 — 2026-11-17
+
+- `release inhouse --flash` no longer ends BLOCKED on an incompatible mandatory CLI gate (for example an Inhouse verify that demands Production-only notes): the agent asks once with numbered options (equivalent checks and publish, satisfy the gate and publish, or stop) and continues on the answer; only the owner cancels. Unpushed local develop commits are part of the candidate and ship in the same push.
+
 ## 7.0.4 — 2026-11-17
 
 - SonarQube rows: TypeScript S4782 (`?` plus `undefined`); xUnit2032 is now safe tier with the `IsType(..., exactMatch: false)` fix; recurring license-management/platform-ng evidence for S1135 (TODO above commented imports), S3863, S1301 and S7761.
