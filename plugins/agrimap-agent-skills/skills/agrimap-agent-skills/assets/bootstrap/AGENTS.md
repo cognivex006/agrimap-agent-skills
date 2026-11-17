@@ -1,6 +1,6 @@
 # กติกากลาง: Skill routing, Workflow และ Release
 
-<!-- AGRIMAP BOOTSTRAP VERSION: 7.0.6 -->
+<!-- AGRIMAP BOOTSTRAP VERSION: 7.0.7 -->
 
 ไฟล์นี้เป็น canonical instruction ของ repository สำหรับ Codex, Claude Code, Gemini CLI, Cursor และผู้พัฒนา โดยไม่ต้องมี AgriMap skills หรือ local Git hook กติกา Markdown ช่วยกำกับพฤติกรรม; Agent ใช้ .NET Global Tool `agm-release` ตรวจ local gate และตรวจหลักฐาน Git ตามไฟล์นี้ ห้ามอนุมานว่า Jenkins บังคับ release gate อยู่ ส่วน GitLab Protected Branch/Tag ต้องตั้งค่าฝั่ง server แยกต่างหาก
 
@@ -43,6 +43,7 @@
 
 - ลำดับ authority: safety invariants §3 > คำสั่งเฉพาะเจาะจงของมนุษย์ในคำขอปัจจุบัน > ค่าเริ่มต้นของไฟล์นี้และ `AGENTS.release.md`; ขัดแค่ค่าเริ่มต้นให้ทำเลยไม่ขออนุมัติ แล้วรายงาน
 - ขัดกฎจริง: ห้ามจบรอบแค่ "ทำไม่ได้" ถามครั้งเดียวพร้อมหลักฐานและตัวเลือกมีเลข 2–3 ข้อ (ข้อ 1 แนะนำ) ทำส่วนอื่นต่อ ตอบแล้วทำทันทีห้ามถามซ้ำ; host ไม่มีเครื่องมือถาม (Codex) ใช้ตัวเลือกมีเลขในข้อความ; BLOCKED เฉพาะไม่มีสิทธิ์/เข้าถึงไม่ได้/เครื่องพัง นอกนั้นถาม นอกนั้นเป็นคำถาม (release outcome `question`)
+- เชิงรุก: สิ่งที่ไม่กระทบ behavior/contract ทำเลยแล้วรายงาน; ที่กระทบเสนอตัวเลือกมีเลขท้ายรอบ ไม่รอสั่งซ้ำ
 - ผู้ใช้ตัดสินใจหรือสั่งชัด (เลือกทาง, "ต่อไปให้...", อนุมัติ) บันทึก decision เองทันทีด้วย `decide record` ไม่ต้องถาม
 - ใช้ไฟล์มาตรฐาน: `changelog.md`, `release.md`, `release-notes/<VERSION>.md` ที่ root และ `.agrimap-agent/memory/project.md` เป็น project memory/index กลาง; ห้ามสร้าง root `project.md` หรือไฟล์ต่าง case ซ้ำ
 - `CLAUDE.md`, `GEMINI.md`, `CURSOR.md` เป็น pointer มาที่ `AGENTS.md` เท่านั้น ห้าม copy กติกา แก้ที่ `AGENTS.md` จุดเดียว
@@ -151,7 +152,7 @@
 
 - ก่อน commit แสดงไฟล์ allowlist ที่ modified/untracked จริงด้วย `git status --short -- <allowlisted-subtrees>` และตรวจว่าทุก artifact ของ run ถูกนับครบ
 - Stage ด้วย exact file paths ที่ตรวจแล้วเท่านั้น เช่น `git add -- <file-1> <file-2>`; ห้าม `git add .`, `git add -A` หรือ `git add -- .agrimap-agent`
-- ห้าม stage path นอก allowlist เพียงเพราะอยู่ใน worktree; หากงานจำเป็นต้องใช้ path นอก allowlist ให้หยุดและขอ owner authority ก่อน
+- ห้าม stage path นอก allowlist เพียงเพราะอยู่ใน worktree; ถ้างานต้องใช้ ถามครั้งเดียว (1) รวม (2) เก็บ local แล้วทำส่วนอื่นต่อ
 - ห้าม complete หากมี artifact ที่ run นี้สร้าง/แก้ใน allowlist แต่ตกหล่นจาก intended commit หรือ report ไม่ตรงกับ Git diff/status จริง
 - หาก policy §10 ไม่เปิด delivery และไม่ได้สั่ง commit ให้รายงาน exact modified/untracked paths เป็น local deliverables; กลุ่ม B ต้อง commit/push final audit artifacts ตาม §6.3
 - ห้ามเก็บ secret, token, credential, ข้อมูลส่วนบุคคลที่ไม่จำเป็น, hidden reasoning, transcript หรือ raw telemetry ใน artifact ใด ๆ; raw requester input อนุญาตเฉพาะ prompt history ตามข้อยกเว้น §9.1 และ contract ของ host ห้ามคัดลอกเข้า memory/log/report
