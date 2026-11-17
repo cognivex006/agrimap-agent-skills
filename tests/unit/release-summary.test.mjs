@@ -74,7 +74,7 @@ test('success envelope renders the golden snapshot byte-for-byte, every time', (
 });
 
 test('partial and blocked runs show real statuses, UNKNOWN fields and remaining work', () => {
-  const blocked = { ...success, outcome: 'blocked', versions: { before: '1.4.2' },
+  const blocked = { ...success, outcome: 'blocked', blockReason: 'environment', versions: { before: '1.4.2' },
     steps: [{ name: 'preflight', status: 'done' }, { name: 'verification', status: 'blocked', detail: 'dotnet SDK missing' }, { name: 'commit-push-inhouse', status: 'not-run' }],
     publication: { pushed: false }, blocked: ['verification: dotnet SDK 8 not installed'], pending: ['commit-push-inhouse'], nextAction: 'Install the SDK, then resume' };
   const out = renderEnvelope(blocked, 'Release timing: UNAVAILABLE\nElapsed: UNKNOWN');
@@ -82,7 +82,7 @@ test('partial and blocked runs show real statuses, UNKNOWN fields and remaining 
   assert.match(out, /\| 2 \| verification \| blocked \| dotnet SDK missing \|/);
   assert.match(out, /- Pushed: no/);
   assert.match(out, /Blocked:\n- verification: dotnet SDK 8 not installed/);
-  assert.match(out, /- BLOCKED\n- Next action: Install the SDK, then resume/);
+  assert.match(out, /- BLOCKED \(environment\)\n- Next action: Install the SDK, then resume/);
   assert.match(out, /Elapsed: UNKNOWN/);
 });
 
@@ -122,4 +122,15 @@ test('CLI renders with the real timing block, or an UNAVAILABLE block without on
   assert.equal(none.status, 0);
   assert.match(none.stdout, /Release timing: UNAVAILABLE[\s\S]*Reason: No timing state was passed/);
   assert.equal(cli('bogus').status, 1);
+});
+
+test('7.0.6: owner-decidable gates render as a numbered question; blocked needs a real reason', () => {
+  const q = { ...success, outcome: 'question', steps: [{ name: 'verify', status: 'pending' }],
+    question: { text: 'Inhouse verify ขอ notes ของ Production', options: ['ตรวจเทียบเท่าแล้ว publish', 'เขียน notes แล้ว publish', 'หยุด'] } };
+  const out = renderEnvelope(q, 'Release timing: UNAVAILABLE');
+  assert.match(out, /## Decision needed/);
+  assert.match(out, /1\. ตรวจเทียบเท่าแล้ว publish \(แนะนำ\)/);
+  assert.ok(validateEnvelope({ ...success, outcome: 'question' }).some(e => /question\.text/.test(e)));
+  assert.ok(validateEnvelope({ ...success, outcome: 'blocked' }).some(e => /blockReason/.test(e)));
+  assert.deepEqual(validateEnvelope({ ...success, outcome: 'blocked', blockReason: 'access' }), []);
 });
