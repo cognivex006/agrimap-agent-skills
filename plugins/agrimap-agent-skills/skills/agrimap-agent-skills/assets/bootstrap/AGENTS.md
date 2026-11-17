@@ -1,6 +1,6 @@
 # กติกากลาง: Skill routing, Workflow และ Release
 
-<!-- AGRIMAP BOOTSTRAP VERSION: 7.0.5 -->
+<!-- AGRIMAP BOOTSTRAP VERSION: 7.0.6 -->
 
 ไฟล์นี้เป็น canonical instruction ของ repository สำหรับ Codex, Claude Code, Gemini CLI, Cursor และผู้พัฒนา โดยไม่ต้องมี AgriMap skills หรือ local Git hook กติกา Markdown ช่วยกำกับพฤติกรรม; Agent ใช้ .NET Global Tool `agm-release` ตรวจ local gate และตรวจหลักฐาน Git ตามไฟล์นี้ ห้ามอนุมานว่า Jenkins บังคับ release gate อยู่ ส่วน GitLab Protected Branch/Tag ต้องตั้งค่าฝั่ง server แยกต่างหาก
 
@@ -42,7 +42,7 @@
 ## 1. ขอบเขตและ fixed ownership
 
 - ลำดับ authority: safety invariants §3 > คำสั่งเฉพาะเจาะจงของมนุษย์ในคำขอปัจจุบัน > ค่าเริ่มต้นของไฟล์นี้และ `AGENTS.release.md`; ขัดแค่ค่าเริ่มต้นให้ทำเลยไม่ขออนุมัติ แล้วรายงาน
-- ขัดกฎจริง: ห้ามจบรอบแค่ "ทำไม่ได้" ถามครั้งเดียวพร้อมหลักฐานและตัวเลือกมีเลข 2–3 ข้อ (ข้อ 1 แนะนำ) ทำส่วนอื่นต่อ ตอบแล้วทำทันทีห้ามถามซ้ำ; host ไม่มีเครื่องมือถาม (Codex) ใช้ตัวเลือกมีเลขในข้อความ
+- ขัดกฎจริง: ห้ามจบรอบแค่ "ทำไม่ได้" ถามครั้งเดียวพร้อมหลักฐานและตัวเลือกมีเลข 2–3 ข้อ (ข้อ 1 แนะนำ) ทำส่วนอื่นต่อ ตอบแล้วทำทันทีห้ามถามซ้ำ; host ไม่มีเครื่องมือถาม (Codex) ใช้ตัวเลือกมีเลขในข้อความ; BLOCKED เฉพาะไม่มีสิทธิ์/เข้าถึงไม่ได้/เครื่องพัง นอกนั้นถาม นอกนั้นเป็นคำถาม (release outcome `question`)
 - ผู้ใช้ตัดสินใจหรือสั่งชัด (เลือกทาง, "ต่อไปให้...", อนุมัติ) บันทึก decision เองทันทีด้วย `decide record` ไม่ต้องถาม
 - ใช้ไฟล์มาตรฐาน: `changelog.md`, `release.md`, `release-notes/<VERSION>.md` ที่ root และ `.agrimap-agent/memory/project.md` เป็น project memory/index กลาง; ห้ามสร้าง root `project.md` หรือไฟล์ต่าง case ซ้ำ
 - `CLAUDE.md`, `GEMINI.md`, `CURSOR.md` เป็น pointer มาที่ `AGENTS.md` เท่านั้น ห้าม copy กติกา แก้ที่ `AGENTS.md` จุดเดียว
@@ -112,7 +112,7 @@
 
 ### 9.2 Run identity และรูปแบบ path
 
-- งานที่แก้ repository หรือสร้างผลลัพธ์ durable ให้ใช้ human requester ที่ยืนยันแล้วในบทสนทนา/host context เดิมก่อน หากไม่มี local state ไม่ได้แปลว่าต้องถามชื่อซ้ำ ตรวจ session ปัจจุบัน, confirmed local-user record และ session ที่ยังใช้ได้ของเครื่อง/ผู้ใช้เดียวกันใน repository นี้ก่อนถาม; ถ้ามี runtime ใช้ `agm-workspace.mjs requester --cwd <project> --session <session>` แบบอ่านอย่างเดียว แล้วส่งชื่อที่ยืนยันแล้วผ่าน `--requested-by` ให้ start/identify เมื่อจำเป็น ไม่ยืนยันชื่อใหม่ทุกวันสำหรับ persistent confirmation และไม่เดาจาก Git author/OS user หรือ copied audit history เพียงอย่างเดียว ถ้าหลักฐานที่ยืนยันยังขาดหรือขัดกันจึงถามครั้งเดียว ตัวตนไม่ใช่สิทธิ์อนุมัติ release
+- งานที่แก้ repository หรือสร้างผลลัพธ์ durable ให้ใช้ human requester ที่ยืนยันแล้วในบทสนทนา/host context เดิมก่อน ถ้ามี runtime ใช้ `agm-workspace.mjs requester --cwd <project> --session <session>` แบบอ่านอย่างเดียว แล้วส่งชื่อที่ยืนยันแล้วผ่าน `--requested-by` ให้ start/identify เมื่อจำเป็น ไม่ถามชื่อซ้ำ ผู้สั่งในบทสนทนาคือ requester; ไม่มีชื่อยืนยันใช้ OS user + `unconfirmed` แล้วทำต่อ ห้าม block เพราะตัวตน
 - ใช้เวลา `Asia/Bangkok`; `RUN_ID` รูปแบบ `ddHHmmss` และ slug แบบ lowercase-kebab-case หาก ID/path ชนกับของเดิมให้ใช้วินาทีถัดไป ห้ามรวมสอง run
 - ใช้ path มาตรฐาน:
   - decision: `decisions/YYYY-MM/<RUN_ID>-<slug>.md`

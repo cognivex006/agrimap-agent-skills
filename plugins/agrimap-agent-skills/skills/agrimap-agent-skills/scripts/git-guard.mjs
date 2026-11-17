@@ -226,7 +226,7 @@ export function evaluate(invocation, context) {
   if (sub === "add") {
     const paths = args.filter(arg => arg !== "--" && !arg.startsWith("-")).map(item => item.replaceAll("\\", "/").replace(/^\.\//, ""));
     if (args.includes("-A") || args.includes("--all") || shortFlags(args.filter(arg => arg !== "--"), "A") || paths.some(item => item === "." || item === ":/" || item === "*")) {
-      return { decision: DENY, rule: "G3", reason: "stage exact paths only; never add everything" };
+      return { decision: DENY, rule: "G3", reason: "stage exact paths only; never add everything. Use `git add -- <path> ...` (for tracked edits: `git add -- $(git diff --name-only)`); nothing else in this command ran, so re-run the remaining steps" };
     }
     if (paths.some(item => item === ".agrimap-agent" || item === ".agrimap-agent/" || item === ".agrimap-agent/local" || item.startsWith(".agrimap-agent/local/"))) {
       return { decision: DENY, rule: "G3", reason: ".agrimap-agent is staged by deliver; .agrimap-agent/local is never committed" };

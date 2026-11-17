@@ -302,13 +302,14 @@ export function generateDescription(options) {
   const items = collectDescriptionItems(readReleaseLog(range));
   const projectName = clip(optionValue(options['project-name']) || repoName(), LIMITS.name);
   const bullets = [...items].slice(0, LIMITS.items).map(item => descriptionBullet(item, projectName));
-  const lines = [`# ${projectName} / ${version}`, ...bullets];
-  return { projectName, version, range, items: lines.length - 1, markdown: lines.join('\n') + '\n' };
+  // 7.0.6: a delta with no feature:/fix: commit is a maintenance release, not a blocker.
+  const maintenance = bullets.length === 0;
+  const lines = [`# ${projectName} / ${version}`, ...(maintenance ? ['- ปรับปรุงภายใน (maintenance only)'] : bullets)];
+  return { projectName, version, range, items: lines.length - 1, maintenance, markdown: lines.join('\n') + '\n' };
 }
 
 function generate(options) {
   const result = generateDescription(options);
-  if (!result.items) fail('RELEASE_DESCRIPTION_EMPTY', 1, { range: result.range, next: 'No feature:/fix: commit in range; check --from/--to or the commit headers' });
   if (options.out && options.out !== true) writeFileSync(options.out, result.markdown, 'utf8');
   print({ ok: true, file: options.out && options.out !== true ? options.out : null, ...result });
 }

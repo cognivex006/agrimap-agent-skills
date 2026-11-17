@@ -2,6 +2,16 @@
 
 Release history, not current operating instructions. Start with [Getting Started](docs/GETTING-STARTED.md) and [Migration](docs/MIGRATION-3.0.md) for current behavior.
 
+
+## 7.0.6 — 2026-11-17
+
+- Gates no longer end owner-commanded runs as BLOCKED when the owner can decide in one reply. The release envelope gains outcome `question` (numbered options, option 1 recommended, rendered as `Decision needed`); `blocked` now requires `blockReason` permission|access|environment. Diverged jenkins/jenkins-release becomes a question whose option 1 is the history-preserving merge after a conflict-free `git merge-tree`. Bootstrap AGENTS.md states the same rule for every operation.
+- `release-notify.mjs generate` no longer fails with `RELEASE_DESCRIPTION_EMPTY` when the delta has no feature:/fix: commit; it writes `ปรับปรุงภายใน (maintenance only)` with `maintenance: true` (3 blocked releases in the AgriMap logs).
+- Requester identity never blocks: whoever types the command in the conversation is the requester; without a confirmed name the OS user is recorded as `unconfirmed` and the run continues.
+- `--flash` verify: `git diff --check` skips exported/generated paths verified elsewhere; a delta with no feature/fix entry gets `maintenance only`; Docker images are reused while the Dockerfile/build context is unchanged, otherwise built now; `SECRET_SUSPECTED` is a question after independent steps finish.
+- Evidence: 45 `blocked` log events across services, jobs and apps/web; environment (disk, npm 429, Git access) stays blocked, everything owner-decidable becomes a question.
+- Guard G3 suggests the exact `git add -- <paths>` form and says the rest of the command did not run.
+
 ## 7.0.5 — 2026-11-17
 
 - `release inhouse --flash` no longer ends BLOCKED on an incompatible mandatory CLI gate (for example an Inhouse verify that demands Production-only notes): the agent asks once with numbered options (equivalent checks and publish, satisfy the gate and publish, or stop) and continues on the answer; only the owner cancels. Unpushed local develop commits are part of the candidate and ship in the same push.
