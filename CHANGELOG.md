@@ -4,6 +4,10 @@ Release history, not current operating instructions. Start with [Getting Started
 
 
 
+
+## 7.0.8 — 2026-11-17
+
+- Release understands the owner's own uncommitted edits: files that were dirty before the run (written by the owner or another session) are release content, not foreign work. `deliver plan` adopts them automatically in a release run (`--foreign include|exclude` overrides); `--flash` reads their diff, groups them by topic and commits each with a team header before the version commit. Outside release the plan warns `OWNER_PENDING_EDITS` with a numbered choice (include as a separate commit, or leave local) instead of skipping them silently.
 ## 7.0.7 — 2026-11-17
 
 - Proactive improvement (owner request): inside authorized write work, no-impact improvements (Sonar safe tier, stale wording, config/docs that disagree with code, missing tests for touched code, unsatisfiable gates) are done and reported; impactful ones end the turn as numbered options instead of waiting to be asked again. Bootstrap AGENTS.md §1 and `recommendations.md`.

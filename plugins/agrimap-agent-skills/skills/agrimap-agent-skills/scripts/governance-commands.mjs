@@ -362,7 +362,7 @@ async function deliverCommand(ctx, sub, args, root) {
   const options = {
     root, policy: loaded.validation?.ok ? loaded.policy : null, active, ackRequired: await rootAck(root, session),
     explicit: text(args.explicit), input: await readInput(args.input), changelogNa: text(args["changelog-na"]),
-    mixed: text(args.mixed), allowSecretPaths: list(args["allow-secret-paths"]), excludePaths: list(args["exclude-paths"]),
+    mixed: text(args.mixed), foreign: text(args.foreign), allowSecretPaths: list(args["allow-secret-paths"]), excludePaths: list(args["exclude-paths"]),
     localPaths, bodyFallback, governance: flags, spec: specGate(project, active, dirtyInventory(root).map(entry => entry.path), specNa),
   };
   const policyWarnings = loaded.exists && !loaded.validation?.ok ? [{ code: "POLICY_INVALID", subject: "workflow.json", fix: "fix the policy; delivery is not automatic meanwhile" }] : [];
