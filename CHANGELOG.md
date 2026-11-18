@@ -5,6 +5,10 @@ Release history, not current operating instructions. Start with [Getting Started
 
 
 
+## 7.0.9 — 2026-11-17
+
+- Maintenance release: records the macOS/Linux phase results measured on v7.0.8 (`specs/phase-macos-linux.md`); no runtime behavior change.
+
 ## 7.0.8 — 2026-11-17
 
 - Release understands the owner's own uncommitted edits: files that were dirty before the run (written by the owner or another session) are release content, not foreign work. `deliver plan` adopts them automatically in a release run (`--foreign include|exclude` overrides); `--flash` reads their diff, groups them by topic and commits each with a team header before the version commit. Outside release the plan warns `OWNER_PENDING_EDITS` with a numbered choice (include as a separate commit, or leave local) instead of skipping them silently.
