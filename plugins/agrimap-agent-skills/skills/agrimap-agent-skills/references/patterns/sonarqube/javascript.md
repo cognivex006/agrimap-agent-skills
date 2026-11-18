@@ -4,7 +4,7 @@ Plain `.js`/`.mjs`/`.cjs` files: bootstrap tools such as `tools/agrimap/release-
 
 | Golden | Key | Smell | New code | Existing code | Seen |
 | --- | --- | --- | --- | --- | --- |
-| ADV-15 | S6594 | `str.match(/re/)` without `g` | must (`/re/.exec(str)`) | safe | release-notify.mjs (5.0.14) |
+| ADV-15 | S6594 | `str.match(/re/)` without `g` | must (`/re/.exec(str)`) | safe | release-notify.mjs (5.0.14); product copies of `tools/agrimap/release-notify.mjs` older than the package (refresh from the package, never hand-fix) |
 | ADV-16 | S6353 | `[A-Za-z0-9_]`, `[0-9]` | must (`\w`, `\d`) | safe | release-notify.mjs |
 | ADV-42 | S7781 | `replace(/lit/g, ...)` for a literal | must (`replaceAll`) | safe | release-notify.mjs |
 | SEC-23 | S5852 | `\s*` under the `m` flag, overlapping quantifiers | must | recommend | release-notify.mjs profile/registry patterns |

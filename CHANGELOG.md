@@ -5,6 +5,12 @@ Release history, not current operating instructions. Start with [Getting Started
 
 
 
+## 7.1.0 — 2026-11-18
+
+- Fix scope by stage for the delivery phase: write time fixes every `must` row and the whole-file safe tier unasked; release sweeps the safe tier over the release delta as one `fix:` commit and refreshes stale package-managed files (`tools/agrimap/release-notify.mjs`) instead of hand-patching. CA1822/S2325 on `private` members joins the safe tier.
+- Saved decisions are loaded before planning or writing (`Decisions applied:`); the Orchestration line is mandatory for multi-unit work with a quick delegate rule.
+- URL matrix: agrimap-license-management (Inhouse, Production under the platform domain), agmbo-license-status-netcore and the delivery-scope systems. Front ends build on Node 26 and serve with nginx-unprivileged 1.31.8.
+
 ## 7.0.9 — 2026-11-17
 
 - Maintenance release: records the macOS/Linux phase results measured on v7.0.8 (`specs/phase-macos-linux.md`); no runtime behavior change.

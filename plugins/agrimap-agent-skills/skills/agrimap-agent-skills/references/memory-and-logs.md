@@ -8,3 +8,7 @@ Completion copies the done list into recent memory and removes the savepoint; bl
 Runtime generates timestamps/IDs/metadata. Confirmed requester attribution persists in the user/workspace scope; it is not owner authority. Record actual model separately from modelLabel.
 Orient before code search (resume, review, diagnosis, pending): savepoint → recent memory for the paths → `recall --topic --paths` → latest CHANGELOG → `git status/diff`, `git log --oneline -15 -- <paths>`; older history only via `git log -S/--follow`. Stop once answered. These are claims: confirm against current files; a savepoint status does not prove work remains.
 Use one lifecycle owner: installed runtime or portable fallback emits the same evidence, not two parallel runs.
+
+## Decisions in force (7.1.0)
+
+Before planning or the first write, list `.agrimap-agent/decisions/` newest first and read those whose slug or context matches the target repository, lane or topic. Apply each unless superseded and state `Decisions applied: <files>` or `none`. A conflicting new request wins and is recorded as a superseding decision. With two or more units the first plan line is the Orchestration line from subagents-and-branches.md; when it says delegate, dispatch at once without asking.

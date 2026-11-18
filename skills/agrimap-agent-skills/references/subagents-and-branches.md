@@ -8,6 +8,8 @@ Load for every plan or execution with two or more units, and whenever delegation
 
 ## Orchestration decision (5.0.1)
 
+Quick rule (7.1.0): delegate now when there are three or more independent units with disjoint files, or a search across two or more repositories; stay sequential for one lane in one repository, shared files or a contract still being produced. No question, no silent skip: the Orchestration line names the choice and reason.
+
 Owner decision 2026-10-14: decide this for every plan or execution with two or more units, not only when delegation was requested, and state it in one line (`Orchestration: sequential` or `Orchestration: N agents — units …`).
 
 1. Work graph: list units with lane/skill, repository, files, `depends_on`, contract produced or consumed (SP signature, DTO/API, component inputs) and acceptance check.
