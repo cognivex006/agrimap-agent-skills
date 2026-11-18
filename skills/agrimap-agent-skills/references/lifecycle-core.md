@@ -9,8 +9,9 @@ Before the first repository write run `agm-workspace.mjs context`: read/ack its 
 Reuse a conversation/host-confirmed requester via `--requested-by`; missing runtime state does not invalidate confirmation. Otherwise inspect `agm-workspace.mjs requester --cwd <project> --session <id>` read-only. Never infer identity from Git/OS authorship or copied audit history. Reject expired/revoked/foreign/ambiguous records; otherwise ask once. Identity grants no publication authority.
 
 For adopted product repositories before durable work, compare the installed AGENTS.md bootstrap version marker/receipt to the active skill manifest. A missing or different version only warns: run project-bootstrap apply now (auto-merge keeps project lines, with backups) and continue; report a pending file. For release, check branch freshness before bootstrap writes. No product bootstrap in the skill-package root or for ordinary questions.
+Apply matching decisions first (memory-and-logs.md); multi-unit work states its Orchestration line.
 Follow explicit project recording requirements (bootstrap AGENTS §9) without duplicate lifecycles.
-Follow recommendations.md in every operation: proactively give supported advice with gaps, assumptions and confidence. Advice grants no write authority.
+Follow recommendations.md in every operation; advice grants no write authority.
 
 Use existing requester authorization; never require a generated prompt merely to repeat approval.
 - light: bounded authorized work; current/recent memory and milestone audit; no tasks.
@@ -20,6 +21,6 @@ Triage depth by risk ([delivery-workflow.md](delivery-workflow.md)); state `Dept
 Use `agm-workspace.mjs start --operation <op> --session <id> --tracking --risk <reason>` where relevant. Read-only calls return started=false unless --persist/--tracking requests durable work. Never create empty task trees. Explicit init alone prepares project knowledge; --bootstrap installs project assets.
 
 ## Evidence and completion
-Checkpoint changed acceptance, decisions, integration or verification only. Keep submissions in history. Redact history/log/memory via scripts/sensitive-recording.mjs, including manual writes. No raw backups. Keep facts/evidence concise; runtime supplies metadata.
+Checkpoint changed acceptance, decisions, integration or verification only. Keep submissions in history. Redact history/log/memory via scripts/sensitive-recording.mjs, including manual writes. No raw backups.
 v3 tracked work uses the savepoint (memory-and-logs.md), kept current at milestones and before pausing. Separate analysis/QA/results only when an actual consumer needs them. Legacy five-file executions stay readable under their original contract.
 Complete only after actual acceptance and proportional verification; artifact existence or a command exit code alone is not product success. Finalize recent memory and remove the savepoint. Reports are requested deliverables, not mandatory duplicates. Never delete historical prompts/logs as migration.

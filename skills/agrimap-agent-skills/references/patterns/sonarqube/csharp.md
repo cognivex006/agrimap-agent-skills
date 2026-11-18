@@ -50,7 +50,7 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 
 | Golden | Key | Smell | New code | Existing code | Seen |
 | --- | --- | --- | --- | --- | --- |
-| ADV-02 | CA1822, S2325 | Member uses no instance data (filters, middleware helpers too) | must | recommend | plus `ResponseActionResultFilter.OnAppException`, `OnException`; `GlobalExceptionMiddleware.ResolveStatusCode`, `GetDefaultErrorCode`; identity `RedirectWithErrorAsync`; plus `OnException`; plus tests `ServiceFixture.Create` |
+| ADV-02 | CA1822, S2325 | Member uses no instance data (filters, middleware helpers too) | must | safe for `private` non-virtual members (7.1.0); recommend for others | license-management `ResponseActionResultFilter.CheckException`, `BuildAdminRequest`; plus `ResponseActionResultFilter.OnAppException`, `OnException`; `GlobalExceptionMiddleware.ResolveStatusCode`, `GetDefaultErrorCode`; identity `RedirectWithErrorAsync`; plus `OnException`; plus tests `ServiceFixture.Create` |
 | ADV-32 | S2933 | Private field assigned only in the constructor is not `readonly` | must | safe | catalog |
 | ADV-01 | S4136 | Overloads not adjacent | should | recommend | identity `IOAuthUseCase` |
 | ADV-03 | S1905 | Redundant cast | must | recommend | identity `as List<...>` |

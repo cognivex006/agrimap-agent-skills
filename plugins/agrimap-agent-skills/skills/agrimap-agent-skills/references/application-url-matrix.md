@@ -13,6 +13,7 @@ This is the authoritative FE/BE decision reference for domain concatenation, red
 | **agrimap-ex** | Default | `http://localhost:4202/agrimap-suite-wa` | `https://appserv2.cdg.co.th/agrimap-suite-wa` | `https://agrimap-ex.cdg.co.th` | `https://agrimap-ex.ldd.go.th` |
 | **agrimap-ex** | Normal | `http://localhost:4202/agrimap-suite-wa/executive` | `https://appserv2.cdg.co.th/agrimap-suite-wa/executive` | `https://agrimap-ex.cdg.co.th` | `https://agrimap-ex.ldd.go.th` |
 | **agrimap-pro** | Application | `http://localhost:4203/agrimap-pro-wa` | `https://appserv2.cdg.co.th/agrimap-pro-wa` | `https://agrimap-pro.cdg.co.th` | `https://agrimap-pro.ldd.go.th` |
+| **agrimap-license-management** | Application | `http://localhost:4201/agrimap-license-management-wa` | `https://appserv2.cdg.co.th/agrimap-license-management-wa` | — | `https://agrimap-platform.ldd.go.th/agrimap-license-management-wa` |
 
 ## Callback URL
 
@@ -25,6 +26,7 @@ This is the authoritative FE/BE decision reference for domain concatenation, red
 | **agrimap-ex** | Default | `http://localhost:4202/agrimap-suite-wa/callback` | `https://appserv2.cdg.co.th/agrimap-suite-wa/callback` | `https://agrimap-ex.cdg.co.th/callback` | `https://agrimap-ex.ldd.go.th/callback` |
 | **agrimap-ex** | Normal | `http://localhost:4202/agrimap-suite-wa/callback` | `https://appserv2.cdg.co.th/agrimap-suite-wa/callback` | `https://agrimap-ex.cdg.co.th/callback` | `https://agrimap-ex.ldd.go.th/callback` |
 | **agrimap-pro** | Application | `http://localhost:4203/agrimap-pro-wa/callback` | `https://appserv2.cdg.co.th/agrimap-pro-wa/callback` | `https://agrimap-pro.cdg.co.th/callback` | `https://agrimap-pro.ldd.go.th/callback` |
+| **agrimap-license-management** | Application | `http://localhost:4201/agrimap-license-management-wa/callback` | `https://appserv2.cdg.co.th/agrimap-license-management-wa/callback` | — | `https://agrimap-platform.ldd.go.th/agrimap-license-management-wa/callback` |
 
 ## Decision rules
 
@@ -33,5 +35,6 @@ This is the authoritative FE/BE decision reference for domain concatenation, red
 - `Normal` uses `/ii-online` for online and `/executive` for ex only in Development/Inhouse.
 - K8s.Dev and Production use separate domains, so `Normal` adds no application path.
 - `Default` and `Normal` share the callback URL inside the same application.
+- `agrimap-license-management` (repository `agmwa-license-management-ng`, base href `/agrimap-license-management-wa/`) keeps its path in every environment: Production lives under the platform domain, not its own domain. Development shares port 4201 with platform (`npm run start:agrimap:<env>`). K8s.Dev is unverified: report it, never guess. Its API is `agmws-license-management` and its job `agmbo-license-status-netcore` (service-url-matrix.md).
 - Unsupported combinations return an explicit unsupported result; never substitute another environment or application.
 - Load this reference conditionally for FE/BE analysis, design, diagnosis, review, simulation, planning, QA, prompt authoring, and execution when URL/domain/redirect/callback logic is in scope.
