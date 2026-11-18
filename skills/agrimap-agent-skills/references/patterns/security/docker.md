@@ -41,7 +41,7 @@ ENTRYPOINT ["dotnet", "AgriMap.Web.Service.dll"]
 ```dockerfile
 # Angular build with a private registry token, no token in layers
 # syntax=docker/dockerfile:1
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=secret,id=npmrc,target=/app/.npmrc npm ci --ignore-scripts --legacy-peer-deps
@@ -50,10 +50,10 @@ COPY src ./src
 COPY public ./public
 RUN npx ng build --configuration=production
 
-FROM nginxinc/nginx-unprivileged:1.26-alpine
+FROM nginx/nginx-unprivileged:1.31.8-alpine
 COPY nginx/production/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/<app>/browser /usr/share/nginx/html
 EXPOSE 8080
 ```
 
-Changing the build is a deployment change: keep the Jenkinsfile arguments in step (`--secret id=npmrc,src=...` replaces `--build-arg NPM_TOKEN`), and say in the summary which environments were built.
+Front ends build on Node 26 (`node:26-alpine` or `node:26-slim`) and serve with `nginx/nginx-unprivileged:1.31.8-alpine` (owner 2026-11-18, agmwa-license-management-ng). Changing the build is a deployment change: keep the Jenkinsfile arguments in step (`--secret id=npmrc,src=...` replaces `--build-arg NPM_TOKEN`), and say in the summary which environments were built.

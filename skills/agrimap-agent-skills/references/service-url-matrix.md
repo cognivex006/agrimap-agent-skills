@@ -4,7 +4,7 @@ Authoritative BE/FE reference for reaching AgriMap .NET services and jobs: the g
 
 This file deliberately holds no database endpoints, IP addresses, credentials or connection strings. Read those only from the project's own configuration and secret store at run time; never copy them into skills, memory, prompts or reports.
 
-Verified 2026-09-29 against the gateway `ocelot.<environment>.json` routes, the FE environment files, the service Jenkinsfiles and the infra Kubernetes base.
+Systems in delivery scope (owner 2026-11-18): agmwa-license-management-ng, agmws-license-management-netcore, agmbo-license-status-netcore, agmbo-cleansing-service-netcore, agmbo-cleansing-file-netcore, agmws-plus-netcore, agmws-query-engine-netcore. Verified 2026-09-29 against the gateway `ocelot.<environment>.json` routes, the FE environment files, the service Jenkinsfiles and the infra Kubernetes base.
 
 ## Environments
 
@@ -73,6 +73,7 @@ Jobs run outside the request path and call APIs Pod-to-Pod.
 | --- | --- | --- |
 | `agmbo-geoprocessing-netcore` | `agmbo-geoprocessing-netcore-svc` (`agrimap-job`) | |
 | `agmbo-publisher-netcore` | `agmbo-publisher-netcore-svc` (`agrimap-job`) | |
+| `agmbo-license-status-netcore` | `agmbo-license-status-netcore-svc` (`agrimap-job`) | License status job for agmws-license-management; name follows the convention, verify its manifest |
 | `agmbo-cleansing-service-netcore` | `agmbo-cleansing-service-netcore-svc` (`agrimap-job`) | Name follows the convention; no Kubernetes base manifest yet |
 | `agmbo-cleansing-file-netcore` | `agmbo-cleansing-file-netcore-svc` (`agrimap-job`) | Name follows the convention; no Kubernetes base manifest yet |
 

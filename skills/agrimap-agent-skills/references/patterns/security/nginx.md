@@ -1,6 +1,6 @@
 # Security — nginx
 
-`nginx/<env>/nginx.conf` of the `agmwa-*` front ends (served by `nginxinc/nginx-unprivileged`). Sonar has no nginx analyzer: these are SEC-19/SEC-30 rules checked by review and by Golden Lint later. Header ownership: confirm whether the gateway already sets a header before adding it here (SEC-19). Class definitions: [security-baseline.md](../security-baseline.md).
+`nginx/<env>/nginx.conf` of the `agmwa-*` front ends (served by `nginx/nginx-unprivileged:1.31.8-alpine`, built on Node 26). Sonar has no nginx analyzer: these are SEC-19/SEC-30 rules checked by review and by Golden Lint later. Header ownership: confirm whether the gateway already sets a header before adding it here (SEC-19). Class definitions: [security-baseline.md](../security-baseline.md).
 
 ## Contents
 
