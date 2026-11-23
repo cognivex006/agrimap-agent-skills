@@ -1,6 +1,6 @@
 # กติกา Release, Version, Changelog และ Deployment
 
-<!-- AGRIMAP BOOTSTRAP VERSION: 7.1.1 -->
+<!-- AGRIMAP BOOTSTRAP VERSION: 7.1.2 -->
 
 ไฟล์นี้ใช้ร่วมกับ `AGENTS.md` (core) ของ repository เดียวกัน: เก็บ §2 Intent routing ฉบับเต็มและ §4–§8 โดยคงเลข § เดิม เพื่อให้การอ้างอิงข้ามไฟล์ไม่เปลี่ยน §1, §3, §9 และ §10 อยู่ใน `AGENTS.md` และยังบังคับใช้กับงาน release ทุกงาน
 
@@ -192,7 +192,8 @@ agm-release -- notes --mode production
 
 ### 6.1 คำว่า deploy ในเอกสารนี้หมายถึงอะไร
 
-- **Agent ไม่เคย deploy ด้วยตัวเอง** ไม่ remote ไป server ไม่เรียก Jenkins API ไม่รัน `kubectl`, `helm`, `docker` หรือสั่ง rollout ใด ๆ
+- **Agent ไม่เคย deploy ด้วยตัวเอง** ไม่ remote ไป server ไม่เรียก Jenkins API ไม่รัน `kubectl`, `helm`, `docker push`/`docker run` หรือสั่ง rollout ใด ๆ
+- `docker build` ในเครื่องเป็นหลักฐานเสริม (Jenkins Build build image เอง): engine ใช้ไม่ได้ให้บันทึก `Docker: not verified locally` แล้ว push ต่อโดยไม่ถาม ถามเฉพาะ build fail บน engine ที่ทำงานได้
 - หน้าที่ด้าน pipeline ของ Agent คือ push และ remote-verify branch ตาม mode; `Version + Tags` ต้องทำ annotated tag push/remote verification ตาม §7 ต่อให้ครบด้วย จากนั้น Jenkins job ที่ตั้ง trigger ไว้ฝั่ง server จึงทำงานเอง trigger ไม่ได้อยู่ใน repo นี้ (`Jenkinsfile` ไม่มี `triggers {}` block)
 - Pipeline ทั้งสองไฟล์ทำแค่ SonarQube analysis, Build และ Push to registry ไม่มี stage rollout ดังนั้น pipeline เขียว = **มี image ใหม่ใน registry** ยังไม่ได้แปลว่าของขึ้น server แล้ว
 - Agent จึงต้องรายงานว่า "push แล้ว" หรือ "promote แล้ว" เท่านั้น ห้ามรายงานว่า deploy สำเร็จหรือ pipeline ผ่าน เว้นแต่ตรวจ pipeline จริงได้
