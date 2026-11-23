@@ -27,6 +27,7 @@ C# rules for `agmws-*`, `agmbo-*` and `AgriMap.*` (`csharpsquid` and Roslyn anal
 | ADV-39 | S1066 | `if` nested directly in an `if` with no `else` | must | safe | catalog |
 | ADV-14 | S3267 | `foreach` body is only an `if` filter | must | recommend | identity `BuildQueryString`; license-management `ImportFileParserResolver`; dynamic-dashboard `9d52fd2`; license-management `ImportFileParserResolver` (`foreach (var signature in ZipSignatures)`), `SensitiveParameters` (`foreach (var key in masked.Keys.ToList())`) still open |
 | ADV-30 | S2971, S6602, S6603, S6605 | `Where(p).FirstOrDefault()`, `Any(p)` on `List<T>`, `All(p)` on `List<T>` | must | safe | dynamic-dashboard `ade0d6e` (`FirstOrDefault(w => w.Checked)`) |
+| — | S1199 | Bare nested `{ }` block inside a method body (left over from a removed `using`/`if`) | must (remove the braces; extract a method only if the block needs its own scope) | safe | plus `StringExtensions.FileRename`, `HashExtensions.ComputeSha256Hash` |
 
 ## Dead code and noise
 
