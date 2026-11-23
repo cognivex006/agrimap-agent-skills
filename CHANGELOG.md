@@ -5,6 +5,10 @@ Release history, not current operating instructions. Start with [Getting Started
 
 
 
+## 7.1.1 — 2026-11-23
+
+- C# SonarQube table adds S1199 (bare nested `{ }` block in a method body): must remove the braces in new code, safe tier for existing code; extract a method only when the block needs its own scope. Seen in plus `StringExtensions.FileRename` and `HashExtensions.ComputeSha256Hash`.
+
 ## 7.1.0 — 2026-11-18
 
 - Fix scope by stage for the delivery phase: write time fixes every `must` row and the whole-file safe tier unasked; release sweeps the safe tier over the release delta as one `fix:` commit and refreshes stale package-managed files (`tools/agrimap/release-notify.mjs`) instead of hand-patching. CA1822/S2325 on `private` members joins the safe tier.
