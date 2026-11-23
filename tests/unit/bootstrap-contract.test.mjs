@@ -128,6 +128,20 @@ test('pipeline inhouse never bumps and republishes the current Inhouse version; 
 });
 
 
+test('flash publishes when only the local Docker engine is unavailable and never repeats a question (7.1.2)',async()=>{
+  const references=path.join(projectRoot,'skills/agrimap-agent-skills/references');
+  const flash=await readFile(path.join(references,'release-flash.md'),'utf8');
+  const tools=await readFile(path.join(references,'release-tools.md'),'utf8');
+  const template=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/assets/bootstrap/AGENTS.release.md'),'utf8');
+  assert.match(flash,/A local Docker build is optional \(Jenkins Build builds the image\)/);
+  assert.match(flash,/records `Docker: not verified locally` and continues to D unasked; only a failure on a working engine asks once\./);
+  assert.match(flash,/retries the failed step once, then takes the publishing option; never repeat the question, even on resume\./);
+  assert.match(flash,/report merged work as `local only, not pushed`/);
+  assert.doesNotMatch(flash,/Docker images included/);
+  assert.match(tools,/a broken machine\/tool \(not a local Docker build, which Jenkins repeats\)/);
+  assert.match(template,/`docker build` ในเครื่องเป็นหลักฐานเสริม/);
+});
+
 test('owner release command is the confirmation; only a version or candidate anomaly asks (5.0.1)',async()=>{
   const references=path.join(projectRoot,'skills/agrimap-agent-skills/references');
   const workflow=await readFile(path.join(references,'release-workflow.md'),'utf8');
@@ -202,7 +216,8 @@ test('instruction diet: core AGENTS.md at most 24,000 chars; core + release keep
   // 5.0.11: owner requests 2026-11-02 — §8 a blocked verification proves its cause and restates the full handoff on retry;
   // §2.3 pipeline inhouse never bumps and may republish the current Inhouse version (specs/decisions/0003).
   // owner request 2026-11-04 — §2/§6.3 the final audit commit stays local and ships with the next release's develop push.
-  assert.equal(createHash('sha256').update(frozen).digest('hex'),'879432f6735e5df1ccd6c5c69549db6e9fbbf249a6c3ae63587fce363c1479e3');
+  // 7.1.2: owner request 2026-11-23 — §6.1 a local docker build is optional evidence; an unavailable engine never stops promotion.
+  assert.equal(createHash('sha256').update(frozen).digest('hex'),'4a3fff2018fc5a85582bf31328ab33fc78b32ef9faa40ab07b999a4fc9e68f0f');
   const headings=['## 0.','## 1.','## 2.','### 2.1','### 2.2','### 2.3','## 3.','## 4.','## 5.','### 5.1','### 5.2','## 6.','### 6.1','### 6.2','### 6.3','## 7.','## 8.','### 8.1','## 9.','### 9.1','### 9.5','## 10.','### 10.5','## Bootstrap contract freshness'];
   const all=(core+'\n'+release).split('\n');
   for(const h of headings)assert.ok(all.some(line=>line.startsWith(h)),h);
