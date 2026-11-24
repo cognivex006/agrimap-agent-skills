@@ -1,12 +1,12 @@
 {
-  "version": "7.1.3",
+  "version": "7.1.4",
   "source": "Owner-supplied canonical contract submitted 2026-09-08; owner-authorized missing-memory indexing revision 2026-09-09; owner-authorized explicit Version/Patch precedence and compatible direct preparation revision 2026-09-09",
   "files": [
     {
       "source": "AGENTS.md",
       "target": "AGENTS.md",
       "mode": "copy",
-      "sha256": "0739e49ebaa3ebf73eb507df8a5382971b6b80a4318a04edfdd525ecfe050790",
+      "sha256": "aedff7b2c548381279e0d4770ec6e4983f6db14bccd891efc9e86e5c5bd22af3",
       "previous": [
         {
           "version": "3.2.2",
@@ -307,6 +307,10 @@
         {
           "version": "7.1.2",
           "sha256": "2f11066ee5e3b8b3b880dcad7874a3e708ff775dc48a74393aedf743de40d988"
+        },
+        {
+          "version": "7.1.3",
+          "sha256": "0739e49ebaa3ebf73eb507df8a5382971b6b80a4318a04edfdd525ecfe050790"
         }
       ]
     },
@@ -314,7 +318,7 @@
       "source": "AGENTS.release.md",
       "target": "AGENTS.release.md",
       "mode": "copy",
-      "sha256": "a14cc3c8f744e533e4e2daa29650d819bd32ac0aaff14909cee87b129f2c8c67",
+      "sha256": "cfa51d957bac7edc296276e6f4aeb5b4a4801d20715e3998475ddfd2ab119de0",
       "previous": [
         {
           "version": "4.8.0",
@@ -539,6 +543,10 @@
         {
           "version": "7.1.2",
           "sha256": "36a705ef5463821711e286feeb5a2b2109b459d47c60a07354a8e2bd703bd308"
+        },
+        {
+          "version": "7.1.3",
+          "sha256": "a14cc3c8f744e533e4e2daa29650d819bd32ac0aaff14909cee87b129f2c8c67"
         }
       ]
     },
@@ -686,11 +694,15 @@
         "be-main",
         "be-library"
       ],
-      "sha256": "6bfd16e0e718a9b7d8a7f85eca423e381f409c566f8580427d61ae829faeb4a9",
+      "sha256": "53f65103bbc6a029e3ebee8254daeb5bae6eb6c15b0042a3bb1e2e228081ff76",
       "previous": [
         {
           "version": "6.1.2",
           "sha256": "a749a8988d765f5e235d84c430d08e558deb659e2130f17970adec5576d73f00"
+        },
+        {
+          "version": "7.1.3",
+          "sha256": "6bfd16e0e718a9b7d8a7f85eca423e381f409c566f8580427d61ae829faeb4a9"
         }
       ]
     }
