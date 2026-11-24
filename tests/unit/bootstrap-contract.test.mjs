@@ -438,3 +438,10 @@ test('bootstrap manages a Roslyn analyzer block in .editorconfig for backend kin
     }finally{await rm(temp,{recursive:true,force:true});}
   }
 });
+
+test('analyzer block raises Info-default and Sonar must rules so the build shows them',async()=>{
+  // Owner request 2026-11-24: ASP0015/CA1845/CA1859/S3267 kept reaching SonarQube because build output hides Info.
+  const text=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/assets/bootstrap/analyzers.editorconfig'),'utf8');
+  for(const id of ['ASP0015','CA1845','CA1859','CA1854','CA1822','S3267','S1135','S1075','S1128','S1481'])
+    assert.match(text,new RegExp(`^dotnet_diagnostic\\.${id}\\.severity = warning$`,'m'),id);
+});

@@ -1,14 +1,18 @@
 [*.cs]
 # Severities for the Roslyn rules AgriMap Golden marks "must" (patterns/sonarqube/csharp.md).
 # Project overrides go in a later [*.cs] section of this file: later sections win.
+# ASP0015/CA1845/CA1859 default to Info, which `dotnet build` never prints: raised so the build shows them.
+dotnet_diagnostic.ASP0015.severity = warning
 dotnet_diagnostic.CA1510.severity = warning
 dotnet_diagnostic.CA1511.severity = warning
 dotnet_diagnostic.CA1512.severity = warning
 dotnet_diagnostic.CA1513.severity = warning
 dotnet_diagnostic.CA1822.severity = warning
 dotnet_diagnostic.CA1826.severity = warning
+dotnet_diagnostic.CA1845.severity = warning
 dotnet_diagnostic.CA1850.severity = warning
 dotnet_diagnostic.CA1854.severity = warning
+dotnet_diagnostic.CA1859.severity = warning
 dotnet_diagnostic.CA1861.severity = warning
 dotnet_diagnostic.CA1862.severity = warning
 dotnet_diagnostic.CA1865.severity = warning
@@ -17,3 +21,16 @@ dotnet_diagnostic.CA1869.severity = warning
 dotnet_diagnostic.CA2208.severity = warning
 dotnet_diagnostic.CA2254.severity = warning
 dotnet_diagnostic.IDE0005.severity = warning
+# SonarQube C# rules (csharpsquid). Effective only where the project references SonarAnalyzer.CSharp
+# (Directory.Build.props, PrivateAssets=all); without it these lines are inert.
+dotnet_diagnostic.S1075.severity = warning
+dotnet_diagnostic.S1128.severity = warning
+dotnet_diagnostic.S1135.severity = warning
+dotnet_diagnostic.S1481.severity = warning
+dotnet_diagnostic.S1854.severity = warning
+dotnet_diagnostic.S125.severity = warning
+dotnet_diagnostic.S1199.severity = warning
+dotnet_diagnostic.S3267.severity = warning
+dotnet_diagnostic.S3358.severity = warning
+dotnet_diagnostic.S3626.severity = warning
+dotnet_diagnostic.S3776.severity = warning
