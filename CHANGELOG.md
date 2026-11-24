@@ -5,6 +5,10 @@ Release history, not current operating instructions. Start with [Getting Started
 
 
 
+## Unreleased
+
+- Bootstrap analyzer block now raises ASP0015, CA1845 and CA1859 to warning (they default to Info, which `dotnet build` never prints, so header-indexer, `Substring` concatenation and concrete-type findings reached SonarQube unseen), and sets csharpsquid `must` rows (S3267, S1135, S1075, S1481, S1128 ...) to warning for projects that reference SonarAnalyzer.CSharp. The safe-tier done check requires zero warnings for those IDs in touched files and says when S-rules were not checked locally. C# table adds CA1845 (safe).
+
 ## 7.1.2 — 2026-11-23
 
 - Release `--flash`: a local Docker image build is optional evidence because Jenkins Build builds the image. When the local engine or its storage is unavailable (no disk, read-only BuildKit, WSL I/O error, HTTP 500) the run records `Docker: not verified locally` and publishes without asking; only a build that fails on a working engine asks. A free-text answer such as `ทำต่อให้จบ` or a fixed cause retries once and then takes the publishing option, never the same question again. Merged work before the develop push is reported as `local only, not pushed`. Bootstrap §6.1 narrows the docker ban to `docker push`/`docker run`.

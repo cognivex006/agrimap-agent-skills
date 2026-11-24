@@ -678,8 +678,13 @@
         "be-main",
         "be-library"
       ],
-      "sha256": "a749a8988d765f5e235d84c430d08e558deb659e2130f17970adec5576d73f00",
-      "previous": []
+      "sha256": "6bfd16e0e718a9b7d8a7f85eca423e381f409c566f8580427d61ae829faeb4a9",
+      "previous": [
+        {
+          "version": "6.1.2",
+          "sha256": "a749a8988d765f5e235d84c430d08e558deb659e2130f17970adec5576d73f00"
+        }
+      ]
     }
   ]
 }
