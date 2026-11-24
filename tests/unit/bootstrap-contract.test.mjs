@@ -444,4 +444,7 @@ test('analyzer block raises Info-default and Sonar must rules so the build shows
   const text=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/assets/bootstrap/analyzers.editorconfig'),'utf8');
   for(const id of ['ASP0015','CA1845','CA1859','CA1854','CA1822','S3267','S1135','S1075','S1128','S1481'])
     assert.match(text,new RegExp(`^dotnet_diagnostic\\.${id}\\.severity = warning$`,'m'),id);
+  assert.match(text,/^dotnet_code_quality\.CA1822\.api_surface = private, internal$/m,'CA1822 fixer must not touch public API');
+  const policy=await readFile(path.join(projectRoot,'skills/agrimap-agent-skills/references/sonarqube-remediation.md'),'utf8');
+  assert.match(policy,/dotnet format analyzers <project> --severity warn --diagnostics CA1845 CA1854 CA1822/,'C# auto-fix step');
 });

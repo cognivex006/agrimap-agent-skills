@@ -8,6 +8,8 @@ dotnet_diagnostic.CA1511.severity = warning
 dotnet_diagnostic.CA1512.severity = warning
 dotnet_diagnostic.CA1513.severity = warning
 dotnet_diagnostic.CA1822.severity = warning
+# CA1822 only on private/internal members, so the dotnet format fixer never changes public API.
+dotnet_code_quality.CA1822.api_surface = private, internal
 dotnet_diagnostic.CA1826.severity = warning
 dotnet_diagnostic.CA1845.severity = warning
 dotnet_diagnostic.CA1850.severity = warning

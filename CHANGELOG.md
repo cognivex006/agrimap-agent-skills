@@ -5,6 +5,10 @@ Release history, not current operating instructions. Start with [Getting Started
 
 
 
+## Unreleased
+
+- C# safe tier runs `dotnet format analyzers` first for the rules whose fixers the CLI runs (CA1845, CA1854, CA1822, CA1510..1513, CA1850, measured on .NET 9), then hand-fixes ASP0015, CA1859, CA1866 and S-rules from the build warnings. The analyzer block limits CA1822 to private/internal members so the fixer never changes public API.
+
 ## 7.1.3 — 2026-11-24
 
 - Bootstrap analyzer block now raises ASP0015, CA1845 and CA1859 to warning (they default to Info, which `dotnet build` never prints, so header-indexer, `Substring` concatenation and concrete-type findings reached SonarQube unseen), and sets csharpsquid `must` rows (S3267, S1135, S1075, S1481, S1128 ...) to warning for projects that reference SonarAnalyzer.CSharp. The safe-tier done check requires zero warnings for those IDs in touched files and says when S-rules were not checked locally. C# table adds CA1845 (safe).
