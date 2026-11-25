@@ -5,6 +5,10 @@ Release history, not current operating instructions. Start with [Getting Started
 
 
 
+## 7.1.5 — 2026-11-25
+
+- Foundation fixes made immediate: S5332 bans any `"http://..."` literal in C#, including a Kestrel binding fallback such as `["http://+:5000"]` (read `ASPNETCORE_URLS`/`Urls` from configuration, empty when unset), and is safe tier at write time. CA1822 (ADV-02) safe tier widens from `private` to `private`/`internal` non-virtual members and non-test helpers of test projects such as `CreateUseCase`; public API stays recommend-first.
+
 ## 7.1.4 — 2026-11-24
 
 - C# safe tier runs `dotnet format analyzers` first for the rules whose fixers the CLI runs (CA1845, CA1854, CA1822, CA1510..1513, CA1850, measured on .NET 9), then hand-fixes ASP0015, CA1859, CA1866 and S-rules from the build warnings. The analyzer block limits CA1822 to private/internal members so the fixer never changes public API.
