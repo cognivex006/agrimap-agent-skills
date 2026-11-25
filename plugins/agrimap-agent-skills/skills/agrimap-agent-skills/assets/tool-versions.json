@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "skillVersion": "7.1.4",
+  "skillVersion": "7.1.5",
   "sqlfluff": {
     "version": "4.2.2"
   }
